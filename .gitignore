@@ -1,0 +1,14 @@
+node_modules
+.turbo
+.next
+dist
+coverage
+.env
+.env.local
+.env.*.local
+.expo
+web-build
+android
+ios
+*.log
+*.tsbuildinfo

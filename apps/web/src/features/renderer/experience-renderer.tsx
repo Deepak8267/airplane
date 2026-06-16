@@ -1,0 +1,196 @@
+"use client";
+
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import type { ExperiencePage, PublicExperiencePayload } from "@airplane/shared";
+import { trackRendererEvent } from "./tracking";
+
+export function ExperienceRenderer({ payload, preview = false }: { payload: PublicExperiencePayload; preview?: boolean }) {
+  const [index, setIndex] = useState(0);
+  const [startedAt] = useState(() => Date.now());
+  const [noAttempts, setNoAttempts] = useState(0);
+  const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
+  const [visitor, setVisitor] = useState<string | null>(null);
+  const [session] = useState(() => createClientId());
+  const page = payload.pages[index] ?? getFallbackPage(payload.pages);
+  const isLast = index === payload.pages.length - 1;
+  const theme = payload.experience.theme;
+
+  useEffect(() => {
+    setVisitor(getOrCreateVisitor());
+  }, []);
+
+  useEffect(() => {
+    if (preview || !visitor) {
+      return;
+    }
+
+    void trackRendererEvent({
+      experienceId: payload.experience.id,
+      visitorId: visitor,
+      sessionId: session,
+      eventType: "experience_viewed"
+    });
+  }, [payload.experience.id, preview, session, visitor]);
+
+  useEffect(() => {
+    if (!preview && page && visitor) {
+      void trackRendererEvent({
+        experienceId: payload.experience.id,
+        visitorId: visitor,
+        sessionId: session,
+        pageId: page.id,
+        eventType: "page_viewed"
+      });
+    }
+  }, [page, payload.experience.id, preview, session, visitor]);
+
+  function next() {
+    if (isLast) {
+      if (!preview && visitor) {
+        void trackRendererEvent({
+          experienceId: payload.experience.id,
+          visitorId: visitor,
+          sessionId: session,
+          eventType: "experience_completed",
+          metadata: { completionTimeSeconds: Math.round((Date.now() - startedAt) / 1000) }
+        });
+      }
+      return;
+    }
+
+    setIndex((value) => Math.min(value + 1, payload.pages.length - 1));
+  }
+
+  function handleNoAttempt() {
+    const nextAttempts = noAttempts + 1;
+    setNoAttempts(nextAttempts);
+    setNoPosition({
+      x: Math.round(Math.random() * 180 - 90),
+      y: Math.round(Math.random() * 140 - 70)
+    });
+
+    if (!preview && visitor) {
+      void trackRendererEvent({
+        experienceId: payload.experience.id,
+        visitorId: visitor,
+        sessionId: session,
+        pageId: page.id,
+        eventType: "proposal_no_attempted",
+        metadata: { attemptNumber: nextAttempts }
+      });
+    }
+  }
+
+  function handleYes() {
+    if (!preview && visitor) {
+      void trackRendererEvent({
+        experienceId: payload.experience.id,
+        visitorId: visitor,
+        sessionId: session,
+        pageId: page.id,
+        eventType: "proposal_answered_yes",
+        metadata: {
+          noAttempts,
+          completionTimeSeconds: Math.round((Date.now() - startedAt) / 1000)
+        }
+      });
+    }
+    next();
+  }
+
+  return (
+    <main
+      className="min-h-dvh overflow-hidden px-5 py-6"
+      style={{ background: theme.background, color: theme.foreground }}
+    >
+      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-xl flex-col justify-center">
+        <AnimatePresence mode="wait">
+          <motion.section
+            key={page.id}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="flex flex-col gap-5"
+            exit={{ opacity: 0, y: -18, scale: 0.98 }}
+            initial={{ opacity: 0, y: 18, scale: 0.98 }}
+            transition={{ duration: 0.32, ease: "easeOut" }}
+          >
+            <PageBody page={page} recipientName={payload.experience.recipientName} />
+            {page.pageType === "proposal" ? (
+              <div className="relative mt-2 flex min-h-24 items-center gap-3">
+                <button className="h-14 flex-1 rounded-lg px-5 text-base font-black text-white" style={{ background: theme.accent }} onClick={handleYes}>
+                  YES
+                </button>
+                <motion.button
+                  animate={{ x: noPosition.x, y: noPosition.y }}
+                  className="h-14 flex-1 rounded-lg border border-black/15 bg-white px-5 text-base font-black"
+                  onClick={handleNoAttempt}
+                  transition={{ type: "spring", stiffness: 320, damping: 18 }}
+                >
+                  NO
+                </motion.button>
+              </div>
+            ) : (
+              <button className="mt-2 h-14 rounded-lg px-5 text-base font-black text-white" style={{ background: theme.accent }} onClick={next}>
+                {isLast ? "Finish" : page.content.ctaLabel ?? "Continue"}
+              </button>
+            )}
+            {payload.experience.watermarkEnabled ? <p className="pt-2 text-center text-xs font-bold opacity-60">Made with AIRPLANE</p> : null}
+          </motion.section>
+        </AnimatePresence>
+      </div>
+    </main>
+  );
+}
+
+function getFallbackPage(pages: ExperiencePage[]) {
+  const page = pages[0];
+
+  if (!page) {
+    throw new Error("Experience has no pages.");
+  }
+
+  return page;
+}
+
+function PageBody({ page, recipientName }: { page: ExperiencePage; recipientName: string }) {
+  if (page.pageType === "quiz") {
+    return (
+      <>
+        <p className="text-sm font-black uppercase text-current opacity-60">{recipientName}</p>
+        <h1 className="text-4xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>
+        <div className="grid gap-3">
+          {(page.content.answers ?? []).map((answer) => (
+            <button key={answer.id} className="rounded-lg border border-black/10 bg-white/80 p-4 text-left font-bold">
+              {answer.label}
+            </button>
+          ))}
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <p className="text-sm font-black uppercase text-current opacity-60">{recipientName}</p>
+      <h1 className="text-5xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>
+      <p className="text-lg leading-8 opacity-80">{page.content.body ?? page.content.finalMessage}</p>
+    </>
+  );
+}
+
+function getOrCreateVisitor() {
+  const key = "airplane_visitor_id";
+  const existing = window.localStorage.getItem(key);
+
+  if (existing) {
+    return existing;
+  }
+
+  const next = crypto.randomUUID();
+  window.localStorage.setItem(key, next);
+  return next;
+}
+
+function createClientId() {
+  return globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2);
+}
