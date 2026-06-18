@@ -10,8 +10,8 @@ export async function signInWithEmail(email: string, password: string) {
     throw new Error(error.message);
   }
 
-  if (data.user) {
-    await ensureUserProfile(data.user.id, data.user.email ?? email);
+  if (data.session?.user) {
+    await ensureUserProfile(data.session.user.id, data.session.user.email ?? email);
   }
 
   return data.session;
