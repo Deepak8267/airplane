@@ -1,9 +1,16 @@
 import { Link } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
-import { templateFixtures } from "@/features/templates/template-fixtures";
+import { getTemplates } from "@/features/templates/template-service";
 
 export default function HomeScreen() {
+  const templatesQuery = useQuery({
+    queryKey: ["templates"],
+    queryFn: getTemplates
+  });
+  const templates = templatesQuery.data ?? [];
+
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
@@ -21,8 +28,16 @@ export default function HomeScreen() {
       />
 
       <FlatList
-        data={templateFixtures}
+        data={templates}
         keyExtractor={(item) => item.id}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>{templatesQuery.isLoading ? "Loading templates..." : "No templates found"}</Text>
+            <Text style={styles.emptyCopy}>
+              {templatesQuery.error instanceof Error ? templatesQuery.error.message : "Run the Supabase seed file if this stays empty."}
+            </Text>
+          </View>
+        }
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <Link href={{ pathname: "/templates/[id]", params: { id: item.id } }} asChild>
@@ -55,4 +70,8 @@ const styles = StyleSheet.create({
   cardTitle: { color: "#101828", fontSize: 17, fontWeight: "800" },
   cardCopy: { color: "#667085", fontSize: 14, lineHeight: 20 },
   pro: { color: "#7c3aed", fontWeight: "900", fontSize: 12 }
+  ,
+  emptyState: { padding: 16, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", gap: 6 },
+  emptyTitle: { color: "#101828", fontSize: 16, fontWeight: "900" },
+  emptyCopy: { color: "#667085", lineHeight: 20 }
 });

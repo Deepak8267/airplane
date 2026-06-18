@@ -1,10 +1,16 @@
 import { router } from "expo-router";
+import { useMutation } from "@tanstack/react-query";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { updateDraftExperience } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
 
 export default function BuilderScreen() {
   const draft = useBuilderStore((state) => state.draft);
   const updateDraft = useBuilderStore((state) => state.updateDraft);
+  const saveMutation = useMutation({
+    mutationFn: updateDraftExperience,
+    onSuccess: () => router.push("/publish")
+  });
 
   if (!draft) {
     return (
@@ -39,10 +45,27 @@ export default function BuilderScreen() {
         <Pressable style={styles.secondaryButton} onPress={() => router.push("/preview/current")}>
           <Text style={styles.secondaryButtonText}>Preview</Text>
         </Pressable>
-        <Pressable style={styles.button} onPress={() => router.push("/publish")}>
-          <Text style={styles.buttonText}>Publish</Text>
+        <Pressable
+          style={[styles.button, { opacity: saveMutation.isPending ? 0.7 : 1 }]}
+          onPress={() => {
+            if (!draft.experienceId) {
+              return;
+            }
+
+            saveMutation.mutate({
+              id: draft.experienceId,
+              title: draft.title,
+              recipientName: draft.recipientName,
+              message: draft.message,
+              theme: draft.theme
+            });
+          }}
+          disabled={saveMutation.isPending}
+        >
+          <Text style={styles.buttonText}>{saveMutation.isPending ? "Saving..." : "Publish"}</Text>
         </Pressable>
       </View>
+      {saveMutation.error instanceof Error ? <Text style={styles.error}>{saveMutation.error.message}</Text> : null}
     </ScrollView>
   );
 }
@@ -79,5 +102,6 @@ const styles = StyleSheet.create({
   button: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#101828", justifyContent: "center", alignItems: "center" },
   buttonText: { color: "#ffffff", fontWeight: "800" },
   secondaryButton: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd", justifyContent: "center", alignItems: "center" },
-  secondaryButtonText: { color: "#101828", fontWeight: "800" }
+  secondaryButtonText: { color: "#101828", fontWeight: "800" },
+  error: { color: "#b42318", lineHeight: 20 }
 });

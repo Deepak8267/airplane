@@ -1,12 +1,38 @@
 import type { ExperiencePage, PublicExperiencePayload } from "@airplane/shared";
+import { mapExperience, mapExperiencePage } from "@airplane/supabase";
+import { supabase } from "@/lib/supabase";
 import { templateFixtures } from "@/features/templates/template-fixtures";
 
 export async function getPublicExperienceBySlug(slug: string): Promise<PublicExperiencePayload | null> {
-  if (slug.toUpperCase() !== "DEMO01") {
+  if (slug.toUpperCase() === "DEMO01") {
+    return buildFixturePayload("DEMO01");
+  }
+
+  const { data: experienceRow, error: experienceError } = await supabase
+    .from("experiences")
+    .select("*")
+    .eq("slug", slug.toUpperCase())
+    .eq("is_published", true)
+    .single();
+
+  if (experienceError || !experienceRow) {
     return null;
   }
 
-  return buildFixturePayload("DEMO01");
+  const { data: pageRows, error: pagesError } = await supabase
+    .from("experience_pages")
+    .select("*")
+    .eq("experience_id", experienceRow.id)
+    .order("position", { ascending: true });
+
+  if (pagesError) {
+    throw new Error(pagesError.message);
+  }
+
+  return {
+    experience: mapExperience(experienceRow),
+    pages: (pageRows ?? []).map(mapExperiencePage)
+  };
 }
 
 export async function getPreviewExperienceById(id: string): Promise<PublicExperiencePayload> {
