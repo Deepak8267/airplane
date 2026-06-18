@@ -114,7 +114,7 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             transition={{ duration: 0.32, ease: "easeOut" }}
           >
-            <PageBody page={page} recipientName={payload.experience.recipientName} />
+            <PageBody coverPhotoUrl={payload.experience.coverPhotoUrl} page={page} recipientName={payload.experience.recipientName} />
             {page.pageType === "proposal" ? (
               <div className="relative mt-2 flex min-h-24 items-center gap-3">
                 <button className="h-14 flex-1 rounded-lg px-5 text-base font-black text-white" style={{ background: theme.accent }} onClick={handleYes}>
@@ -152,7 +152,15 @@ function getFallbackPage(pages: ExperiencePage[]) {
   return page;
 }
 
-function PageBody({ page, recipientName }: { page: ExperiencePage; recipientName: string }) {
+function PageBody({
+  coverPhotoUrl,
+  page,
+  recipientName
+}: {
+  coverPhotoUrl: string | null;
+  page: ExperiencePage;
+  recipientName: string;
+}) {
   if (page.pageType === "quiz") {
     return (
       <>
@@ -171,6 +179,9 @@ function PageBody({ page, recipientName }: { page: ExperiencePage; recipientName
 
   return (
     <>
+      {page.pageType === "cover" && coverPhotoUrl ? (
+        <img alt="" className="mb-2 aspect-[4/5] w-full rounded-lg object-cover shadow-xl shadow-black/10" src={coverPhotoUrl} />
+      ) : null}
       <p className="text-sm font-black uppercase text-current opacity-60">{recipientName}</p>
       <h1 className="text-5xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>
       <p className="text-lg leading-8 opacity-80">{page.content.body ?? page.content.finalMessage}</p>

@@ -7,6 +7,7 @@ type BuilderDraft = {
   title: string;
   recipientName: string;
   message: string;
+  coverPhotoUrl: string | null;
   theme: Theme;
   pages: ExperiencePageDraft[];
 };
@@ -15,7 +16,7 @@ type BuilderState = {
   draft: BuilderDraft | null;
   startFromTemplate: (template: Template) => void;
   startFromExperience: (experience: Experience, pages: ExperiencePage[]) => void;
-  updateDraft: (patch: Partial<Pick<BuilderDraft, "title" | "recipientName" | "message" | "theme">>) => void;
+  updateDraft: (patch: Partial<Pick<BuilderDraft, "title" | "recipientName" | "message" | "coverPhotoUrl" | "theme">>) => void;
 };
 
 export const useBuilderStore = create<BuilderState>((set) => ({
@@ -28,6 +29,7 @@ export const useBuilderStore = create<BuilderState>((set) => ({
         title: template.name,
         recipientName: "",
         message: template.description,
+        coverPhotoUrl: null,
         theme: template.defaultTheme,
         pages: template.defaultPages
       }
@@ -40,6 +42,7 @@ export const useBuilderStore = create<BuilderState>((set) => ({
         title: experience.title,
         recipientName: experience.recipientName,
         message: experience.message,
+        coverPhotoUrl: experience.coverPhotoUrl,
         theme: experience.theme,
         pages: pages.map((page) => ({
           pageType: page.pageType,

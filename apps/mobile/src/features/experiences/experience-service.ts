@@ -8,6 +8,7 @@ export type ExperienceDraftInput = {
   title: string;
   recipientName: string;
   message: string;
+  coverPhotoUrl: string | null;
   theme: Template["defaultTheme"];
 };
 
@@ -35,6 +36,7 @@ export async function createDraftExperience(template: Template): Promise<{ exper
       title: template.name,
       recipient_name: "",
       message: template.description,
+      cover_photo_url: null,
       theme: template.defaultTheme,
       watermark_enabled: true
     })
@@ -48,11 +50,11 @@ export async function createDraftExperience(template: Template): Promise<{ exper
   const pageRows = template.defaultPages.map((page, index) => ({
     experience_id: experienceRow.id,
     page_type: page.pageType,
-      position: index,
-      title: page.title,
-      content: page.content as Json,
-      media_urls: page.mediaUrls,
-      settings: page.settings as Json
+    position: index,
+    title: page.title,
+    content: page.content as Json,
+    media_urls: page.mediaUrls,
+    settings: page.settings as Json
   }));
 
   const { data: pages, error: pagesError } = await supabase
@@ -78,6 +80,7 @@ export async function updateDraftExperience(input: ExperienceDraftInput): Promis
       title: input.title,
       recipient_name: input.recipientName,
       message: input.message,
+      cover_photo_url: input.coverPhotoUrl,
       theme: input.theme
     })
     .eq("id", input.id)
@@ -89,6 +92,27 @@ export async function updateDraftExperience(input: ExperienceDraftInput): Promis
   }
 
   return mapExperience(data);
+}
+
+export async function uploadCoverPhoto(experienceId: string, uri: string): Promise<string> {
+  const userId = await ensureCreatorUserId();
+  const response = await fetch(uri);
+  const blob = await response.blob();
+  const contentType = blob.type || "image/jpeg";
+  const extension = getImageExtension(contentType);
+  const path = `${userId}/${experienceId}/cover-${Date.now()}.${extension}`;
+
+  const { error } = await supabase.storage.from("covers").upload(path, blob, {
+    contentType,
+    upsert: true
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const { data } = supabase.storage.from("covers").getPublicUrl(path);
+  return data.publicUrl;
 }
 
 export async function publishExperience(experienceId: string): Promise<string> {
@@ -133,4 +157,16 @@ async function ensureUserProfile(userId: string, email: string | null) {
   if (error) {
     throw new Error(error.message);
   }
+}
+
+function getImageExtension(contentType: string) {
+  if (contentType.includes("png")) {
+    return "png";
+  }
+
+  if (contentType.includes("webp")) {
+    return "webp";
+  }
+
+  return "jpg";
 }

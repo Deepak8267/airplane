@@ -1,7 +1,8 @@
 import { router } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import { useMutation } from "@tanstack/react-query";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { updateDraftExperience } from "@/features/experiences/experience-service";
+import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { updateDraftExperience, uploadCoverPhoto } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
 
 export default function BuilderScreen() {
@@ -10,6 +11,37 @@ export default function BuilderScreen() {
   const saveMutation = useMutation({
     mutationFn: updateDraftExperience,
     onSuccess: () => router.push("/publish")
+  });
+  const uploadMutation = useMutation({
+    mutationFn: async () => {
+      if (!draft?.experienceId) {
+        throw new Error("Create the draft before uploading a cover photo.");
+      }
+
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        throw new Error("Photo library permission is required to choose a cover photo.");
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [4, 5],
+        mediaTypes: ["images"],
+        quality: 0.85
+      });
+
+      if (result.canceled || !result.assets[0]) {
+        return null;
+      }
+
+      return uploadCoverPhoto(draft.experienceId, result.assets[0].uri);
+    },
+    onSuccess: (coverPhotoUrl) => {
+      if (coverPhotoUrl) {
+        updateDraft({ coverPhotoUrl });
+      }
+    }
   });
 
   if (!draft) {
@@ -30,6 +62,24 @@ export default function BuilderScreen() {
       <Field label="Title" value={draft.title} onChangeText={(title) => updateDraft({ title })} />
       <Field label="Recipient name" value={draft.recipientName} onChangeText={(recipientName) => updateDraft({ recipientName })} />
       <Field label="Message" value={draft.message} onChangeText={(message) => updateDraft({ message })} multiline />
+
+      <View style={styles.coverPanel}>
+        <View style={styles.coverPreview}>
+          {draft.coverPhotoUrl ? (
+            <Image source={{ uri: draft.coverPhotoUrl }} style={styles.coverImage} />
+          ) : (
+            <Text style={styles.coverPlaceholder}>Cover photo</Text>
+          )}
+        </View>
+        <Pressable
+          disabled={uploadMutation.isPending}
+          style={[styles.secondaryButton, { opacity: uploadMutation.isPending ? 0.7 : 1 }]}
+          onPress={() => uploadMutation.mutate()}
+        >
+          <Text style={styles.secondaryButtonText}>{uploadMutation.isPending ? "Uploading..." : "Choose photo"}</Text>
+        </Pressable>
+        {uploadMutation.error instanceof Error ? <Text style={styles.error}>{uploadMutation.error.message}</Text> : null}
+      </View>
 
       <View style={styles.pages}>
         <Text style={styles.sectionTitle}>Pages</Text>
@@ -57,6 +107,7 @@ export default function BuilderScreen() {
               title: draft.title,
               recipientName: draft.recipientName,
               message: draft.message,
+              coverPhotoUrl: draft.coverPhotoUrl,
               theme: draft.theme
             });
           }}
@@ -93,6 +144,10 @@ const styles = StyleSheet.create({
   label: { color: "#344054", fontWeight: "800" },
   input: { minHeight: 50, borderWidth: 1, borderColor: "#d0d5dd", borderRadius: 8, paddingHorizontal: 13, backgroundColor: "#ffffff", fontSize: 16, color: "#101828" },
   textarea: { minHeight: 112, paddingTop: 12, textAlignVertical: "top" },
+  coverPanel: { gap: 10 },
+  coverPreview: { height: 220, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", overflow: "hidden", backgroundColor: "#f2f4f7", alignItems: "center", justifyContent: "center" },
+  coverImage: { width: "100%", height: "100%" },
+  coverPlaceholder: { color: "#667085", fontWeight: "800" },
   pages: { gap: 10 },
   sectionTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
   pageRow: { padding: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", borderRadius: 8, gap: 4 },

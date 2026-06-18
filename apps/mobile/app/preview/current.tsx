@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useBuilderStore } from "@/stores/builder-store";
 
@@ -11,6 +11,7 @@ export default function CurrentPreviewScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: draft.theme.background }]}>
+      {draft.coverPhotoUrl ? <Image source={{ uri: draft.coverPhotoUrl }} style={styles.coverImage} /> : null}
       <Text style={[styles.recipient, { color: draft.theme.accent }]}>{draft.recipientName}</Text>
       <Text style={[styles.title, { color: draft.theme.foreground }]}>{draft.title}</Text>
       <Text style={[styles.copy, { color: draft.theme.foreground }]}>{draft.message}</Text>
@@ -23,6 +24,7 @@ export default function CurrentPreviewScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, padding: 24, justifyContent: "center", gap: 14 },
+  coverImage: { width: "100%", aspectRatio: 4 / 5, borderRadius: 8 },
   recipient: { fontSize: 16, fontWeight: "900" },
   title: { fontSize: 38, lineHeight: 44, fontWeight: "900" },
   copy: { fontSize: 18, lineHeight: 27 },
