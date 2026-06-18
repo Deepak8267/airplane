@@ -11,6 +11,19 @@ export type ExperienceDraftInput = {
   theme: Template["defaultTheme"];
 };
 
+export async function getMyExperiences(): Promise<Experience[]> {
+  const { data, error } = await supabase
+    .from("experiences")
+    .select("*")
+    .order("updated_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []).map(mapExperience);
+}
+
 export async function createDraftExperience(template: Template): Promise<{ experience: Experience; pages: ExperiencePage[] }> {
   const userId = await ensureCreatorUserId();
 

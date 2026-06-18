@@ -3,7 +3,17 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSessionStore } from "@/stores/session-store";
 
 export default function IndexScreen() {
+  const hydrated = useSessionStore((state) => state.hydrated);
   const session = useSessionStore((state) => state.session);
+
+  if (!hydrated) {
+    return (
+      <View style={styles.screen}>
+        <Text style={styles.logo}>AIRPLANE</Text>
+        <Text style={styles.copy}>Loading your session...</Text>
+      </View>
+    );
+  }
 
   if (session) {
     return <Redirect href="/home" />;
@@ -19,11 +29,6 @@ export default function IndexScreen() {
       <Link href="/auth/sign-in" asChild>
         <Pressable style={styles.primaryButton}>
           <Text style={styles.primaryButtonText}>Sign in</Text>
-        </Pressable>
-      </Link>
-      <Link href="/home" asChild>
-        <Pressable style={styles.secondaryButton}>
-          <Text style={styles.secondaryButtonText}>View demo shell</Text>
         </Pressable>
       </Link>
     </View>

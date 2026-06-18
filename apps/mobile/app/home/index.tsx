@@ -1,10 +1,18 @@
 import { Link } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
+import { signOut } from "@/features/auth/auth-service";
 import { getTemplates } from "@/features/templates/template-service";
+import { useSessionStore } from "@/stores/session-store";
 
 export default function HomeScreen() {
+  const session = useSessionStore((state) => state.session);
+  const localSignOut = useSessionStore((state) => state.signOut);
+  const signOutMutation = useMutation({
+    mutationFn: signOut,
+    onSuccess: localSignOut
+  });
   const templatesQuery = useQuery({
     queryKey: ["templates"],
     queryFn: getTemplates
@@ -16,6 +24,18 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <Text style={styles.eyebrow}>Creator Home</Text>
         <Text style={styles.title}>Choose a starting point.</Text>
+        <Text style={styles.account}>{session?.user.email ?? "Anonymous creator"}</Text>
+      </View>
+
+      <View style={styles.actions}>
+        <Link href={"/experiences" as never} asChild>
+          <Pressable style={styles.actionButton}>
+            <Text style={styles.actionButtonText}>My experiences</Text>
+          </Pressable>
+        </Link>
+        <Pressable style={styles.actionButton} onPress={() => signOutMutation.mutate()}>
+          <Text style={styles.actionButtonText}>Sign out</Text>
+        </Pressable>
       </View>
 
       <FlatList
@@ -61,6 +81,10 @@ const styles = StyleSheet.create({
   header: { paddingTop: 8, gap: 6 },
   eyebrow: { color: "#2563eb", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
   title: { color: "#101828", fontSize: 30, lineHeight: 36, fontWeight: "800" },
+  account: { color: "#667085", fontWeight: "700" },
+  actions: { flexDirection: "row", gap: 10, paddingTop: 16 },
+  actionButton: { flex: 1, minHeight: 46, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
+  actionButtonText: { color: "#101828", fontWeight: "800" },
   categories: { gap: 8, paddingVertical: 18 },
   category: { overflow: "hidden", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: "#ffffff", color: "#344054", fontWeight: "700", textTransform: "capitalize" },
   list: { gap: 12, paddingBottom: 40 },

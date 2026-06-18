@@ -1,17 +1,18 @@
 import { create } from "zustand";
-
-type DemoSession = {
-  email: string;
-};
+import type { Session } from "@supabase/supabase-js";
 
 type SessionState = {
-  session: DemoSession | null;
-  setDemoSession: (email: string) => void;
+  hydrated: boolean;
+  session: Session | null;
+  setSession: (session: Session | null) => void;
+  setHydrated: (hydrated: boolean) => void;
   signOut: () => void;
 };
 
 export const useSessionStore = create<SessionState>((set) => ({
+  hydrated: false,
   session: null,
-  setDemoSession: (email) => set({ session: { email } }),
+  setSession: (session) => set({ session }),
+  setHydrated: (hydrated) => set({ hydrated }),
   signOut: () => set({ session: null })
 }));
