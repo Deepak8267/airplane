@@ -107,6 +107,7 @@ async function ensureCreatorUserId() {
   const { data: sessionData } = await supabase.auth.getSession();
 
   if (sessionData.session?.user.id) {
+    await ensureUserProfile(sessionData.session.user.id, sessionData.session.user.email ?? null);
     return sessionData.session.user.id;
   }
 
@@ -118,5 +119,18 @@ async function ensureCreatorUserId() {
     );
   }
 
+  await ensureUserProfile(data.user.id, data.user.email ?? null);
   return data.user.id;
+}
+
+async function ensureUserProfile(userId: string, email: string | null) {
+  const { error } = await supabase.from("users").upsert({
+    id: userId,
+    email,
+    provider: email ? "email" : "anonymous"
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
