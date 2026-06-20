@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import { getCountdownParts } from "@airplane/shared";
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useBuilderStore } from "@/stores/builder-store";
@@ -7,12 +8,25 @@ import { useBuilderStore } from "@/stores/builder-store";
 export default function CurrentPreviewScreen() {
   const draft = useBuilderStore((state) => state.draft);
   const [index, setIndex] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+  const activePage = draft?.pages[index];
+  const countdownTarget = activePage?.pageType === "countdown" ? activePage.content.targetDate : undefined;
 
-  if (!draft || !draft.pages[index]) {
+  useEffect(() => {
+    if (!countdownTarget) {
+      return;
+    }
+
+    setNow(Date.now());
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [countdownTarget]);
+
+  if (!draft || !activePage) {
     return null;
   }
 
-  const page = draft.pages[index];
+  const page = activePage;
   const isLast = index === draft.pages.length - 1;
   const primaryText = page.content.question ?? page.title;
   const supportingText = page.content.body ?? page.content.finalMessage;
@@ -37,7 +51,12 @@ export default function CurrentPreviewScreen() {
       {supportingText ? <Text style={[styles.copy, { color: draft.theme.foreground }]}>{supportingText}</Text> : null}
 
       {page.pageType === "countdown" && page.content.targetDate ? (
-        <Text style={[styles.countdown, { color: draft.theme.accent }]}>{page.content.targetDate}</Text>
+        <CountdownPanel
+          accent={draft.theme.accent}
+          foreground={draft.theme.foreground}
+          now={now}
+          targetDate={page.content.targetDate}
+        />
       ) : null}
 
       {page.pageType === "quiz" ? (
@@ -78,6 +97,36 @@ export default function CurrentPreviewScreen() {
   );
 }
 
+function CountdownPanel({ accent, foreground, now, targetDate }: { accent: string; foreground: string; now: number; targetDate: string }) {
+  const countdown = getCountdownParts(targetDate, now);
+
+  if (!countdown.isValid) {
+    return <Text style={[styles.countdownMessage, { color: foreground }]}>Coming soon</Text>;
+  }
+
+  if (countdown.isComplete) {
+    return <Text style={[styles.countdownMessage, { color: accent }]}>It&apos;s time!</Text>;
+  }
+
+  const units = [
+    { label: "Days", value: countdown.days },
+    { label: "Hours", value: countdown.hours },
+    { label: "Minutes", value: countdown.minutes },
+    { label: "Seconds", value: countdown.seconds }
+  ];
+
+  return (
+    <View style={styles.countdownGrid}>
+      {units.map((unit) => (
+        <View key={unit.label} style={styles.countdownUnit}>
+          <Text style={[styles.countdownValue, { color: accent }]}>{unit.value.toString().padStart(2, "0")}</Text>
+          <Text style={[styles.countdownLabel, { color: foreground }]}>{unit.label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flexGrow: 1, padding: 24, justifyContent: "center", gap: 14 },
   pageMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
@@ -88,7 +137,11 @@ const styles = StyleSheet.create({
   pageLabel: { fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
   title: { fontSize: 38, lineHeight: 44, fontWeight: "900" },
   copy: { fontSize: 18, lineHeight: 27 },
-  countdown: { fontSize: 24, fontWeight: "900" },
+  countdownGrid: { flexDirection: "row", gap: 6 },
+  countdownUnit: { flex: 1, minWidth: 0, height: 74, borderRadius: 8, backgroundColor: "rgba(255, 255, 255, 0.72)", alignItems: "center", justifyContent: "center", gap: 3 },
+  countdownValue: { fontSize: 23, fontWeight: "900" },
+  countdownLabel: { fontSize: 10, fontWeight: "800", opacity: 0.65 },
+  countdownMessage: { fontSize: 28, fontWeight: "900" },
   options: { gap: 10 },
   option: { minHeight: 52, borderRadius: 8, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.14)", backgroundColor: "rgba(255, 255, 255, 0.75)", justifyContent: "center", paddingHorizontal: 16 },
   optionText: { fontSize: 16, fontWeight: "800" },

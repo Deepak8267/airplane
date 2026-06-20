@@ -144,7 +144,15 @@ function createPage(pageType: ExperiencePageType): ExperiencePageDraft {
       };
     }
     case "countdown":
-      return { ...base, title: "Counting down", content: { body: "Something special is coming.", targetDate: "", ctaLabel: "Continue" } };
+      return {
+        ...base,
+        title: "Counting down",
+        content: {
+          body: "Something special is coming.",
+          targetDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          ctaLabel: "Continue"
+        }
+      };
     case "proposal":
       return { ...base, title: "A special question", content: { question: "Will you say yes?" }, settings: { moveNoButton: true } };
     case "final":

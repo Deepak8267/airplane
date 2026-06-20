@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { getCountdownParts } from "@airplane/shared";
 import type { ExperiencePage, PublicExperiencePayload } from "@airplane/shared";
 import { trackRendererEvent } from "./tracking";
 
@@ -228,9 +229,58 @@ function PageBody({
       <p className="text-sm font-black uppercase text-current opacity-60">{recipientName}</p>
       <h1 className="text-5xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>
       <p className="text-lg leading-8 opacity-80">{page.content.body ?? page.content.finalMessage}</p>
+      {page.pageType === "countdown" && page.content.targetDate ? <CountdownPanel targetDate={page.content.targetDate} /> : null}
     </>
   );
 }
+
+function CountdownPanel({ targetDate }: { targetDate: string }) {
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    setNow(Date.now());
+    const interval = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(interval);
+  }, [targetDate]);
+
+  if (now === null) {
+    return (
+      <div className="grid grid-cols-4 gap-2" aria-label="Countdown loading">
+        {COUNTDOWN_LABELS.map((label) => <CountdownUnit key={label} label={label} value="--" />)}
+      </div>
+    );
+  }
+
+  const countdown = getCountdownParts(targetDate, now);
+
+  if (!countdown.isValid) {
+    return <p className="text-2xl font-black">Coming soon</p>;
+  }
+
+  if (countdown.isComplete) {
+    return <p className="text-3xl font-black">It&apos;s time!</p>;
+  }
+
+  return (
+    <div className="grid grid-cols-4 gap-2" aria-label="Countdown">
+      <CountdownUnit label="Days" value={countdown.days.toString().padStart(2, "0")} />
+      <CountdownUnit label="Hours" value={countdown.hours.toString().padStart(2, "0")} />
+      <CountdownUnit label="Minutes" value={countdown.minutes.toString().padStart(2, "0")} />
+      <CountdownUnit label="Seconds" value={countdown.seconds.toString().padStart(2, "0")} />
+    </div>
+  );
+}
+
+function CountdownUnit({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex h-20 min-w-0 flex-col items-center justify-center rounded-lg bg-white/70 px-1">
+      <span className="text-2xl font-black tabular-nums">{value}</span>
+      <span className="text-[10px] font-bold uppercase opacity-60">{label}</span>
+    </div>
+  );
+}
+
+const COUNTDOWN_LABELS = ["Days", "Hours", "Minutes", "Seconds"];
 
 function getOrCreateVisitor() {
   const key = "airplane_visitor_id";
