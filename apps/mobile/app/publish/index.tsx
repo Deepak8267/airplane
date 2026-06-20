@@ -2,14 +2,30 @@ import * as Sharing from "expo-sharing";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { publishExperience } from "@/features/experiences/experience-service";
+import { publishExperience, updateDraftExperience } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
 
 export default function PublishScreen() {
   const draft = useBuilderStore((state) => state.draft);
   const [link, setLink] = useState<string | null>(null);
   const publishMutation = useMutation({
-    mutationFn: publishExperience,
+    mutationFn: async () => {
+      if (!draft?.experienceId) {
+        throw new Error("No draft is ready to publish.");
+      }
+
+      await updateDraftExperience({
+        id: draft.experienceId,
+        title: draft.title,
+        recipientName: draft.recipientName,
+        message: draft.message,
+        coverPhotoUrl: draft.coverPhotoUrl,
+        theme: draft.theme,
+        pages: draft.pages
+      });
+
+      return publishExperience(draft.experienceId);
+    },
     onSuccess: (slug) => {
       setLink(`${process.env.EXPO_PUBLIC_WEB_URL ?? "https://airplane.app"}/e/${slug}`);
     }
@@ -23,18 +39,14 @@ export default function PublishScreen() {
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.eyebrow}>Published</Text>
+      <Text style={styles.eyebrow}>{link ? "Published" : "Publish"}</Text>
       <Text style={styles.title}>{draft?.title ?? "Your experience"} is ready to publish.</Text>
       {link ? <Text style={styles.link}>{link}</Text> : null}
       {publishMutation.error instanceof Error ? <Text style={styles.error}>{publishMutation.error.message}</Text> : null}
       {!link ? (
         <Pressable
           style={[styles.button, { opacity: publishMutation.isPending ? 0.7 : 1 }]}
-          onPress={() => {
-            if (draft?.experienceId) {
-              publishMutation.mutate(draft.experienceId);
-            }
-          }}
+          onPress={() => publishMutation.mutate()}
           disabled={publishMutation.isPending || !draft?.experienceId}
         >
           <Text style={styles.buttonText}>{publishMutation.isPending ? "Publishing..." : "Publish experience"}</Text>

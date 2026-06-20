@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation } from "@tanstack/react-query";
+import type { ExperiencePageDraft, PageContent } from "@airplane/shared";
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { updateDraftExperience, uploadCoverPhoto } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
@@ -8,6 +9,7 @@ import { useBuilderStore } from "@/stores/builder-store";
 export default function BuilderScreen() {
   const draft = useBuilderStore((state) => state.draft);
   const updateDraft = useBuilderStore((state) => state.updateDraft);
+  const updatePage = useBuilderStore((state) => state.updatePage);
   const saveMutation = useMutation({
     mutationFn: updateDraftExperience,
     onSuccess: () => router.push("/publish")
@@ -84,10 +86,12 @@ export default function BuilderScreen() {
       <View style={styles.pages}>
         <Text style={styles.sectionTitle}>Pages</Text>
         {draft.pages.map((page, index) => (
-          <View key={`${page.pageType}-${index}`} style={styles.pageRow}>
-            <Text style={styles.pageType}>{page.pageType}</Text>
-            <Text style={styles.pageTitle}>{page.title}</Text>
-          </View>
+          <PageEditor
+            index={index}
+            key={`${page.pageType}-${index}`}
+            onChange={(patch) => updatePage(index, patch)}
+            page={page}
+          />
         ))}
       </View>
 
@@ -108,7 +112,8 @@ export default function BuilderScreen() {
               recipientName: draft.recipientName,
               message: draft.message,
               coverPhotoUrl: draft.coverPhotoUrl,
-              theme: draft.theme
+              theme: draft.theme,
+              pages: draft.pages
             });
           }}
           disabled={saveMutation.isPending}
@@ -118,6 +123,71 @@ export default function BuilderScreen() {
       </View>
       {saveMutation.error instanceof Error ? <Text style={styles.error}>{saveMutation.error.message}</Text> : null}
     </ScrollView>
+  );
+}
+
+function PageEditor({
+  index,
+  onChange,
+  page
+}: {
+  index: number;
+  onChange: (patch: Partial<ExperiencePageDraft>) => void;
+  page: ExperiencePageDraft;
+}) {
+  const updateContent = (patch: Partial<PageContent>) => onChange({ content: { ...page.content, ...patch } });
+
+  return (
+    <View style={styles.pageEditor}>
+      <View style={styles.pageHeader}>
+        <Text style={styles.pageNumber}>Page {index + 1}</Text>
+        <Text style={styles.pageType}>{formatPageType(page.pageType)}</Text>
+      </View>
+      <Field label="Page title" value={page.title} onChangeText={(title) => onChange({ title })} />
+
+      {page.pageType === "quiz" ? (
+        <>
+          <Field label="Question" value={page.content.question ?? ""} onChangeText={(question) => updateContent({ question })} multiline />
+          {(page.content.answers ?? []).map((answer, answerIndex) => (
+            <Field
+              key={answer.id}
+              label={`Answer ${answerIndex + 1}`}
+              value={answer.label}
+              onChangeText={(label) =>
+                updateContent({
+                  answers: (page.content.answers ?? []).map((item, itemIndex) =>
+                    itemIndex === answerIndex ? { ...item, label } : item
+                  )
+                })
+              }
+            />
+          ))}
+        </>
+      ) : null}
+
+      {page.pageType === "proposal" ? (
+        <Field label="Question" value={page.content.question ?? ""} onChangeText={(question) => updateContent({ question })} multiline />
+      ) : null}
+
+      {page.pageType === "final" ? (
+        <Field label="Final message" value={page.content.finalMessage ?? ""} onChangeText={(finalMessage) => updateContent({ finalMessage })} multiline />
+      ) : null}
+
+      {page.pageType === "countdown" ? (
+        <>
+          <Field label="Message" value={page.content.body ?? ""} onChangeText={(body) => updateContent({ body })} multiline />
+          <Field label="Target date (ISO)" value={page.content.targetDate ?? ""} onChangeText={(targetDate) => updateContent({ targetDate })} />
+        </>
+      ) : null}
+
+      {page.pageType === "cover" || page.pageType === "memory" ? (
+        <Field label="Body" value={page.content.body ?? ""} onChangeText={(body) => updateContent({ body })} multiline />
+      ) : null}
+
+      {page.pageType !== "proposal" && page.pageType !== "final" ? (
+        <Field label="Button label" value={page.content.ctaLabel ?? ""} onChangeText={(ctaLabel) => updateContent({ ctaLabel })} />
+      ) : null}
+    </View>
   );
 }
 
@@ -135,6 +205,10 @@ function Field(props: { label: string; value: string; onChangeText: (value: stri
   );
 }
 
+function formatPageType(pageType: ExperiencePageDraft["pageType"]) {
+  return pageType.charAt(0).toUpperCase() + pageType.slice(1);
+}
+
 const styles = StyleSheet.create({
   screen: { padding: 20, gap: 16 },
   empty: { flex: 1, padding: 20, justifyContent: "center", gap: 16 },
@@ -150,9 +224,10 @@ const styles = StyleSheet.create({
   coverPlaceholder: { color: "#667085", fontWeight: "800" },
   pages: { gap: 10 },
   sectionTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
-  pageRow: { padding: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", borderRadius: 8, gap: 4 },
+  pageEditor: { padding: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", borderRadius: 8, gap: 12 },
+  pageHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  pageNumber: { color: "#101828", fontWeight: "900", fontSize: 16 },
   pageType: { color: "#2563eb", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  pageTitle: { color: "#101828", fontWeight: "800", fontSize: 16 },
   actions: { flexDirection: "row", gap: 10 },
   button: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#101828", justifyContent: "center", alignItems: "center" },
   buttonText: { color: "#ffffff", fontWeight: "800" },

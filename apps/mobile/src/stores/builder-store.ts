@@ -17,6 +17,7 @@ type BuilderState = {
   startFromTemplate: (template: Template) => void;
   startFromExperience: (experience: Experience, pages: ExperiencePage[]) => void;
   updateDraft: (patch: Partial<Pick<BuilderDraft, "title" | "recipientName" | "message" | "coverPhotoUrl" | "theme">>) => void;
+  updatePage: (index: number, patch: Partial<ExperiencePageDraft>) => void;
 };
 
 export const useBuilderStore = create<BuilderState>((set) => ({
@@ -56,5 +57,18 @@ export const useBuilderStore = create<BuilderState>((set) => ({
   updateDraft: (patch) =>
     set((state) => ({
       draft: state.draft ? { ...state.draft, ...patch } : null
-    }))
+    })),
+  updatePage: (index, patch) =>
+    set((state) => {
+      const currentPage = state.draft?.pages[index];
+
+      if (!state.draft || !currentPage) {
+        return state;
+      }
+
+      const pages = [...state.draft.pages];
+      pages[index] = { ...currentPage, ...patch };
+
+      return { draft: { ...state.draft, pages } };
+    })
 }));

@@ -1,6 +1,6 @@
 import { mapExperience, mapExperiencePage } from "@airplane/supabase";
 import type { Json } from "@airplane/supabase";
-import type { Experience, ExperiencePage, Template } from "@airplane/shared";
+import type { Experience, ExperiencePage, ExperiencePageDraft, Template } from "@airplane/shared";
 import { supabase } from "@/lib/supabase";
 
 export type ExperienceDraftInput = {
@@ -10,6 +10,7 @@ export type ExperienceDraftInput = {
   message: string;
   coverPhotoUrl: string | null;
   theme: Template["defaultTheme"];
+  pages: ExperiencePageDraft[];
 };
 
 export async function getMyExperiences(): Promise<Experience[]> {
@@ -89,6 +90,24 @@ export async function updateDraftExperience(input: ExperienceDraftInput): Promis
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  const pageRows = input.pages.map((page, position) => ({
+    experience_id: input.id,
+    page_type: page.pageType,
+    position,
+    title: page.title,
+    content: page.content as Json,
+    media_urls: page.mediaUrls,
+    settings: page.settings as Json
+  }));
+
+  const { error: pagesError } = await supabase.from("experience_pages").upsert(pageRows, {
+    onConflict: "experience_id,position"
+  });
+
+  if (pagesError) {
+    throw new Error(pagesError.message);
   }
 
   return mapExperience(data);
