@@ -62,6 +62,36 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
     setIndex((value) => Math.min(value + 1, payload.pages.length - 1));
   }
 
+  function handleContinue() {
+    if (!preview && visitor) {
+      void trackRendererEvent({
+        experienceId: payload.experience.id,
+        visitorId: visitor,
+        sessionId: session,
+        pageId: page.id,
+        eventType: "button_clicked",
+        metadata: { label: isLast ? "Finish" : page.content.ctaLabel ?? "Continue" }
+      });
+    }
+
+    next();
+  }
+
+  function handleQuizAnswer(answerId: string, answerLabel: string) {
+    if (!preview && visitor) {
+      void trackRendererEvent({
+        experienceId: payload.experience.id,
+        visitorId: visitor,
+        sessionId: session,
+        pageId: page.id,
+        eventType: "quiz_answered",
+        metadata: { answerId, answerLabel }
+      });
+    }
+
+    next();
+  }
+
   function handleNoAttempt() {
     const nextAttempts = noAttempts + 1;
     setNoAttempts(nextAttempts);
@@ -114,7 +144,12 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             transition={{ duration: 0.32, ease: "easeOut" }}
           >
-            <PageBody coverPhotoUrl={payload.experience.coverPhotoUrl} page={page} recipientName={payload.experience.recipientName} />
+            <PageBody
+              coverPhotoUrl={payload.experience.coverPhotoUrl}
+              onQuizAnswer={handleQuizAnswer}
+              page={page}
+              recipientName={payload.experience.recipientName}
+            />
             {page.pageType === "proposal" ? (
               <div className="relative mt-2 flex min-h-24 items-center gap-3">
                 <button className="h-14 flex-1 rounded-lg px-5 text-base font-black text-white" style={{ background: theme.accent }} onClick={handleYes}>
@@ -130,7 +165,7 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
                 </motion.button>
               </div>
             ) : (
-              <button className="mt-2 h-14 rounded-lg px-5 text-base font-black text-white" style={{ background: theme.accent }} onClick={next}>
+              <button className="mt-2 h-14 rounded-lg px-5 text-base font-black text-white" style={{ background: theme.accent }} onClick={handleContinue}>
                 {isLast ? "Finish" : page.content.ctaLabel ?? "Continue"}
               </button>
             )}
@@ -154,10 +189,12 @@ function getFallbackPage(pages: ExperiencePage[]) {
 
 function PageBody({
   coverPhotoUrl,
+  onQuizAnswer,
   page,
   recipientName
 }: {
   coverPhotoUrl: string | null;
+  onQuizAnswer: (answerId: string, answerLabel: string) => void;
   page: ExperiencePage;
   recipientName: string;
 }) {
@@ -168,7 +205,11 @@ function PageBody({
         <h1 className="text-4xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>
         <div className="grid gap-3">
           {(page.content.answers ?? []).map((answer) => (
-            <button key={answer.id} className="rounded-lg border border-black/10 bg-white/80 p-4 text-left font-bold">
+            <button
+              key={answer.id}
+              className="rounded-lg border border-black/10 bg-white/80 p-4 text-left font-bold"
+              onClick={() => onQuizAnswer(answer.id, answer.label)}
+            >
               {answer.label}
             </button>
           ))}

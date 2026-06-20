@@ -160,6 +160,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      analytics: {
+        Row: {
+          id: string;
+          experience_id: string;
+          views: number;
+          unique_visitors: number;
+          completions: number;
+          average_completion_time_seconds: number;
+          total_no_attempts: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          experience_id: string;
+          views?: number;
+          unique_visitors?: number;
+          completions?: number;
+          average_completion_time_seconds?: number;
+          total_no_attempts?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          views?: number;
+          unique_visitors?: number;
+          completions?: number;
+          average_completion_time_seconds?: number;
+          total_no_attempts?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       events: {
         Row: {
           id: string;

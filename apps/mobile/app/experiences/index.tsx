@@ -1,5 +1,6 @@
 import * as Clipboard from "expo-clipboard";
-import { Link } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { Link, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { getMyExperiences } from "@/features/experiences/experience-service";
@@ -50,10 +51,21 @@ export default function ExperiencesScreen() {
               <Text style={styles.message} numberOfLines={2}>
                 {item.message || "No message yet"}
               </Text>
-              {link ? (
-                <Pressable style={styles.secondaryButton} onPress={() => Clipboard.setStringAsync(link)}>
-                  <Text style={styles.secondaryButtonText}>Copy link</Text>
-                </Pressable>
+              {item.isPublished ? (
+                <View style={styles.cardActions}>
+                  <Pressable
+                    style={styles.secondaryButton}
+                    onPress={() => router.push({ pathname: "/analytics/[id]", params: { id: item.id } } as never)}
+                  >
+                    <Ionicons color="#101828" name="bar-chart-outline" size={19} />
+                    <Text style={styles.secondaryButtonText}>Analytics</Text>
+                  </Pressable>
+                  {link ? (
+                    <Pressable style={styles.iconButton} accessibilityLabel="Copy experience link" onPress={() => Clipboard.setStringAsync(link)}>
+                      <Ionicons color="#101828" name="copy-outline" size={20} />
+                    </Pressable>
+                  ) : null}
+                </View>
               ) : null}
             </View>
           );
@@ -77,8 +89,10 @@ const styles = StyleSheet.create({
   draft: { color: "#b54708", backgroundColor: "#fef0c7" },
   recipient: { color: "#344054", fontWeight: "800" },
   message: { color: "#667085", lineHeight: 20 },
-  secondaryButton: { height: 44, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", alignItems: "center", justifyContent: "center" },
+  cardActions: { flexDirection: "row", gap: 8 },
+  secondaryButton: { flex: 1, height: 44, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
   secondaryButtonText: { color: "#101828", fontWeight: "900" },
+  iconButton: { width: 44, height: 44, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", alignItems: "center", justifyContent: "center" },
   emptyState: { padding: 16, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", gap: 10 },
   emptyTitle: { color: "#101828", fontSize: 17, fontWeight: "900" },
   emptyCopy: { color: "#667085", lineHeight: 20 },
