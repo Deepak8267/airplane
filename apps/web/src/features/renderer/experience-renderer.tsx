@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getCountdownParts } from "@airplane/shared";
-import type { ExperiencePage, PublicExperiencePayload } from "@airplane/shared";
+import type { ExperiencePage, PublicExperiencePayload, Theme } from "@airplane/shared";
 import { trackRendererEvent } from "./tracking";
 
 export function ExperienceRenderer({ payload, preview = false }: { payload: PublicExperiencePayload; preview?: boolean }) {
@@ -133,7 +133,7 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
   return (
     <main
       className="min-h-dvh overflow-hidden px-5 py-6"
-      style={{ background: theme.background, color: theme.foreground }}
+      style={{ background: theme.background, color: theme.foreground, fontFamily: getThemeFontFamily(theme.fontFamily) }}
     >
       <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-xl flex-col justify-center">
         <AnimatePresence mode="wait">
@@ -150,6 +150,7 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
               onQuizAnswer={handleQuizAnswer}
               page={page}
               recipientName={payload.experience.recipientName}
+              theme={theme}
             />
             {page.pageType === "proposal" ? (
               <div className="relative mt-2 flex min-h-24 items-center gap-3">
@@ -160,6 +161,7 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
                   animate={{ x: noPosition.x, y: noPosition.y }}
                   className="h-14 flex-1 rounded-lg border border-black/15 bg-white px-5 text-base font-black"
                   onClick={handleNoAttempt}
+                  style={{ background: theme.muted, color: theme.foreground }}
                   transition={{ type: "spring", stiffness: 320, damping: 18 }}
                 >
                   NO
@@ -192,12 +194,14 @@ function PageBody({
   coverPhotoUrl,
   onQuizAnswer,
   page,
-  recipientName
+  recipientName,
+  theme
 }: {
   coverPhotoUrl: string | null;
   onQuizAnswer: (answerId: string, answerLabel: string) => void;
   page: ExperiencePage;
   recipientName: string;
+  theme: Theme;
 }) {
   const mediaUrl = page.mediaUrls[0] ?? (page.pageType === "cover" ? coverPhotoUrl : null);
 
@@ -210,8 +214,9 @@ function PageBody({
           {(page.content.answers ?? []).map((answer) => (
             <button
               key={answer.id}
-              className="rounded-lg border border-black/10 bg-white/80 p-4 text-left font-bold"
+              className="rounded-lg border border-black/10 p-4 text-left font-bold"
               onClick={() => onQuizAnswer(answer.id, answer.label)}
+              style={{ background: theme.muted, color: theme.foreground }}
             >
               {answer.label}
             </button>
@@ -281,6 +286,18 @@ function CountdownUnit({ label, value }: { label: string; value: string }) {
 }
 
 const COUNTDOWN_LABELS = ["Days", "Hours", "Minutes", "Seconds"];
+
+function getThemeFontFamily(fontFamily: Theme["fontFamily"]) {
+  if (fontFamily === "serif") {
+    return 'Georgia, Cambria, "Times New Roman", serif';
+  }
+
+  if (fontFamily === "rounded") {
+    return 'ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif';
+  }
+
+  return 'Inter, ui-sans-serif, system-ui, sans-serif';
+}
 
 function getOrCreateVisitor() {
   const key = "airplane_visitor_id";

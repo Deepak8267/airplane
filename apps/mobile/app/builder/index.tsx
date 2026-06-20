@@ -3,7 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation } from "@tanstack/react-query";
-import type { ExperiencePageDraft, ExperiencePageType, PageContent } from "@airplane/shared";
+import { EXPERIENCE_THEMES } from "@airplane/shared";
+import type { ExperiencePageDraft, ExperiencePageType, PageContent, Theme } from "@airplane/shared";
 import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { updateDraftExperience, uploadCoverPhoto, uploadPagePhoto } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
@@ -101,6 +102,7 @@ export default function BuilderScreen() {
       <Field label="Title" value={draft.title} onChangeText={(title) => updateDraft({ title })} />
       <Field label="Recipient name" value={draft.recipientName} onChangeText={(recipientName) => updateDraft({ recipientName })} />
       <Field label="Message" value={draft.message} onChangeText={(message) => updateDraft({ message })} multiline />
+      <ThemePicker selectedTheme={draft.theme} onSelect={(theme) => updateDraft({ theme })} />
 
       <View style={styles.coverPanel}>
         <View style={styles.coverPreview}>
@@ -211,6 +213,44 @@ export default function BuilderScreen() {
         </View>
       </Modal>
     </ScrollView>
+  );
+}
+
+function ThemePicker({ onSelect, selectedTheme }: { onSelect: (theme: Theme) => void; selectedTheme: Theme }) {
+  const themes = EXPERIENCE_THEMES.some((theme) => theme.id === selectedTheme.id)
+    ? EXPERIENCE_THEMES
+    : [selectedTheme, ...EXPERIENCE_THEMES];
+
+  return (
+    <View style={styles.themeSection}>
+      <Text style={styles.sectionTitle}>Theme</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.themeList}>
+        {themes.map((theme) => {
+          const selected = theme.id === selectedTheme.id;
+
+          return (
+            <Pressable
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
+              key={theme.id}
+              onPress={() => onSelect(theme)}
+              style={[styles.themeOption, { backgroundColor: theme.background, borderColor: selected ? theme.accent : "#d0d5dd" }]}
+            >
+              <View style={styles.themeOptionHeader}>
+                <Text numberOfLines={1} style={[styles.themeName, { color: theme.foreground }]}>{theme.name}</Text>
+                {selected ? <Ionicons color={theme.accent} name="checkmark-circle" size={20} /> : null}
+              </View>
+              <View style={styles.themeSwatches}>
+                <View style={[styles.themeSwatch, { backgroundColor: theme.accent }]} />
+                <View style={[styles.themeSwatch, { backgroundColor: theme.muted }]} />
+                <View style={[styles.themeSwatch, { backgroundColor: theme.foreground }]} />
+              </View>
+              <Text style={[styles.themeFont, { color: theme.foreground }]}>{formatFontName(theme.fontFamily)}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -355,6 +395,10 @@ function formatPageType(pageType: ExperiencePageDraft["pageType"]) {
   return pageType.charAt(0).toUpperCase() + pageType.slice(1);
 }
 
+function formatFontName(fontFamily: Theme["fontFamily"]) {
+  return fontFamily.charAt(0).toUpperCase() + fontFamily.slice(1);
+}
+
 const PAGE_TYPES: Array<{ type: ExperiencePageType; label: string; description: string }> = [
   { type: "cover", label: "Cover", description: "Opening title and message" },
   { type: "memory", label: "Memory", description: "Share a meaningful moment" },
@@ -373,6 +417,14 @@ const styles = StyleSheet.create({
   label: { color: "#344054", fontWeight: "800" },
   input: { minHeight: 50, borderWidth: 1, borderColor: "#d0d5dd", borderRadius: 8, paddingHorizontal: 13, backgroundColor: "#ffffff", fontSize: 16, color: "#101828" },
   textarea: { minHeight: 112, paddingTop: 12, textAlignVertical: "top" },
+  themeSection: { gap: 10 },
+  themeList: { gap: 10, paddingRight: 4 },
+  themeOption: { width: 148, height: 112, borderRadius: 8, borderWidth: 2, padding: 12, justifyContent: "space-between" },
+  themeOptionHeader: { minHeight: 22, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 6 },
+  themeName: { flex: 1, fontSize: 15, fontWeight: "900" },
+  themeSwatches: { flexDirection: "row", gap: 6 },
+  themeSwatch: { width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)" },
+  themeFont: { fontSize: 11, fontWeight: "800", opacity: 0.65 },
   coverPanel: { gap: 10 },
   coverPreview: { height: 220, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", overflow: "hidden", backgroundColor: "#f2f4f7", alignItems: "center", justifyContent: "center" },
   coverImage: { width: "100%", height: "100%" },
