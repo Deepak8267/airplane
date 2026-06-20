@@ -198,6 +198,8 @@ function PageBody({
   page: ExperiencePage;
   recipientName: string;
 }) {
+  const mediaUrl = page.mediaUrls[0] ?? (page.pageType === "cover" ? coverPhotoUrl : null);
+
   if (page.pageType === "quiz") {
     return (
       <>
@@ -220,8 +222,8 @@ function PageBody({
 
   return (
     <>
-      {page.pageType === "cover" && coverPhotoUrl ? (
-        <img alt="" className="mb-2 aspect-[4/5] w-full rounded-lg object-cover shadow-xl shadow-black/10" src={coverPhotoUrl} />
+      {mediaUrl ? (
+        <img alt="" className="mb-2 max-h-[48dvh] w-full rounded-lg object-cover shadow-xl shadow-black/10" src={mediaUrl} />
       ) : null}
       <p className="text-sm font-black uppercase text-current opacity-60">{recipientName}</p>
       <h1 className="text-5xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>

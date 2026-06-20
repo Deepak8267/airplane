@@ -125,13 +125,23 @@ export async function updateDraftExperience(input: ExperienceDraftInput): Promis
 
 export async function uploadCoverPhoto(experienceId: string, uri: string): Promise<string> {
   const userId = await ensureCreatorUserId();
+  return uploadExperienceImage("covers", `${userId}/${experienceId}/cover-${Date.now()}`, uri);
+}
+
+export async function uploadPagePhoto(experienceId: string, pageIndex: number, uri: string): Promise<string> {
+  const userId = await ensureCreatorUserId();
+  return uploadExperienceImage("photos", `${userId}/${experienceId}/page-${pageIndex}-${Date.now()}`, uri);
+}
+
+async function uploadExperienceImage(bucket: "covers" | "photos", pathWithoutExtension: string, uri: string) {
   const response = await fetch(uri);
   const blob = await response.blob();
   const contentType = blob.type || "image/jpeg";
   const extension = getImageExtension(contentType);
-  const path = `${userId}/${experienceId}/cover-${Date.now()}.${extension}`;
+  const path = `${pathWithoutExtension}.${extension}`;
 
-  const { error } = await supabase.storage.from("covers").upload(path, blob, {
+  const { error } = await supabase.storage.from(bucket).upload(path, blob, {
+    cacheControl: "31536000",
     contentType,
     upsert: true
   });
@@ -140,7 +150,7 @@ export async function uploadCoverPhoto(experienceId: string, uri: string): Promi
     throw new Error(error.message);
   }
 
-  const { data } = supabase.storage.from("covers").getPublicUrl(path);
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
 

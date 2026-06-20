@@ -4,8 +4,8 @@ import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useMutation } from "@tanstack/react-query";
 import type { ExperiencePageDraft, ExperiencePageType, PageContent } from "@airplane/shared";
-import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { updateDraftExperience, uploadCoverPhoto } from "@/features/experiences/experience-service";
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { updateDraftExperience, uploadCoverPhoto, uploadPagePhoto } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
 
 export default function BuilderScreen() {
@@ -51,6 +51,37 @@ export default function BuilderScreen() {
       }
     }
   });
+  const pagePhotoMutation = useMutation({
+    mutationFn: async ({ pageIndex, uri }: { pageIndex: number; uri: string }) => {
+      if (!draft?.experienceId) {
+        throw new Error("Create the draft before uploading a page photo.");
+      }
+
+      const publicUrl = await uploadPagePhoto(draft.experienceId, pageIndex, uri);
+      return { pageIndex, publicUrl };
+    },
+    onSuccess: ({ pageIndex, publicUrl }) => updatePage(pageIndex, { mediaUrls: [publicUrl] })
+  });
+
+  async function choosePagePhoto(pageIndex: number) {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert("Photo access needed", "Allow photo library access to add a memory photo.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      mediaTypes: ["images"],
+      quality: 0.85
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      pagePhotoMutation.mutate({ pageIndex, uri: result.assets[0].uri });
+    }
+  }
 
   if (!draft) {
     return (
@@ -101,8 +132,12 @@ export default function BuilderScreen() {
             onChange={(patch) => updatePage(index, patch)}
             onMoveDown={() => movePage(index, 1)}
             onMoveUp={() => movePage(index, -1)}
+            onChoosePhoto={() => choosePagePhoto(index)}
             onRemove={() => removePage(index)}
+            onRemovePhoto={() => updatePage(index, { mediaUrls: [] })}
             page={page}
+            photoError={pagePhotoMutation.variables?.pageIndex === index && pagePhotoMutation.error instanceof Error ? pagePhotoMutation.error.message : null}
+            photoUploading={pagePhotoMutation.isPending && pagePhotoMutation.variables?.pageIndex === index}
           />
         ))}
         <Pressable style={styles.addPageButton} onPress={() => setPagePickerVisible(true)}>
@@ -185,20 +220,28 @@ function PageEditor({
   canRemove,
   index,
   onChange,
+  onChoosePhoto,
   onMoveDown,
   onMoveUp,
   onRemove,
-  page
+  onRemovePhoto,
+  page,
+  photoError,
+  photoUploading
 }: {
   canMoveDown: boolean;
   canMoveUp: boolean;
   canRemove: boolean;
   index: number;
   onChange: (patch: Partial<ExperiencePageDraft>) => void;
+  onChoosePhoto: () => void;
   onMoveDown: () => void;
   onMoveUp: () => void;
   onRemove: () => void;
+  onRemovePhoto: () => void;
   page: ExperiencePageDraft;
+  photoError: string | null;
+  photoUploading: boolean;
 }) {
   const updateContent = (patch: Partial<PageContent>) => onChange({ content: { ...page.content, ...patch } });
 
@@ -222,6 +265,31 @@ function PageEditor({
         </View>
       </View>
       <Field label="Page title" value={page.title} onChangeText={(title) => onChange({ title })} />
+
+      {page.pageType === "memory" ? (
+        <View style={styles.pagePhotoSection}>
+          {page.mediaUrls[0] ? (
+            <Image source={{ uri: page.mediaUrls[0] }} style={styles.pagePhoto} />
+          ) : (
+            <View style={styles.pagePhotoPlaceholder}>
+              <Ionicons color="#667085" name="image-outline" size={28} />
+              <Text style={styles.coverPlaceholder}>Memory photo</Text>
+            </View>
+          )}
+          <View style={styles.pagePhotoActions}>
+            <Pressable disabled={photoUploading} style={styles.photoButton} onPress={onChoosePhoto}>
+              <Ionicons color="#175cd3" name="image-outline" size={19} />
+              <Text style={styles.photoButtonText}>{photoUploading ? "Uploading..." : page.mediaUrls[0] ? "Replace" : "Choose photo"}</Text>
+            </Pressable>
+            {page.mediaUrls[0] ? (
+              <Pressable accessibilityLabel="Remove page photo" style={styles.smallIconButton} onPress={onRemovePhoto}>
+                <Ionicons color="#b42318" name="trash-outline" size={19} />
+              </Pressable>
+            ) : null}
+          </View>
+          {photoError ? <Text style={styles.error}>{photoError}</Text> : null}
+        </View>
+      ) : null}
 
       {page.pageType === "quiz" ? (
         <>
@@ -315,6 +383,12 @@ const styles = StyleSheet.create({
   pageHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   pageNumber: { color: "#101828", fontWeight: "900", fontSize: 16 },
   pageType: { color: "#2563eb", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
+  pagePhotoSection: { gap: 8 },
+  pagePhoto: { width: "100%", aspectRatio: 4 / 3, borderRadius: 8 },
+  pagePhotoPlaceholder: { width: "100%", aspectRatio: 4 / 3, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#d0d5dd", backgroundColor: "#f9fafb", alignItems: "center", justifyContent: "center", gap: 8 },
+  pagePhotoActions: { flexDirection: "row", gap: 8 },
+  photoButton: { flex: 1, height: 42, borderRadius: 8, borderWidth: 1, borderColor: "#84adff", backgroundColor: "#eff4ff", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
+  photoButtonText: { color: "#175cd3", fontWeight: "900" },
   pageControls: { flexDirection: "row", gap: 6 },
   smallIconButton: { width: 38, height: 38, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd" },
   disabledControl: { opacity: 0.3 },

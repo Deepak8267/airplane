@@ -16,6 +16,7 @@ export default function CurrentPreviewScreen() {
   const isLast = index === draft.pages.length - 1;
   const primaryText = page.content.question ?? page.title;
   const supportingText = page.content.body ?? page.content.finalMessage;
+  const pagePhotoUrl = page.mediaUrls[0] ?? (page.pageType === "cover" ? draft.coverPhotoUrl : null);
 
   return (
     <ScrollView
@@ -27,8 +28,8 @@ export default function CurrentPreviewScreen() {
         <Text style={[styles.counter, { color: draft.theme.foreground }]}>{index + 1} / {draft.pages.length}</Text>
       </View>
 
-      {page.pageType === "cover" && draft.coverPhotoUrl ? (
-        <Image source={{ uri: draft.coverPhotoUrl }} style={styles.coverImage} />
+      {pagePhotoUrl ? (
+        <Image source={{ uri: pagePhotoUrl }} style={page.pageType === "cover" ? styles.coverImage : styles.pageImage} />
       ) : null}
 
       {page.content.question ? <Text style={[styles.pageLabel, { color: draft.theme.accent }]}>{page.title}</Text> : null}
@@ -81,6 +82,7 @@ const styles = StyleSheet.create({
   screen: { flexGrow: 1, padding: 24, justifyContent: "center", gap: 14 },
   pageMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   coverImage: { width: "100%", aspectRatio: 4 / 5, borderRadius: 8 },
+  pageImage: { width: "100%", aspectRatio: 4 / 3, borderRadius: 8 },
   recipient: { fontSize: 16, fontWeight: "900" },
   counter: { fontSize: 13, fontWeight: "800", opacity: 0.6 },
   pageLabel: { fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
