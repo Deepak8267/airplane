@@ -110,6 +110,16 @@ export async function updateDraftExperience(input: ExperienceDraftInput): Promis
     throw new Error(pagesError.message);
   }
 
+  const { error: stalePagesError } = await supabase
+    .from("experience_pages")
+    .delete()
+    .eq("experience_id", input.id)
+    .gte("position", input.pages.length);
+
+  if (stalePagesError) {
+    throw new Error(stalePagesError.message);
+  }
+
   return mapExperience(data);
 }
 

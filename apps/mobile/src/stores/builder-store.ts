@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Experience, ExperiencePage, ExperiencePageDraft, Template, Theme } from "@airplane/shared";
+import type { Experience, ExperiencePage, ExperiencePageDraft, ExperiencePageType, Template, Theme } from "@airplane/shared";
 
 type BuilderDraft = {
   experienceId: string | null;
@@ -18,6 +18,9 @@ type BuilderState = {
   startFromExperience: (experience: Experience, pages: ExperiencePage[]) => void;
   updateDraft: (patch: Partial<Pick<BuilderDraft, "title" | "recipientName" | "message" | "coverPhotoUrl" | "theme">>) => void;
   updatePage: (index: number, patch: Partial<ExperiencePageDraft>) => void;
+  addPage: (pageType: ExperiencePageType) => void;
+  removePage: (index: number) => void;
+  movePage: (index: number, direction: -1 | 1) => void;
 };
 
 export const useBuilderStore = create<BuilderState>((set) => ({
@@ -70,5 +73,81 @@ export const useBuilderStore = create<BuilderState>((set) => ({
       pages[index] = { ...currentPage, ...patch };
 
       return { draft: { ...state.draft, pages } };
+    }),
+  addPage: (pageType) =>
+    set((state) => ({
+      draft: state.draft
+        ? { ...state.draft, pages: [...state.draft.pages, createPage(pageType)] }
+        : null
+    })),
+  removePage: (index) =>
+    set((state) => {
+      if (!state.draft || state.draft.pages.length <= 1) {
+        return state;
+      }
+
+      return {
+        draft: {
+          ...state.draft,
+          pages: state.draft.pages.filter((_, pageIndex) => pageIndex !== index)
+        }
+      };
+    }),
+  movePage: (index, direction) =>
+    set((state) => {
+      if (!state.draft) {
+        return state;
+      }
+
+      const targetIndex = index + direction;
+
+      if (targetIndex < 0 || targetIndex >= state.draft.pages.length) {
+        return state;
+      }
+
+      const pages = [...state.draft.pages];
+      const currentPage = pages[index];
+      const targetPage = pages[targetIndex];
+
+      if (!currentPage || !targetPage) {
+        return state;
+      }
+
+      pages[index] = targetPage;
+      pages[targetIndex] = currentPage;
+
+      return { draft: { ...state.draft, pages } };
     })
 }));
+
+function createPage(pageType: ExperiencePageType): ExperiencePageDraft {
+  const base = { pageType, mediaUrls: [], settings: {} };
+
+  switch (pageType) {
+    case "cover":
+      return { ...base, title: "A new beginning", content: { body: "Add your opening message.", ctaLabel: "Continue" } };
+    case "memory":
+      return { ...base, title: "A favorite memory", content: { body: "Tell the story behind this moment.", ctaLabel: "Next memory" } };
+    case "quiz": {
+      const id = Date.now().toString(36);
+      return {
+        ...base,
+        title: "A question for you",
+        content: {
+          question: "What is your answer?",
+          answers: [
+            { id: `${id}-a`, label: "First answer" },
+            { id: `${id}-b`, label: "Second answer" }
+          ],
+          ctaLabel: "Continue"
+        }
+      };
+    }
+    case "countdown":
+      return { ...base, title: "Counting down", content: { body: "Something special is coming.", targetDate: "", ctaLabel: "Continue" } };
+    case "proposal":
+      return { ...base, title: "A special question", content: { question: "Will you say yes?" }, settings: { moveNoButton: true } };
+    case "final":
+      return { ...base, title: "The end", content: { finalMessage: "Thank you for being part of this." } };
+  }
+}
