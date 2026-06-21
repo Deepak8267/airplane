@@ -1,14 +1,23 @@
 import * as Clipboard from "expo-clipboard";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { getMyExperiences } from "@/features/experiences/experience-service";
+import { getExperienceForEditing, getMyExperiences } from "@/features/experiences/experience-service";
+import { useBuilderStore } from "@/stores/builder-store";
 
 export default function ExperiencesScreen() {
+  const startFromExperience = useBuilderStore((state) => state.startFromExperience);
   const experiencesQuery = useQuery({
     queryKey: ["my-experiences"],
     queryFn: getMyExperiences
+  });
+  const editMutation = useMutation({
+    mutationFn: getExperienceForEditing,
+    onSuccess: ({ experience, pages }) => {
+      startFromExperience(experience, pages);
+      router.push("/builder");
+    }
   });
   const experiences = experiencesQuery.data ?? [];
 
@@ -51,21 +60,36 @@ export default function ExperiencesScreen() {
               <Text style={styles.message} numberOfLines={2}>
                 {item.message || "No message yet"}
               </Text>
-              {item.isPublished ? (
-                <View style={styles.cardActions}>
-                  <Pressable
-                    style={styles.secondaryButton}
-                    onPress={() => router.push({ pathname: "/analytics/[id]", params: { id: item.id } } as never)}
-                  >
-                    <Ionicons color="#101828" name="bar-chart-outline" size={19} />
-                    <Text style={styles.secondaryButtonText}>Analytics</Text>
-                  </Pressable>
-                  {link ? (
-                    <Pressable style={styles.iconButton} accessibilityLabel="Copy experience link" onPress={() => Clipboard.setStringAsync(link)}>
-                      <Ionicons color="#101828" name="copy-outline" size={20} />
+              <View style={styles.cardActions}>
+                <Pressable
+                  disabled={editMutation.isPending}
+                  style={[styles.secondaryButton, editMutation.isPending && editMutation.variables === item.id ? styles.pendingButton : null]}
+                  onPress={() => editMutation.mutate(item.id)}
+                >
+                  <Ionicons color="#101828" name="create-outline" size={19} />
+                  <Text style={styles.secondaryButtonText}>
+                    {editMutation.isPending && editMutation.variables === item.id ? "Opening..." : "Edit"}
+                  </Text>
+                </Pressable>
+                {item.isPublished ? (
+                  <>
+                    <Pressable
+                      style={styles.secondaryButton}
+                      onPress={() => router.push({ pathname: "/analytics/[id]", params: { id: item.id } } as never)}
+                    >
+                      <Ionicons color="#101828" name="bar-chart-outline" size={19} />
+                      <Text style={styles.secondaryButtonText}>Analytics</Text>
                     </Pressable>
-                  ) : null}
-                </View>
+                    {link ? (
+                      <Pressable style={styles.iconButton} accessibilityLabel="Copy experience link" onPress={() => Clipboard.setStringAsync(link)}>
+                        <Ionicons color="#101828" name="copy-outline" size={20} />
+                      </Pressable>
+                    ) : null}
+                  </>
+                ) : null}
+              </View>
+              {editMutation.variables === item.id && editMutation.error instanceof Error ? (
+                <Text style={styles.error}>{editMutation.error.message}</Text>
               ) : null}
             </View>
           );
@@ -91,11 +115,13 @@ const styles = StyleSheet.create({
   message: { color: "#667085", lineHeight: 20 },
   cardActions: { flexDirection: "row", gap: 8 },
   secondaryButton: { flex: 1, height: 44, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
+  pendingButton: { opacity: 0.65 },
   secondaryButtonText: { color: "#101828", fontWeight: "900" },
   iconButton: { width: 44, height: 44, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", alignItems: "center", justifyContent: "center" },
   emptyState: { padding: 16, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", gap: 10 },
   emptyTitle: { color: "#101828", fontSize: 17, fontWeight: "900" },
   emptyCopy: { color: "#667085", lineHeight: 20 },
   primaryButton: { height: 48, borderRadius: 8, backgroundColor: "#101828", alignItems: "center", justifyContent: "center" },
-  primaryButtonText: { color: "#ffffff", fontWeight: "900" }
+  primaryButtonText: { color: "#ffffff", fontWeight: "900" },
+  error: { color: "#b42318", lineHeight: 20 }
 });

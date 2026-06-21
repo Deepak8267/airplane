@@ -26,6 +26,36 @@ export async function getMyExperiences(): Promise<Experience[]> {
   return (data ?? []).map(mapExperience);
 }
 
+export async function getExperienceForEditing(experienceId: string): Promise<{ experience: Experience; pages: ExperiencePage[] }> {
+  const [experienceResult, pagesResult] = await Promise.all([
+    supabase.from("experiences").select("*").eq("id", experienceId).single(),
+    supabase
+      .from("experience_pages")
+      .select("*")
+      .eq("experience_id", experienceId)
+      .order("position", { ascending: true })
+  ]);
+
+  if (experienceResult.error) {
+    throw new Error(experienceResult.error.message);
+  }
+
+  if (pagesResult.error) {
+    throw new Error(pagesResult.error.message);
+  }
+
+  const pages = (pagesResult.data ?? []).map(mapExperiencePage);
+
+  if (pages.length === 0) {
+    throw new Error("This experience has no pages to edit.");
+  }
+
+  return {
+    experience: mapExperience(experienceResult.data),
+    pages
+  };
+}
+
 export async function createDraftExperience(template: Template): Promise<{ experience: Experience; pages: ExperiencePage[] }> {
   const userId = await ensureCreatorUserId();
 
