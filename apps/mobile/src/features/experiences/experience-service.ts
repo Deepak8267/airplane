@@ -56,6 +56,73 @@ export async function getExperienceForEditing(experienceId: string): Promise<{ e
   };
 }
 
+export async function duplicateExperience(experienceId: string): Promise<{ experience: Experience; pages: ExperiencePage[] }> {
+  const userId = await ensureCreatorUserId();
+  const source = await getExperienceForEditing(experienceId);
+  const title = `${source.experience.title} Copy`.slice(0, 120);
+  const { data: experienceRow, error: experienceError } = await supabase
+    .from("experiences")
+    .insert({
+      user_id: userId,
+      template_id: source.experience.templateId,
+      title,
+      recipient_name: source.experience.recipientName,
+      message: source.experience.message,
+      theme: source.experience.theme,
+      cover_photo_url: source.experience.coverPhotoUrl,
+      watermark_enabled: source.experience.watermarkEnabled
+    })
+    .select("*")
+    .single();
+
+  if (experienceError) {
+    throw new Error(experienceError.message);
+  }
+
+  const pageRows = source.pages.map((page, position) => ({
+    experience_id: experienceRow.id,
+    page_type: page.pageType,
+    position,
+    title: page.title,
+    content: page.content as Json,
+    media_urls: page.mediaUrls,
+    settings: page.settings as Json
+  }));
+  const { data: duplicatedPages, error: pagesError } = await supabase
+    .from("experience_pages")
+    .insert(pageRows)
+    .select("*")
+    .order("position", { ascending: true });
+
+  if (pagesError) {
+    await supabase.from("experiences").delete().eq("id", experienceRow.id);
+    throw new Error(pagesError.message);
+  }
+
+  return {
+    experience: mapExperience(experienceRow),
+    pages: (duplicatedPages ?? []).map(mapExperiencePage)
+  };
+}
+
+export async function setExperienceArchived({ experienceId, archived }: { experienceId: string; archived: boolean }): Promise<Experience> {
+  const { data, error } = await supabase
+    .from("experiences")
+    .update({
+      status: archived ? "archived" : "draft",
+      is_published: false
+    })
+    .eq("id", experienceId)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return mapExperience(data);
+}
+
 export async function createDraftExperience(template: Template): Promise<{ experience: Experience; pages: ExperiencePage[] }> {
   const userId = await ensureCreatorUserId();
 
