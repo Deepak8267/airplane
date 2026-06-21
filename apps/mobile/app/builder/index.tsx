@@ -335,18 +335,35 @@ function PageEditor({
         <>
           <Field label="Question" value={page.content.question ?? ""} onChangeText={(question) => updateContent({ question })} multiline />
           {(page.content.answers ?? []).map((answer, answerIndex) => (
-            <Field
-              key={answer.id}
-              label={`Answer ${answerIndex + 1}`}
-              value={answer.label}
-              onChangeText={(label) =>
-                updateContent({
-                  answers: (page.content.answers ?? []).map((item, itemIndex) =>
-                    itemIndex === answerIndex ? { ...item, label } : item
-                  )
-                })
-              }
-            />
+            <View key={answer.id} style={styles.answerEditor}>
+              <Pressable
+                accessibilityRole="radio"
+                accessibilityState={{ selected: Boolean(answer.isCorrect) }}
+                style={[styles.correctAnswerButton, answer.isCorrect ? styles.correctAnswerSelected : null]}
+                onPress={() =>
+                  updateContent({
+                    answers: (page.content.answers ?? []).map((item, itemIndex) => ({
+                      ...item,
+                      isCorrect: itemIndex === answerIndex
+                    }))
+                  })
+                }
+              >
+                <Ionicons color={answer.isCorrect ? "#067647" : "#667085"} name={answer.isCorrect ? "radio-button-on" : "radio-button-off"} size={20} />
+                <Text style={[styles.correctAnswerText, answer.isCorrect ? styles.correctAnswerTextSelected : null]}>Correct</Text>
+              </Pressable>
+              <Field
+                label={`Answer ${answerIndex + 1}`}
+                value={answer.label}
+                onChangeText={(label) =>
+                  updateContent({
+                    answers: (page.content.answers ?? []).map((item, itemIndex) =>
+                      itemIndex === answerIndex ? { ...item, label } : item
+                    )
+                  })
+                }
+              />
+            </View>
           ))}
         </>
       ) : null}
@@ -441,6 +458,11 @@ const styles = StyleSheet.create({
   pagePhotoActions: { flexDirection: "row", gap: 8 },
   photoButton: { flex: 1, height: 42, borderRadius: 8, borderWidth: 1, borderColor: "#84adff", backgroundColor: "#eff4ff", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
   photoButtonText: { color: "#175cd3", fontWeight: "900" },
+  answerEditor: { gap: 8, paddingBottom: 4 },
+  correctAnswerButton: { alignSelf: "flex-start", minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", paddingHorizontal: 10, flexDirection: "row", gap: 6, alignItems: "center" },
+  correctAnswerSelected: { borderColor: "#75e0a7", backgroundColor: "#ecfdf3" },
+  correctAnswerText: { color: "#667085", fontSize: 13, fontWeight: "800" },
+  correctAnswerTextSelected: { color: "#067647" },
   pageControls: { flexDirection: "row", gap: 6 },
   smallIconButton: { width: 38, height: 38, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd" },
   disabledControl: { opacity: 0.3 },

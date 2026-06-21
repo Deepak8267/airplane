@@ -11,6 +11,8 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
   const [startedAt] = useState(() => Date.now());
   const [noAttempts, setNoAttempts] = useState(0);
   const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
+  const [quizScore, setQuizScore] = useState(0);
+  const [quizAnswered, setQuizAnswered] = useState(0);
   const [visitor, setVisitor] = useState<string | null>(null);
   const [session] = useState(() => createClientId());
   const page = payload.pages[index] ?? getFallbackPage(payload.pages);
@@ -46,15 +48,21 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
     }
   }, [page, payload.experience.id, preview, session, visitor]);
 
-  function next() {
+  function next(quizProgress?: { score: number; answered: number }) {
     if (isLast) {
       if (!preview && visitor) {
+        const finalScore = quizProgress?.score ?? quizScore;
+        const finalAnswered = quizProgress?.answered ?? quizAnswered;
+
         void trackRendererEvent({
           experienceId: payload.experience.id,
           visitorId: visitor,
           sessionId: session,
           eventType: "experience_completed",
-          metadata: { completionTimeSeconds: Math.round((Date.now() - startedAt) / 1000) }
+          metadata: {
+            completionTimeSeconds: Math.round((Date.now() - startedAt) / 1000),
+            ...(finalAnswered > 0 ? { quizScore: finalScore, quizTotal: finalAnswered } : {})
+          }
         });
       }
       return;
@@ -78,7 +86,12 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
     next();
   }
 
-  function handleQuizAnswer(answerId: string, answerLabel: string) {
+  function handleQuizAnswer(answerId: string, answerLabel: string, isCorrect: boolean) {
+    const nextScore = quizScore + (isCorrect ? 1 : 0);
+    const nextAnswered = quizAnswered + 1;
+    setQuizScore(nextScore);
+    setQuizAnswered(nextAnswered);
+
     if (!preview && visitor) {
       void trackRendererEvent({
         experienceId: payload.experience.id,
@@ -86,11 +99,11 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
         sessionId: session,
         pageId: page.id,
         eventType: "quiz_answered",
-        metadata: { answerId, answerLabel }
+        metadata: { answerId, answerLabel, isCorrect, score: nextScore, total: nextAnswered }
       });
     }
 
-    next();
+    next({ score: nextScore, answered: nextAnswered });
   }
 
   function handleNoAttempt() {
@@ -149,6 +162,8 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
               coverPhotoUrl={payload.experience.coverPhotoUrl}
               onQuizAnswer={handleQuizAnswer}
               page={page}
+              quizAnswered={quizAnswered}
+              quizScore={quizScore}
               recipientName={payload.experience.recipientName}
               theme={theme}
             />
@@ -194,28 +209,35 @@ function PageBody({
   coverPhotoUrl,
   onQuizAnswer,
   page,
+  quizAnswered,
+  quizScore,
   recipientName,
   theme
 }: {
   coverPhotoUrl: string | null;
-  onQuizAnswer: (answerId: string, answerLabel: string) => void;
+  onQuizAnswer: (answerId: string, answerLabel: string, isCorrect: boolean) => void;
   page: ExperiencePage;
+  quizAnswered: number;
+  quizScore: number;
   recipientName: string;
   theme: Theme;
 }) {
   const mediaUrl = page.mediaUrls[0] ?? (page.pageType === "cover" ? coverPhotoUrl : null);
 
   if (page.pageType === "quiz") {
+    const answers = page.content.answers ?? [];
+    const hasMarkedCorrectAnswer = answers.some((answer) => answer.isCorrect);
+
     return (
       <>
         <p className="text-sm font-black uppercase text-current opacity-60">{recipientName}</p>
         <h1 className="text-4xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>
         <div className="grid gap-3">
-          {(page.content.answers ?? []).map((answer) => (
+          {answers.map((answer, answerIndex) => (
             <button
               key={answer.id}
               className="rounded-lg border border-black/10 p-4 text-left font-bold"
-              onClick={() => onQuizAnswer(answer.id, answer.label)}
+              onClick={() => onQuizAnswer(answer.id, answer.label, hasMarkedCorrectAnswer ? Boolean(answer.isCorrect) : answerIndex === 0)}
               style={{ background: theme.muted, color: theme.foreground }}
             >
               {answer.label}
@@ -235,6 +257,12 @@ function PageBody({
       <h1 className="text-5xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>
       <p className="text-lg leading-8 opacity-80">{page.content.body ?? page.content.finalMessage}</p>
       {page.pageType === "countdown" && page.content.targetDate ? <CountdownPanel targetDate={page.content.targetDate} /> : null}
+      {page.pageType === "final" && quizAnswered > 0 ? (
+        <div className="flex items-end justify-between border-y border-current/15 py-4">
+          <p className="text-sm font-bold uppercase opacity-60">Quiz score</p>
+          <p className="text-3xl font-black tabular-nums">{quizScore} / {quizAnswered}</p>
+        </div>
+      ) : null}
     </>
   );
 }

@@ -75,6 +75,9 @@ export default function AnalyticsScreen() {
                     <View style={styles.activityDot} />
                     <View style={styles.activityCopy}>
                       <Text style={styles.activityTitle}>{formatEvent(activity.eventType)}</Text>
+                      {formatEventDetail(activity.eventType, activity.metadata) ? (
+                        <Text style={styles.activityDetail}>{formatEventDetail(activity.eventType, activity.metadata)}</Text>
+                      ) : null}
                       <Text style={styles.activityTime}>{formatDate(activity.createdAt)}</Text>
                     </View>
                   </View>
@@ -136,6 +139,24 @@ function formatEvent(eventType: string) {
   return labels[eventType] ?? eventType.replaceAll("_", " ");
 }
 
+function formatEventDetail(eventType: string, metadata: Record<string, unknown>) {
+  if (eventType === "quiz_answered" && typeof metadata.isCorrect === "boolean") {
+    const result = metadata.isCorrect ? "Correct" : "Incorrect";
+
+    if (typeof metadata.score === "number" && typeof metadata.total === "number") {
+      return `${result} - score ${metadata.score}/${metadata.total}`;
+    }
+
+    return result;
+  }
+
+  if (eventType === "experience_completed" && typeof metadata.quizScore === "number" && typeof metadata.quizTotal === "number") {
+    return `Quiz result ${metadata.quizScore}/${metadata.quizTotal}`;
+  }
+
+  return null;
+}
+
 const styles = StyleSheet.create({
   screen: { flexGrow: 1, padding: 20, gap: 20 },
   stateText: { color: "#667085", textAlign: "center", paddingTop: 40 },
@@ -165,5 +186,6 @@ const styles = StyleSheet.create({
   activityDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#2563eb" },
   activityCopy: { flex: 1, gap: 2 },
   activityTitle: { color: "#101828", fontWeight: "800" },
+  activityDetail: { color: "#344054", fontSize: 13, fontWeight: "700" },
   activityTime: { color: "#667085", fontSize: 12 }
 });

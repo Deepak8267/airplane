@@ -1,4 +1,5 @@
 import { mapExperience } from "@airplane/supabase";
+import type { Json } from "@airplane/supabase";
 import type { AnalyticsSummary, Experience } from "@airplane/shared";
 import { supabase } from "@/lib/supabase";
 
@@ -6,6 +7,7 @@ export type AnalyticsActivity = {
   id: string;
   eventType: string;
   createdAt: string;
+  metadata: Record<string, unknown>;
 };
 
 export type ExperienceAnalytics = {
@@ -20,7 +22,7 @@ export async function getExperienceAnalytics(experienceId: string): Promise<Expe
     supabase.from("analytics").select("*").eq("experience_id", experienceId).maybeSingle(),
     supabase
       .from("events")
-      .select("id,event_type,created_at")
+      .select("id,event_type,created_at,metadata")
       .eq("experience_id", experienceId)
       .order("created_at", { ascending: false })
       .limit(20)
@@ -56,7 +58,12 @@ export async function getExperienceAnalytics(experienceId: string): Promise<Expe
     recentActivity: (eventsResult.data ?? []).map((event) => ({
       id: event.id,
       eventType: event.event_type,
-      createdAt: event.created_at
+      createdAt: event.created_at,
+      metadata: toMetadata(event.metadata)
     }))
   };
+}
+
+function toMetadata(value: Json): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }

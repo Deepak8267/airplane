@@ -35,7 +35,7 @@ export const useBuilderStore = create<BuilderState>((set) => ({
         message: template.description,
         coverPhotoUrl: null,
         theme: template.defaultTheme,
-        pages: template.defaultPages
+        pages: template.defaultPages.map(normalizePage)
       }
     }),
   startFromExperience: (experience, pages) =>
@@ -48,13 +48,15 @@ export const useBuilderStore = create<BuilderState>((set) => ({
         message: experience.message,
         coverPhotoUrl: experience.coverPhotoUrl,
         theme: experience.theme,
-        pages: pages.map((page) => ({
-          pageType: page.pageType,
-          title: page.title,
-          content: page.content,
-          mediaUrls: page.mediaUrls,
-          settings: page.settings
-        }))
+        pages: pages.map((page) =>
+          normalizePage({
+            pageType: page.pageType,
+            title: page.title,
+            content: page.content,
+            mediaUrls: page.mediaUrls,
+            settings: page.settings
+          })
+        )
       }
     }),
   updateDraft: (patch) =>
@@ -136,8 +138,8 @@ function createPage(pageType: ExperiencePageType): ExperiencePageDraft {
         content: {
           question: "What is your answer?",
           answers: [
-            { id: `${id}-a`, label: "First answer" },
-            { id: `${id}-b`, label: "Second answer" }
+            { id: `${id}-a`, label: "First answer", isCorrect: true },
+            { id: `${id}-b`, label: "Second answer", isCorrect: false }
           ],
           ctaLabel: "Continue"
         }
@@ -158,4 +160,20 @@ function createPage(pageType: ExperiencePageType): ExperiencePageDraft {
     case "final":
       return { ...base, title: "The end", content: { finalMessage: "Thank you for being part of this." } };
   }
+}
+
+function normalizePage(page: ExperiencePageDraft): ExperiencePageDraft {
+  const answers = page.content.answers;
+
+  if (page.pageType !== "quiz" || !answers?.length || answers.some((answer) => answer.isCorrect)) {
+    return page;
+  }
+
+  return {
+    ...page,
+    content: {
+      ...page.content,
+      answers: answers.map((answer, index) => ({ ...answer, isCorrect: index === 0 }))
+    }
+  };
 }
