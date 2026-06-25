@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCountdownParts } from "@airplane/shared";
 import type { ExperiencePage, PublicExperiencePayload, Theme } from "@airplane/shared";
 import { trackRendererEvent } from "./tracking";
@@ -15,9 +15,12 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
   const [quizAnswered, setQuizAnswered] = useState(0);
   const [visitor, setVisitor] = useState<string | null>(null);
   const [session] = useState(() => createClientId());
+  const [completed, setCompleted] = useState(false);
+  const completionTracked = useRef(false);
   const page = payload.pages[index] ?? getFallbackPage(payload.pages);
   const isLast = index === payload.pages.length - 1;
   const theme = payload.experience.theme;
+  const progress = Math.round(((index + 1) / payload.pages.length) * 100);
 
   useEffect(() => {
     setVisitor(getOrCreateVisitor());
@@ -48,23 +51,40 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
     }
   }, [page, payload.experience.id, preview, session, visitor]);
 
+  function completeExperience(quizProgress?: { score: number; answered: number }) {
+    if (completionTracked.current) {
+      setCompleted(true);
+      return;
+    }
+
+    completionTracked.current = true;
+    setCompleted(true);
+
+    if (!preview) {
+      const activeVisitor = visitor ?? getOrCreateVisitor();
+      if (!visitor) {
+        setVisitor(activeVisitor);
+      }
+      const finalScore = quizProgress?.score ?? quizScore;
+      const finalAnswered = quizProgress?.answered ?? quizAnswered;
+
+      void trackRendererEvent({
+        experienceId: payload.experience.id,
+        visitorId: activeVisitor,
+        sessionId: session,
+        eventType: "experience_completed",
+        metadata: {
+          completionTimeSeconds: Math.round((Date.now() - startedAt) / 1000),
+          pageCount: payload.pages.length,
+          ...(finalAnswered > 0 ? { quizScore: finalScore, quizTotal: finalAnswered } : {})
+        }
+      });
+    }
+  }
+
   function next(quizProgress?: { score: number; answered: number }) {
     if (isLast) {
-      if (!preview && visitor) {
-        const finalScore = quizProgress?.score ?? quizScore;
-        const finalAnswered = quizProgress?.answered ?? quizAnswered;
-
-        void trackRendererEvent({
-          experienceId: payload.experience.id,
-          visitorId: visitor,
-          sessionId: session,
-          eventType: "experience_completed",
-          metadata: {
-            completionTimeSeconds: Math.round((Date.now() - startedAt) / 1000),
-            ...(finalAnswered > 0 ? { quizScore: finalScore, quizTotal: finalAnswered } : {})
-          }
-        });
-      }
+      completeExperience(quizProgress);
       return;
     }
 
@@ -110,8 +130,8 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
     const nextAttempts = noAttempts + 1;
     setNoAttempts(nextAttempts);
     setNoPosition({
-      x: Math.round(Math.random() * 180 - 90),
-      y: Math.round(Math.random() * 140 - 70)
+      x: Math.round(Math.random() * 140 - 70),
+      y: Math.round(Math.random() * 96 - 48)
     });
 
     if (!preview && visitor) {
@@ -124,6 +144,24 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
         metadata: { attemptNumber: nextAttempts }
       });
     }
+  }
+
+  function handleNoAnswer() {
+    if (!preview && visitor) {
+      void trackRendererEvent({
+        experienceId: payload.experience.id,
+        visitorId: visitor,
+        sessionId: session,
+        pageId: page.id,
+        eventType: "proposal_answered_no",
+        metadata: {
+          noAttempts,
+          completionTimeSeconds: Math.round((Date.now() - startedAt) / 1000)
+        }
+      });
+    }
+
+    completeExperience();
   }
 
   function handleYes() {
@@ -143,12 +181,49 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
     next();
   }
 
+  if (completed) {
+    return (
+      <main
+        className="min-h-dvh overflow-hidden px-5 py-6"
+        style={{ background: theme.background, color: theme.foreground, fontFamily: getThemeFontFamily(theme.fontFamily) }}
+      >
+        <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-xl flex-col justify-center gap-5">
+          <motion.section
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col gap-5"
+            initial={{ opacity: 0, y: 18 }}
+            transition={{ duration: 0.32, ease: "easeOut" }}
+          >
+            <p className="text-sm font-black uppercase text-current opacity-60">Complete</p>
+            <h1 className="text-5xl font-black leading-tight tracking-normal sm:text-6xl">Thank you.</h1>
+            <p className="text-lg leading-8 opacity-80">
+              {payload.experience.recipientName ? `${payload.experience.recipientName}, this experience is complete.` : "This experience is complete."}
+            </p>
+            {quizAnswered > 0 ? (
+              <div className="flex items-end justify-between border-y border-current/15 py-4">
+                <p className="text-sm font-bold uppercase opacity-60">Quiz score</p>
+                <p className="text-3xl font-black tabular-nums">{quizScore} / {quizAnswered}</p>
+              </div>
+            ) : null}
+            {payload.experience.watermarkEnabled ? <p className="pt-2 text-center text-xs font-bold opacity-60">Made with AIRPLANE</p> : null}
+          </motion.section>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main
       className="min-h-dvh overflow-hidden px-5 py-6"
       style={{ background: theme.background, color: theme.foreground, fontFamily: getThemeFontFamily(theme.fontFamily) }}
     >
-      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-xl flex-col justify-center">
+      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-xl flex-col justify-center gap-6">
+        <div aria-label={`Page ${index + 1} of ${payload.pages.length}`} className="flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/10">
+            <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: theme.accent }} />
+          </div>
+          <span className="text-xs font-black tabular-nums opacity-60">{index + 1}/{payload.pages.length}</span>
+        </div>
         <AnimatePresence mode="wait">
           <motion.section
             key={page.id}
@@ -168,14 +243,14 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
               theme={theme}
             />
             {page.pageType === "proposal" ? (
-              <div className="relative mt-2 flex min-h-24 items-center gap-3">
-                <button className="h-14 flex-1 rounded-lg px-5 text-base font-black text-white" style={{ background: theme.accent }} onClick={handleYes}>
+              <div className="relative mt-2 flex min-h-28 items-center gap-3">
+                <button className="h-14 flex-1 rounded-lg px-5 text-base font-black text-white shadow-lg shadow-black/10" style={{ background: theme.accent }} onClick={handleYes}>
                   YES
                 </button>
                 <motion.button
                   animate={{ x: noPosition.x, y: noPosition.y }}
-                  className="h-14 flex-1 rounded-lg border border-black/15 bg-white px-5 text-base font-black"
-                  onClick={handleNoAttempt}
+                  className="h-14 flex-1 rounded-lg border border-black/15 bg-white px-5 text-base font-black shadow-lg shadow-black/5"
+                  onClick={page.settings.moveNoButton === false ? handleNoAnswer : handleNoAttempt}
                   style={{ background: theme.muted, color: theme.foreground }}
                   transition={{ type: "spring", stiffness: 320, damping: 18 }}
                 >
@@ -183,7 +258,7 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
                 </motion.button>
               </div>
             ) : (
-              <button className="mt-2 h-14 rounded-lg px-5 text-base font-black text-white" style={{ background: theme.accent }} onClick={handleContinue}>
+              <button className="mt-2 h-14 rounded-lg px-5 text-base font-black text-white shadow-lg shadow-black/10" style={{ background: theme.accent }} onClick={handleContinue}>
                 {isLast ? "Finish" : page.content.ctaLabel ?? "Continue"}
               </button>
             )}
