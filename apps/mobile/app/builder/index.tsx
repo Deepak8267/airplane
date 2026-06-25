@@ -13,6 +13,7 @@ import { useBuilderStore } from "@/stores/builder-store";
 import type { BuilderDraft } from "@/stores/builder-store";
 
 type AutosaveState = { status: "saved" | "pending" | "saving" | "error"; error?: string };
+type PickedImage = { uri: string };
 
 export default function BuilderScreen() {
   const [pagePickerVisible, setPagePickerVisible] = useState(false);
@@ -41,24 +42,12 @@ export default function BuilderScreen() {
         throw new Error("Create the draft before uploading a cover photo.");
       }
 
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-      if (!permission.granted) {
-        throw new Error("Photo library permission is required to choose a cover photo.");
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: true,
-        aspect: [4, 5],
-        mediaTypes: ["images"],
-        quality: 0.85
-      });
-
-      if (result.canceled || !result.assets[0]) {
+      const image = await pickImage({ aspect: [4, 5] });
+      if (!image) {
         return null;
       }
 
-      return uploadCoverPhoto(draft.experienceId, result.assets[0].uri);
+      return uploadCoverPhoto(draft.experienceId, image.uri);
     },
     onSuccess: (coverPhotoUrl) => {
       if (coverPhotoUrl) {
@@ -148,23 +137,12 @@ export default function BuilderScreen() {
   }
 
   async function choosePagePhoto(pageIndex: number) {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      Alert.alert("Photo access needed", "Allow photo library access to add a memory photo.");
+    const image = await pickImage({ aspect: [4, 3] });
+    if (!image) {
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      mediaTypes: ["images"],
-      quality: 0.85
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      pagePhotoMutation.mutate({ pageIndex, uri: result.assets[0].uri });
-    }
+    pagePhotoMutation.mutate({ pageIndex, uri: image.uri });
   }
 
   if (!draft) {
@@ -195,16 +173,27 @@ export default function BuilderScreen() {
           {draft.coverPhotoUrl ? (
             <Image source={{ uri: draft.coverPhotoUrl }} style={styles.coverImage} />
           ) : (
-            <Text style={styles.coverPlaceholder}>Cover photo</Text>
+            <View style={styles.coverEmptyState}>
+              <Ionicons color="#667085" name="image-outline" size={32} />
+              <Text style={styles.coverPlaceholder}>Cover photo</Text>
+            </View>
           )}
         </View>
-        <Pressable
-          disabled={uploadMutation.isPending}
-          style={[styles.secondaryButton, { opacity: uploadMutation.isPending ? 0.7 : 1 }]}
-          onPress={() => uploadMutation.mutate()}
-        >
-          <Text style={styles.secondaryButtonText}>{uploadMutation.isPending ? "Uploading..." : "Choose photo"}</Text>
-        </Pressable>
+        <View style={styles.photoActionRow}>
+          <Pressable
+            disabled={uploadMutation.isPending}
+            style={[styles.secondaryButton, { opacity: uploadMutation.isPending ? 0.7 : 1 }]}
+            onPress={() => uploadMutation.mutate()}
+          >
+            <Ionicons color="#101828" name="image-outline" size={19} />
+            <Text style={styles.secondaryButtonText}>{uploadMutation.isPending ? "Uploading..." : draft.coverPhotoUrl ? "Replace cover" : "Choose cover"}</Text>
+          </Pressable>
+          {draft.coverPhotoUrl ? (
+            <Pressable accessibilityLabel="Remove cover photo" disabled={uploadMutation.isPending} style={styles.smallIconButton} onPress={() => updateDraft({ coverPhotoUrl: null })}>
+              <Ionicons color="#b42318" name="trash-outline" size={19} />
+            </Pressable>
+          ) : null}
+        </View>
         {uploadMutation.error instanceof Error ? <Text style={styles.error}>{uploadMutation.error.message}</Text> : null}
       </View>
 
@@ -326,6 +315,28 @@ function ThemePicker({ onSelect, selectedTheme }: { onSelect: (theme: Theme) => 
       </ScrollView>
     </View>
   );
+}
+
+async function pickImage({ aspect }: { aspect: [number, number] }): Promise<PickedImage | null> {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (!permission.granted) {
+    Alert.alert("Photo access needed", "Allow photo library access to add photos to this experience.");
+    return null;
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    allowsEditing: true,
+    aspect,
+    mediaTypes: ["images"],
+    quality: 0.82
+  });
+
+  if (result.canceled || !result.assets[0]) {
+    return null;
+  }
+
+  return { uri: result.assets[0].uri };
 }
 
 function PageEditor({
@@ -564,7 +575,9 @@ const styles = StyleSheet.create({
   coverPanel: { gap: 10 },
   coverPreview: { height: 220, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", overflow: "hidden", backgroundColor: "#f2f4f7", alignItems: "center", justifyContent: "center" },
   coverImage: { width: "100%", height: "100%" },
+  coverEmptyState: { alignItems: "center", justifyContent: "center", gap: 8 },
   coverPlaceholder: { color: "#667085", fontWeight: "800" },
+  photoActionRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   pages: { gap: 10 },
   sectionTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
   pageEditor: { padding: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", borderRadius: 8, gap: 12 },
@@ -601,7 +614,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", gap: 10 },
   button: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#101828", justifyContent: "center", alignItems: "center" },
   buttonText: { color: "#ffffff", fontWeight: "800" },
-  secondaryButton: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd", justifyContent: "center", alignItems: "center" },
+  secondaryButton: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd", justifyContent: "center", alignItems: "center", flexDirection: "row", gap: 7 },
   secondaryButtonText: { color: "#101828", fontWeight: "800" },
   error: { color: "#b42318", lineHeight: 20 }
 });

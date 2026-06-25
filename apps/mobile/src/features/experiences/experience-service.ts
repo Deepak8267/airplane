@@ -3,6 +3,8 @@ import type { Json } from "@airplane/supabase";
 import type { Experience, ExperiencePage, ExperiencePageDraft, Template } from "@airplane/shared";
 import { supabase } from "@/lib/supabase";
 
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
 export type ExperienceDraftInput = {
   id: string;
   title: string;
@@ -222,17 +224,27 @@ export async function updateDraftExperience(input: ExperienceDraftInput): Promis
 
 export async function uploadCoverPhoto(experienceId: string, uri: string): Promise<string> {
   const userId = await ensureCreatorUserId();
-  return uploadExperienceImage("covers", `${userId}/${experienceId}/cover-${Date.now()}`, uri);
+  return uploadExperienceImage("covers", `${userId}/${experienceId}/cover`, uri);
 }
 
 export async function uploadPagePhoto(experienceId: string, pageIndex: number, uri: string): Promise<string> {
   const userId = await ensureCreatorUserId();
-  return uploadExperienceImage("photos", `${userId}/${experienceId}/page-${pageIndex}-${Date.now()}`, uri);
+  return uploadExperienceImage("photos", `${userId}/${experienceId}/page-${pageIndex}`, uri);
 }
 
 async function uploadExperienceImage(bucket: "covers" | "photos", pathWithoutExtension: string, uri: string) {
   const response = await fetch(uri);
+
+  if (!response.ok) {
+    throw new Error("Could not read the selected image. Please choose another photo.");
+  }
+
   const blob = await response.blob();
+
+  if (blob.size > MAX_UPLOAD_BYTES) {
+    throw new Error("Photo is too large. Please choose an image under 8 MB.");
+  }
+
   const contentType = blob.type || "image/jpeg";
   const extension = getImageExtension(contentType);
   const path = `${pathWithoutExtension}.${extension}`;
@@ -244,11 +256,11 @@ async function uploadExperienceImage(bucket: "covers" | "photos", pathWithoutExt
   });
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(`Photo upload failed: ${error.message}`);
   }
 
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  return data.publicUrl;
+  return `${data.publicUrl}?v=${Date.now()}`;
 }
 
 export async function publishExperience(experienceId: string): Promise<string> {
