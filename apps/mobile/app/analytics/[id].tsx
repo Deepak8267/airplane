@@ -48,20 +48,42 @@ export default function AnalyticsScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeading}>
                 <Text style={styles.sectionTitle}>Completion rate</Text>
-                <Text style={styles.rate}>{Math.round(data.summary.completionRate)}%</Text>
+                <Text style={styles.rate}>{formatPercent(data.insights.completionRate)}</Text>
               </View>
               <View style={styles.progressTrack}>
-                <View style={[styles.progressValue, { width: `${data.summary.completionRate}%` }]} />
+                <View style={[styles.progressValue, { width: `${data.insights.completionRate}%` }]} />
               </View>
+              <Text style={styles.sectionHint}>
+                {formatNumber(data.summary.completions)} completions from {formatNumber(data.summary.views)} views.
+              </Text>
             </View>
 
-            <View style={styles.noAttemptsBand}>
-              <View style={styles.noAttemptsIcon}>
-                <Ionicons color="#b54708" name="move-outline" size={22} />
+            <View style={styles.insightsGrid}>
+              <Insight label="YES answers" value={formatNumber(data.insights.proposalYesAnswers)} tone="success" />
+              <Insight label="NO answers" value={formatNumber(data.insights.proposalNoAnswers)} tone="danger" />
+              <Insight label="Quiz answers" value={formatNumber(data.insights.quizAnswers)} tone="info" />
+              <Insight label="Button clicks" value={formatNumber(data.insights.buttonClicks)} tone="neutral" />
+            </View>
+
+            <View style={styles.noAttemptsCard}>
+              <View style={styles.noAttemptsHeader}>
+                <View style={styles.noAttemptsIcon}>
+                  <Ionicons color="#b54708" name="move-outline" size={22} />
+                </View>
+                <View style={styles.noAttemptsCopy}>
+                  <Text style={styles.noAttemptsLabel}>Proposal NO attempts</Text>
+                  <Text style={styles.noAttemptsValue}>{formatNumber(data.summary.totalNoAttempts)}</Text>
+                </View>
               </View>
-              <View style={styles.noAttemptsCopy}>
-                <Text style={styles.noAttemptsLabel}>Proposal NO attempts</Text>
-                <Text style={styles.noAttemptsValue}>{formatNumber(data.summary.totalNoAttempts)}</Text>
+              <View style={styles.noAttemptsStats}>
+                <View style={styles.noAttemptsStat}>
+                  <Text style={styles.noAttemptsStatLabel}>Per view</Text>
+                  <Text style={styles.noAttemptsStatValue}>{formatDecimal(data.insights.averageNoAttemptsPerView)}</Text>
+                </View>
+                <View style={styles.noAttemptsStat}>
+                  <Text style={styles.noAttemptsStatLabel}>Per answer</Text>
+                  <Text style={styles.noAttemptsStatValue}>{formatDecimal(data.insights.averageNoAttemptsPerProposalAnswer)}</Text>
+                </View>
               </View>
             </View>
 
@@ -101,8 +123,25 @@ function Metric({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; 
   );
 }
 
+function Insight({ label, tone, value }: { label: string; tone: "danger" | "info" | "neutral" | "success"; value: string }) {
+  return (
+    <View style={[styles.insight, styles[`${tone}Insight`]]}>
+      <Text style={[styles.insightValue, styles[`${tone}InsightText`]]}>{value}</Text>
+      <Text style={[styles.insightLabel, styles[`${tone}InsightText`]]}>{label}</Text>
+    </View>
+  );
+}
+
 function formatNumber(value: number) {
   return new Intl.NumberFormat().format(value);
+}
+
+function formatPercent(value: number) {
+  return `${Math.round(value)}%`;
+}
+
+function formatDecimal(value: number) {
+  return value.toFixed(value >= 10 ? 0 : 1);
 }
 
 function formatDuration(seconds: number) {
@@ -154,6 +193,22 @@ function formatEventDetail(eventType: string, metadata: Record<string, unknown>)
     return `Quiz result ${metadata.quizScore}/${metadata.quizTotal}`;
   }
 
+  if (eventType === "experience_completed" && typeof metadata.completionTimeSeconds === "number") {
+    return `Completed in ${formatDuration(metadata.completionTimeSeconds)}`;
+  }
+
+  if (eventType === "proposal_no_attempted" && typeof metadata.attemptNumber === "number") {
+    return `Attempt ${metadata.attemptNumber}`;
+  }
+
+  if ((eventType === "proposal_answered_yes" || eventType === "proposal_answered_no") && typeof metadata.noAttempts === "number") {
+    return `${metadata.noAttempts} NO attempts before answer`;
+  }
+
+  if (eventType === "button_clicked" && typeof metadata.label === "string") {
+    return metadata.label;
+  }
+
   return null;
 }
 
@@ -175,11 +230,29 @@ const styles = StyleSheet.create({
   rate: { color: "#067647", fontSize: 20, fontWeight: "900" },
   progressTrack: { height: 10, borderRadius: 5, overflow: "hidden", backgroundColor: "#d1fadf" },
   progressValue: { height: "100%", borderRadius: 5, backgroundColor: "#12b76a" },
-  noAttemptsBand: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 8, backgroundColor: "#fffaeb", borderWidth: 1, borderColor: "#fedf89", padding: 15 },
+  sectionHint: { color: "#667085", fontSize: 13, lineHeight: 18 },
+  insightsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  insight: { minWidth: 145, flexBasis: "47%", flexGrow: 1, minHeight: 84, borderRadius: 8, borderWidth: 1, padding: 13, justifyContent: "space-between" },
+  insightValue: { fontSize: 25, fontWeight: "900" },
+  insightLabel: { fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
+  successInsight: { backgroundColor: "#ecfdf3", borderColor: "#abefc6" },
+  successInsightText: { color: "#067647" },
+  dangerInsight: { backgroundColor: "#fef3f2", borderColor: "#fecdca" },
+  dangerInsightText: { color: "#b42318" },
+  infoInsight: { backgroundColor: "#eff4ff", borderColor: "#b2ccff" },
+  infoInsightText: { color: "#175cd3" },
+  neutralInsight: { backgroundColor: "#f9fafb", borderColor: "#eaecf0" },
+  neutralInsightText: { color: "#344054" },
+  noAttemptsCard: { gap: 14, borderRadius: 8, backgroundColor: "#fffaeb", borderWidth: 1, borderColor: "#fedf89", padding: 15 },
+  noAttemptsHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
   noAttemptsIcon: { width: 42, height: 42, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#fef0c7" },
   noAttemptsCopy: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   noAttemptsLabel: { color: "#7a2e0e", fontWeight: "800" },
   noAttemptsValue: { color: "#7a2e0e", fontSize: 24, fontWeight: "900" },
+  noAttemptsStats: { flexDirection: "row", gap: 10 },
+  noAttemptsStat: { flex: 1, minHeight: 64, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fedf89", padding: 10, justifyContent: "space-between" },
+  noAttemptsStatLabel: { color: "#7a2e0e", fontSize: 12, fontWeight: "800", textTransform: "uppercase" },
+  noAttemptsStatValue: { color: "#7a2e0e", fontSize: 22, fontWeight: "900" },
   activitySection: { gap: 4 },
   emptyActivity: { color: "#667085", paddingVertical: 18 },
   activityRow: { minHeight: 60, flexDirection: "row", alignItems: "center", gap: 12, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
