@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { Experience, ExperiencePage, ExperiencePageDraft, ExperiencePageType, Template, Theme } from "@airplane/shared";
 
-type BuilderDraft = {
+export type BuilderDraft = {
   experienceId: string | null;
   templateId: string;
   title: string;

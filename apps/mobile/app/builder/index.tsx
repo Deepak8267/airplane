@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -6,11 +6,22 @@ import { useMutation } from "@tanstack/react-query";
 import { EXPERIENCE_THEMES } from "@airplane/shared";
 import type { ExperiencePageDraft, ExperiencePageType, PageContent, Theme } from "@airplane/shared";
 import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { validateBuilderDraft } from "@/features/experiences/builder-validation";
 import { updateDraftExperience, uploadCoverPhoto, uploadPagePhoto } from "@/features/experiences/experience-service";
+import type { ExperienceDraftInput } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
+import type { BuilderDraft } from "@/stores/builder-store";
+
+type AutosaveState = { status: "saved" | "pending" | "saving" | "error"; error?: string };
 
 export default function BuilderScreen() {
   const [pagePickerVisible, setPagePickerVisible] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
+  const [autosaveState, setAutosaveState] = useState<AutosaveState>({ status: "saved" });
+  const autosaveQueue = useRef<Promise<void>>(Promise.resolve());
+  const autosaveRevision = useRef(0);
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initializedExperience = useRef<string | null>(null);
   const draft = useBuilderStore((state) => state.draft);
   const updateDraft = useBuilderStore((state) => state.updateDraft);
   const updatePage = useBuilderStore((state) => state.updatePage);
@@ -18,7 +29,10 @@ export default function BuilderScreen() {
   const removePage = useBuilderStore((state) => state.removePage);
   const movePage = useBuilderStore((state) => state.movePage);
   const saveMutation = useMutation({
-    mutationFn: updateDraftExperience,
+    mutationFn: async (input: ExperienceDraftInput) => {
+      await autosaveQueue.current.catch(() => undefined);
+      return updateDraftExperience(input);
+    },
     onSuccess: () => router.push("/publish")
   });
   const uploadMutation = useMutation({
@@ -63,6 +77,75 @@ export default function BuilderScreen() {
     },
     onSuccess: ({ pageIndex, publicUrl }) => updatePage(pageIndex, { mediaUrls: [publicUrl] })
   });
+  const validation = draft ? validateBuilderDraft(draft) : null;
+  const visibleValidation = showValidation ? validation : null;
+
+  useEffect(() => {
+    if (!draft?.experienceId) {
+      return;
+    }
+
+    if (initializedExperience.current !== draft.experienceId) {
+      initializedExperience.current = draft.experienceId;
+      setAutosaveState({ status: "saved" });
+      return;
+    }
+
+    const revision = ++autosaveRevision.current;
+    const input = toDraftInput(draft);
+    setAutosaveState({ status: "pending" });
+    autosaveTimer.current = setTimeout(() => {
+      setAutosaveState({ status: "saving" });
+      const save = autosaveQueue.current
+        .catch(() => undefined)
+        .then(async () => {
+          await updateDraftExperience(input);
+        });
+      autosaveQueue.current = save.catch(() => undefined);
+      void save
+        .then(() => {
+          if (autosaveRevision.current === revision) {
+            setAutosaveState({ status: "saved" });
+          }
+        })
+        .catch((error: unknown) => {
+          if (autosaveRevision.current === revision) {
+            setAutosaveState({ status: "error", error: error instanceof Error ? error.message : "Autosave failed." });
+          }
+        });
+    }, 1200);
+
+    return () => {
+      if (autosaveTimer.current) {
+        clearTimeout(autosaveTimer.current);
+        autosaveTimer.current = null;
+      }
+    };
+  }, [draft]);
+
+  function openPreview() {
+    if (!validation?.isValid) {
+      setShowValidation(true);
+      return;
+    }
+
+    router.push("/preview/current");
+  }
+
+  function saveAndContinue() {
+    if (!draft?.experienceId || !validation?.isValid) {
+      setShowValidation(true);
+      return;
+    }
+
+    if (autosaveTimer.current) {
+      clearTimeout(autosaveTimer.current);
+      autosaveTimer.current = null;
+    }
+
+    autosaveRevision.current += 1;
+    saveMutation.mutate(toDraftInput(draft));
+  }
 
   async function choosePagePhoto(pageIndex: number) {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -97,11 +180,14 @@ export default function BuilderScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.screen}>
-      <Text style={styles.eyebrow}>Builder</Text>
+      <View style={styles.builderMeta}>
+        <Text style={styles.eyebrow}>Builder</Text>
+        <AutosaveStatus state={autosaveState} />
+      </View>
       <Text style={styles.title}>Personalize the experience.</Text>
-      <Field label="Title" value={draft.title} onChangeText={(title) => updateDraft({ title })} />
-      <Field label="Recipient name" value={draft.recipientName} onChangeText={(recipientName) => updateDraft({ recipientName })} />
-      <Field label="Message" value={draft.message} onChangeText={(message) => updateDraft({ message })} multiline />
+      <Field error={visibleValidation?.title} label="Title" value={draft.title} onChangeText={(title) => updateDraft({ title })} />
+      <Field error={visibleValidation?.recipientName} label="Recipient name" value={draft.recipientName} onChangeText={(recipientName) => updateDraft({ recipientName })} />
+      <Field error={visibleValidation?.message} label="Message" value={draft.message} onChangeText={(message) => updateDraft({ message })} multiline />
       <ThemePicker selectedTheme={draft.theme} onSelect={(theme) => updateDraft({ theme })} />
 
       <View style={styles.coverPanel}>
@@ -138,6 +224,7 @@ export default function BuilderScreen() {
             onRemove={() => removePage(index)}
             onRemovePhoto={() => updatePage(index, { mediaUrls: [] })}
             page={page}
+            validationErrors={visibleValidation?.pageErrors[index] ?? []}
             photoError={pagePhotoMutation.variables?.pageIndex === index && pagePhotoMutation.error instanceof Error ? pagePhotoMutation.error.message : null}
             photoUploading={pagePhotoMutation.isPending && pagePhotoMutation.variables?.pageIndex === index}
           />
@@ -149,32 +236,19 @@ export default function BuilderScreen() {
       </View>
 
       <View style={styles.actions}>
-        <Pressable style={styles.secondaryButton} onPress={() => router.push("/preview/current")}>
+        <Pressable style={styles.secondaryButton} onPress={openPreview}>
           <Text style={styles.secondaryButtonText}>Preview</Text>
         </Pressable>
         <Pressable
           style={[styles.button, { opacity: saveMutation.isPending ? 0.7 : 1 }]}
-          onPress={() => {
-            if (!draft.experienceId) {
-              return;
-            }
-
-            saveMutation.mutate({
-              id: draft.experienceId,
-              title: draft.title,
-              recipientName: draft.recipientName,
-              message: draft.message,
-              coverPhotoUrl: draft.coverPhotoUrl,
-              theme: draft.theme,
-              pages: draft.pages
-            });
-          }}
-          disabled={saveMutation.isPending}
+          onPress={saveAndContinue}
+          disabled={saveMutation.isPending || autosaveState.status === "saving"}
         >
-          <Text style={styles.buttonText}>{saveMutation.isPending ? "Saving..." : "Publish"}</Text>
+          <Text style={styles.buttonText}>{saveMutation.isPending || autosaveState.status === "saving" ? "Saving..." : "Publish"}</Text>
         </Pressable>
       </View>
       {saveMutation.error instanceof Error ? <Text style={styles.error}>{saveMutation.error.message}</Text> : null}
+      {autosaveState.status === "error" ? <Text style={styles.error}>{autosaveState.error}</Text> : null}
 
       <Modal
         animationType="slide"
@@ -267,7 +341,8 @@ function PageEditor({
   onRemovePhoto,
   page,
   photoError,
-  photoUploading
+  photoUploading,
+  validationErrors
 }: {
   canMoveDown: boolean;
   canMoveUp: boolean;
@@ -282,11 +357,12 @@ function PageEditor({
   page: ExperiencePageDraft;
   photoError: string | null;
   photoUploading: boolean;
+  validationErrors: string[];
 }) {
   const updateContent = (patch: Partial<PageContent>) => onChange({ content: { ...page.content, ...patch } });
 
   return (
-    <View style={styles.pageEditor}>
+    <View style={[styles.pageEditor, validationErrors.length > 0 ? styles.pageEditorError : null]}>
       <View style={styles.pageHeader}>
         <View>
           <Text style={styles.pageNumber}>Page {index + 1}</Text>
@@ -390,22 +466,60 @@ function PageEditor({
       {page.pageType !== "proposal" && page.pageType !== "final" ? (
         <Field label="Button label" value={page.content.ctaLabel ?? ""} onChangeText={(ctaLabel) => updateContent({ ctaLabel })} />
       ) : null}
+      {validationErrors.length > 0 ? (
+        <View style={styles.validationList}>
+          {validationErrors.map((error) => <Text key={error} style={styles.error}>{error}</Text>)}
+        </View>
+      ) : null}
     </View>
   );
 }
 
-function Field(props: { label: string; value: string; onChangeText: (value: string) => void; multiline?: boolean }) {
+function Field(props: { error?: string | undefined; label: string; value: string; onChangeText: (value: string) => void; multiline?: boolean }) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{props.label}</Text>
       <TextInput
         multiline={props.multiline}
         onChangeText={props.onChangeText}
-        style={[styles.input, props.multiline ? styles.textarea : null]}
+        style={[styles.input, props.multiline ? styles.textarea : null, props.error ? styles.inputError : null]}
         value={props.value}
       />
+      {props.error ? <Text style={styles.fieldError}>{props.error}</Text> : null}
     </View>
   );
+}
+
+function AutosaveStatus({ state }: { state: AutosaveState }) {
+  const config = {
+    saved: { color: "#067647", icon: "cloud-done-outline" as const, label: "Saved" },
+    pending: { color: "#b54708", icon: "cloud-upload-outline" as const, label: "Unsaved" },
+    saving: { color: "#175cd3", icon: "sync-outline" as const, label: "Saving..." },
+    error: { color: "#b42318", icon: "alert-circle-outline" as const, label: "Save failed" }
+  }[state.status];
+
+  return (
+    <View style={styles.autosaveStatus}>
+      <Ionicons color={config.color} name={config.icon} size={17} />
+      <Text style={[styles.autosaveText, { color: config.color }]}>{config.label}</Text>
+    </View>
+  );
+}
+
+function toDraftInput(draft: BuilderDraft): ExperienceDraftInput {
+  if (!draft.experienceId) {
+    throw new Error("Draft has not been created yet.");
+  }
+
+  return {
+    id: draft.experienceId,
+    title: draft.title,
+    recipientName: draft.recipientName,
+    message: draft.message,
+    coverPhotoUrl: draft.coverPhotoUrl,
+    theme: draft.theme,
+    pages: draft.pages
+  };
 }
 
 function formatPageType(pageType: ExperiencePageDraft["pageType"]) {
@@ -428,11 +542,16 @@ const PAGE_TYPES: Array<{ type: ExperiencePageType; label: string; description: 
 const styles = StyleSheet.create({
   screen: { padding: 20, gap: 16 },
   empty: { flex: 1, padding: 20, justifyContent: "center", gap: 16 },
+  builderMeta: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   eyebrow: { color: "#2563eb", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
+  autosaveStatus: { minHeight: 28, flexDirection: "row", alignItems: "center", gap: 5 },
+  autosaveText: { fontSize: 12, fontWeight: "900" },
   title: { fontSize: 30, lineHeight: 36, fontWeight: "900", color: "#101828" },
   field: { gap: 7 },
   label: { color: "#344054", fontWeight: "800" },
   input: { minHeight: 50, borderWidth: 1, borderColor: "#d0d5dd", borderRadius: 8, paddingHorizontal: 13, backgroundColor: "#ffffff", fontSize: 16, color: "#101828" },
+  inputError: { borderColor: "#f04438" },
+  fieldError: { color: "#b42318", fontSize: 12, lineHeight: 17 },
   textarea: { minHeight: 112, paddingTop: 12, textAlignVertical: "top" },
   themeSection: { gap: 10 },
   themeList: { gap: 10, paddingRight: 4 },
@@ -449,6 +568,8 @@ const styles = StyleSheet.create({
   pages: { gap: 10 },
   sectionTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
   pageEditor: { padding: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", borderRadius: 8, gap: 12 },
+  pageEditorError: { borderColor: "#f04438" },
+  validationList: { gap: 3 },
   pageHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   pageNumber: { color: "#101828", fontWeight: "900", fontSize: 16 },
   pageType: { color: "#2563eb", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
