@@ -13,7 +13,7 @@ import { useBuilderStore } from "@/stores/builder-store";
 import type { BuilderDraft } from "@/stores/builder-store";
 
 type AutosaveState = { status: "saved" | "pending" | "saving" | "error"; error?: string };
-type PickedImage = { uri: string };
+type PickedImage = { contentType?: string | undefined; uri: string };
 
 export default function BuilderScreen() {
   const [pagePickerVisible, setPagePickerVisible] = useState(false);
@@ -47,7 +47,7 @@ export default function BuilderScreen() {
         return null;
       }
 
-      return uploadCoverPhoto(draft.experienceId, image.uri);
+      return uploadCoverPhoto(draft.experienceId, image.uri, image.contentType);
     },
     onSuccess: (coverPhotoUrl) => {
       if (coverPhotoUrl) {
@@ -56,12 +56,12 @@ export default function BuilderScreen() {
     }
   });
   const pagePhotoMutation = useMutation({
-    mutationFn: async ({ pageIndex, uri }: { pageIndex: number; uri: string }) => {
+    mutationFn: async ({ contentType, pageIndex, uri }: { contentType?: string | undefined; pageIndex: number; uri: string }) => {
       if (!draft?.experienceId) {
         throw new Error("Create the draft before uploading a page photo.");
       }
 
-      const publicUrl = await uploadPagePhoto(draft.experienceId, pageIndex, uri);
+      const publicUrl = await uploadPagePhoto(draft.experienceId, pageIndex, uri, contentType);
       return { pageIndex, publicUrl };
     },
     onSuccess: ({ pageIndex, publicUrl }) => updatePage(pageIndex, { mediaUrls: [publicUrl] })
@@ -142,7 +142,7 @@ export default function BuilderScreen() {
       return;
     }
 
-    pagePhotoMutation.mutate({ pageIndex, uri: image.uri });
+    pagePhotoMutation.mutate({ contentType: image.contentType, pageIndex, uri: image.uri });
   }
 
   if (!draft) {
@@ -336,7 +336,7 @@ async function pickImage({ aspect }: { aspect: [number, number] }): Promise<Pick
     return null;
   }
 
-  return { uri: result.assets[0].uri };
+  return { contentType: result.assets[0].mimeType, uri: result.assets[0].uri };
 }
 
 function PageEditor({

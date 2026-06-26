@@ -222,34 +222,34 @@ export async function updateDraftExperience(input: ExperienceDraftInput): Promis
   return mapExperience(data);
 }
 
-export async function uploadCoverPhoto(experienceId: string, uri: string): Promise<string> {
+export async function uploadCoverPhoto(experienceId: string, uri: string, contentType?: string): Promise<string> {
   const userId = await ensureCreatorUserId();
-  return uploadExperienceImage("covers", `${userId}/${experienceId}/cover`, uri);
+  return uploadExperienceImage("covers", `${userId}/${experienceId}/cover`, uri, contentType);
 }
 
-export async function uploadPagePhoto(experienceId: string, pageIndex: number, uri: string): Promise<string> {
+export async function uploadPagePhoto(experienceId: string, pageIndex: number, uri: string, contentType?: string): Promise<string> {
   const userId = await ensureCreatorUserId();
-  return uploadExperienceImage("photos", `${userId}/${experienceId}/page-${pageIndex}`, uri);
+  return uploadExperienceImage("photos", `${userId}/${experienceId}/page-${pageIndex}`, uri, contentType);
 }
 
-async function uploadExperienceImage(bucket: "covers" | "photos", pathWithoutExtension: string, uri: string) {
+async function uploadExperienceImage(bucket: "covers" | "photos", pathWithoutExtension: string, uri: string, selectedContentType?: string) {
   const response = await fetch(uri);
 
   if (!response.ok) {
     throw new Error("Could not read the selected image. Please choose another photo.");
   }
 
-  const blob = await response.blob();
+  const file = await response.arrayBuffer();
 
-  if (blob.size > MAX_UPLOAD_BYTES) {
+  if (file.byteLength > MAX_UPLOAD_BYTES) {
     throw new Error("Photo is too large. Please choose an image under 8 MB.");
   }
 
-  const contentType = blob.type || "image/jpeg";
+  const contentType = selectedContentType || response.headers.get("content-type") || "image/jpeg";
   const extension = getImageExtension(contentType);
   const path = `${pathWithoutExtension}.${extension}`;
 
-  const { error } = await supabase.storage.from(bucket).upload(path, blob, {
+  const { error } = await supabase.storage.from(bucket).upload(path, file, {
     cacheControl: "31536000",
     contentType,
     upsert: true
