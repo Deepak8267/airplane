@@ -371,6 +371,44 @@ function PageEditor({
   validationErrors: string[];
 }) {
   const updateContent = (patch: Partial<PageContent>) => onChange({ content: { ...page.content, ...patch } });
+  const quizAnswers = page.content.answers ?? [];
+
+  function addQuizAnswer() {
+    const nextIndex = quizAnswers.length + 1;
+    updateContent({
+      answers: [
+        ...quizAnswers,
+        {
+          id: `${Date.now().toString(36)}-${nextIndex}`,
+          label: `Answer ${nextIndex}`,
+          isCorrect: quizAnswers.length === 0
+        }
+      ]
+    });
+  }
+
+  function removeQuizAnswer(answerIndex: number) {
+    if (quizAnswers.length <= 2) {
+      return;
+    }
+
+    const removedAnswer = quizAnswers[answerIndex];
+    const nextAnswers = quizAnswers.filter((_, indexToKeep) => indexToKeep !== answerIndex);
+
+    updateContent({
+      answers: nextAnswers.map((answer, indexToSet) => ({
+        ...answer,
+        isCorrect: removedAnswer?.isCorrect ? indexToSet === 0 : Boolean(answer.isCorrect)
+      }))
+    });
+  }
+
+  function setCountdownPreset(daysFromNow: number) {
+    const date = new Date();
+    date.setDate(date.getDate() + daysFromNow);
+    date.setHours(18, 0, 0, 0);
+    updateContent({ targetDate: date.toISOString() });
+  }
 
   return (
     <View style={[styles.pageEditor, validationErrors.length > 0 ? styles.pageEditorError : null]}>
@@ -421,30 +459,40 @@ function PageEditor({
       {page.pageType === "quiz" ? (
         <>
           <Field label="Question" value={page.content.question ?? ""} onChangeText={(question) => updateContent({ question })} multiline />
-          {(page.content.answers ?? []).map((answer, answerIndex) => (
+          {quizAnswers.map((answer, answerIndex) => (
             <View key={answer.id} style={styles.answerEditor}>
-              <Pressable
-                accessibilityRole="radio"
-                accessibilityState={{ selected: Boolean(answer.isCorrect) }}
-                style={[styles.correctAnswerButton, answer.isCorrect ? styles.correctAnswerSelected : null]}
-                onPress={() =>
-                  updateContent({
-                    answers: (page.content.answers ?? []).map((item, itemIndex) => ({
-                      ...item,
-                      isCorrect: itemIndex === answerIndex
-                    }))
-                  })
-                }
-              >
-                <Ionicons color={answer.isCorrect ? "#067647" : "#667085"} name={answer.isCorrect ? "radio-button-on" : "radio-button-off"} size={20} />
-                <Text style={[styles.correctAnswerText, answer.isCorrect ? styles.correctAnswerTextSelected : null]}>Correct</Text>
-              </Pressable>
+              <View style={styles.answerHeader}>
+                <Pressable
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: Boolean(answer.isCorrect) }}
+                  style={[styles.correctAnswerButton, answer.isCorrect ? styles.correctAnswerSelected : null]}
+                  onPress={() =>
+                    updateContent({
+                      answers: quizAnswers.map((item, itemIndex) => ({
+                        ...item,
+                        isCorrect: itemIndex === answerIndex
+                      }))
+                    })
+                  }
+                >
+                  <Ionicons color={answer.isCorrect ? "#067647" : "#667085"} name={answer.isCorrect ? "radio-button-on" : "radio-button-off"} size={20} />
+                  <Text style={[styles.correctAnswerText, answer.isCorrect ? styles.correctAnswerTextSelected : null]}>Correct</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityLabel={`Remove answer ${answerIndex + 1}`}
+                  disabled={quizAnswers.length <= 2}
+                  style={[styles.smallIconButton, quizAnswers.length <= 2 ? styles.disabledControl : null]}
+                  onPress={() => removeQuizAnswer(answerIndex)}
+                >
+                  <Ionicons color="#b42318" name="remove-circle-outline" size={20} />
+                </Pressable>
+              </View>
               <Field
                 label={`Answer ${answerIndex + 1}`}
                 value={answer.label}
                 onChangeText={(label) =>
                   updateContent({
-                    answers: (page.content.answers ?? []).map((item, itemIndex) =>
+                    answers: quizAnswers.map((item, itemIndex) =>
                       itemIndex === answerIndex ? { ...item, label } : item
                     )
                   })
@@ -452,6 +500,10 @@ function PageEditor({
               />
             </View>
           ))}
+          <Pressable style={styles.inlineAddButton} onPress={addQuizAnswer}>
+            <Ionicons color="#175cd3" name="add-circle-outline" size={20} />
+            <Text style={styles.inlineAddText}>Add answer</Text>
+          </Pressable>
         </>
       ) : null}
 
@@ -466,7 +518,13 @@ function PageEditor({
       {page.pageType === "countdown" ? (
         <>
           <Field label="Message" value={page.content.body ?? ""} onChangeText={(body) => updateContent({ body })} multiline />
-          <Field label="Target date (ISO)" value={page.content.targetDate ?? ""} onChangeText={(targetDate) => updateContent({ targetDate })} />
+          <Field label="Target date and time" value={page.content.targetDate ?? ""} onChangeText={(targetDate) => updateContent({ targetDate })} />
+          <Text style={styles.helperText}>{formatTargetDate(page.content.targetDate)}</Text>
+          <View style={styles.presetRow}>
+            <PresetButton label="Tomorrow" onPress={() => setCountdownPreset(1)} />
+            <PresetButton label="1 week" onPress={() => setCountdownPreset(7)} />
+            <PresetButton label="1 month" onPress={() => setCountdownPreset(30)} />
+          </View>
         </>
       ) : null}
 
@@ -483,6 +541,14 @@ function PageEditor({
         </View>
       ) : null}
     </View>
+  );
+}
+
+function PresetButton({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <Pressable style={styles.presetButton} onPress={onPress}>
+      <Text style={styles.presetButtonText}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -541,6 +607,26 @@ function formatFontName(fontFamily: Theme["fontFamily"]) {
   return fontFamily.charAt(0).toUpperCase() + fontFamily.slice(1);
 }
 
+function formatTargetDate(value: string | undefined) {
+  if (!value) {
+    return "Choose when this countdown should finish.";
+  }
+
+  const date = new Date(value);
+
+  if (!Number.isFinite(date.getTime())) {
+    return "Enter a valid date, for example 2026-07-01T18:00:00.000Z.";
+  }
+
+  return `Countdown ends ${date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  })}`;
+}
+
 const PAGE_TYPES: Array<{ type: ExperiencePageType; label: string; description: string }> = [
   { type: "cover", label: "Cover", description: "Opening title and message" },
   { type: "memory", label: "Memory", description: "Share a meaningful moment" },
@@ -593,10 +679,17 @@ const styles = StyleSheet.create({
   photoButton: { flex: 1, height: 42, borderRadius: 8, borderWidth: 1, borderColor: "#84adff", backgroundColor: "#eff4ff", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
   photoButtonText: { color: "#175cd3", fontWeight: "900" },
   answerEditor: { gap: 8, paddingBottom: 4 },
+  answerHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   correctAnswerButton: { alignSelf: "flex-start", minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", paddingHorizontal: 10, flexDirection: "row", gap: 6, alignItems: "center" },
   correctAnswerSelected: { borderColor: "#75e0a7", backgroundColor: "#ecfdf3" },
   correctAnswerText: { color: "#667085", fontSize: 13, fontWeight: "800" },
   correctAnswerTextSelected: { color: "#067647" },
+  inlineAddButton: { height: 44, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#84adff", backgroundColor: "#eff4ff", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
+  inlineAddText: { color: "#175cd3", fontWeight: "900" },
+  helperText: { color: "#667085", fontSize: 13, lineHeight: 18 },
+  presetRow: { flexDirection: "row", gap: 8 },
+  presetButton: { flex: 1, minHeight: 40, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
+  presetButtonText: { color: "#344054", fontSize: 13, fontWeight: "900" },
   pageControls: { flexDirection: "row", gap: 6 },
   smallIconButton: { width: 38, height: 38, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd" },
   disabledControl: { opacity: 0.3 },
