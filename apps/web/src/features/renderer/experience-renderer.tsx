@@ -410,7 +410,7 @@ function getOrCreateVisitor() {
     return existing;
   }
 
-  const next = crypto.randomUUID();
+  const next = createClientId();
   window.localStorage.setItem(key, next);
   return next;
 }
