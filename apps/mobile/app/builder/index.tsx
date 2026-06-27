@@ -137,6 +137,13 @@ export default function BuilderScreen() {
     saveMutation.mutate(toDraftInput(draft));
   }
 
+  function confirmRemovePage(index: number) {
+    Alert.alert("Remove page?", "This page will be removed from the experience.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Remove", style: "destructive", onPress: () => removePage(index) }
+    ]);
+  }
+
   async function choosePagePhoto(pageIndex: number) {
     const image = await pickImage({ aspect: [4, 3] });
     if (!image) {
@@ -164,6 +171,12 @@ export default function BuilderScreen() {
         <AutosaveStatus state={autosaveState} />
       </View>
       <Text style={styles.title}>Personalize the experience.</Text>
+      {visibleValidation && !visibleValidation.isValid ? (
+        <View style={styles.validationSummary}>
+          <Ionicons color="#b42318" name="alert-circle-outline" size={20} />
+          <Text style={styles.validationSummaryText}>Fix the highlighted fields before previewing or publishing.</Text>
+        </View>
+      ) : null}
       <Field error={visibleValidation?.title} label="Title" value={draft.title} onChangeText={(title) => updateDraft({ title })} />
       <Field error={visibleValidation?.recipientName} label="Recipient name" value={draft.recipientName} onChangeText={(recipientName) => updateDraft({ recipientName })} />
       <Field error={visibleValidation?.message} label="Message" value={draft.message} onChangeText={(message) => updateDraft({ message })} multiline />
@@ -212,7 +225,7 @@ export default function BuilderScreen() {
             onMoveDown={() => movePage(index, 1)}
             onMoveUp={() => movePage(index, -1)}
             onChoosePhoto={() => choosePagePhoto(index)}
-            onRemove={() => removePage(index)}
+            onRemove={() => confirmRemovePage(index)}
             onRemovePhoto={() => updatePage(index, { mediaUrls: [] })}
             page={page}
             validationErrors={visibleValidation?.pageErrors[index] ?? []}
@@ -719,6 +732,8 @@ const styles = StyleSheet.create({
   autosaveStatus: { minHeight: 28, flexDirection: "row", alignItems: "center", gap: 5 },
   autosaveText: { fontSize: 12, fontWeight: "900" },
   title: { fontSize: 30, lineHeight: 36, fontWeight: "900", color: "#101828" },
+  validationSummary: { minHeight: 48, borderRadius: 8, borderWidth: 1, borderColor: "#fecdca", backgroundColor: "#fef3f2", paddingHorizontal: 12, paddingVertical: 10, flexDirection: "row", alignItems: "center", gap: 9 },
+  validationSummaryText: { flex: 1, color: "#b42318", fontWeight: "800", lineHeight: 19 },
   field: { gap: 7 },
   label: { color: "#344054", fontWeight: "800" },
   input: { minHeight: 50, borderWidth: 1, borderColor: "#d0d5dd", borderRadius: 8, paddingHorizontal: 13, backgroundColor: "#ffffff", fontSize: 16, color: "#101828" },

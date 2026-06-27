@@ -1,6 +1,6 @@
 import { Link } from "expo-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
 import { signOut } from "@/features/auth/auth-service";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
@@ -24,6 +24,12 @@ export default function HomeScreen() {
   });
   const templates = templatesQuery.data ?? [];
   const usage = planUsageQuery.data;
+  const refreshing = templatesQuery.isRefetching || planUsageQuery.isRefetching;
+
+  function refresh() {
+    void templatesQuery.refetch();
+    void planUsageQuery.refetch();
+  }
 
   return (
     <View style={styles.screen}>
@@ -50,10 +56,13 @@ export default function HomeScreen() {
           <Text style={styles.planStatus}>{usage?.status ?? "active"}</Text>
         </View>
         <Text style={styles.planCopy}>
-          {usage?.plan === "pro"
+          {planUsageQuery.isLoading
+            ? "Checking your plan..."
+            : usage?.plan === "pro"
             ? "Unlimited experiences are enabled."
             : `${usage?.activeExperienceCount ?? 0}/${usage?.freeExperienceLimit ?? 3} experiences used.`}
         </Text>
+        {planUsageQuery.error instanceof Error ? <Text style={styles.planError}>{planUsageQuery.error.message}</Text> : null}
         {usage?.plan !== "pro" ? (
           <View style={styles.usageTrack}>
             <View
@@ -78,6 +87,7 @@ export default function HomeScreen() {
       <FlatList
         data={templates}
         keyExtractor={(item) => item.id}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>{templatesQuery.isLoading ? "Loading templates..." : "No templates found"}</Text>
@@ -95,7 +105,7 @@ export default function HomeScreen() {
                 <Text style={styles.cardTitle}>{item.name}</Text>
                 <Text style={styles.cardCopy}>{item.description}</Text>
               </View>
-              {item.isPremium ? <Text style={styles.pro}>PRO</Text> : null}
+              {item.isPremium ? <Text style={styles.pro}>LOCKED</Text> : null}
             </Pressable>
           </Link>
         )}
@@ -118,6 +128,7 @@ const styles = StyleSheet.create({
   planLabel: { color: "#101828", fontSize: 16, fontWeight: "900", textTransform: "capitalize" },
   planStatus: { overflow: "hidden", borderRadius: 8, backgroundColor: "#ffffff", color: "#175cd3", paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
   planCopy: { color: "#344054", fontWeight: "700" },
+  planError: { color: "#b42318", lineHeight: 19 },
   usageTrack: { height: 8, borderRadius: 4, overflow: "hidden", backgroundColor: "#bfdbfe" },
   usageValue: { height: "100%", borderRadius: 4, backgroundColor: "#2563eb" },
   categories: { gap: 8, paddingVertical: 18 },

@@ -54,8 +54,9 @@ export default function TemplateDetailScreen() {
 
   const template = templateQuery.data;
   const usage = planUsageQuery.data;
+  const premiumLocked = template.isPremium && usage?.plan !== "pro";
   const limitReached = usage?.canCreateExperience === false;
-  const disabled = createDraftMutation.isPending || planUsageQuery.isLoading || limitReached;
+  const disabled = createDraftMutation.isPending || planUsageQuery.isLoading || limitReached || premiumLocked;
 
   return (
     <View style={[styles.screen, { backgroundColor: template.defaultTheme.background }]}>
@@ -68,7 +69,9 @@ export default function TemplateDetailScreen() {
           <View style={styles.planNotice}>
             <Text style={styles.planNoticeTitle}>{usage.plan === "pro" ? "Pro plan" : "Free plan"}</Text>
             <Text style={styles.planNoticeCopy}>
-              {usage.plan === "pro"
+              {premiumLocked
+                ? "This premium template will unlock when Pro payments are enabled."
+                : usage.plan === "pro"
                 ? "Unlimited experiences are enabled."
                 : limitReached
                   ? "You have used all 3 free experiences. Archive one experience or upgrade when payments are enabled."
@@ -79,7 +82,13 @@ export default function TemplateDetailScreen() {
         {createDraftMutation.error instanceof Error ? <Text style={styles.error}>{createDraftMutation.error.message}</Text> : null}
         <Pressable style={[styles.button, { backgroundColor: template.defaultTheme.accent, opacity: disabled ? 0.7 : 1 }]} onPress={start} disabled={disabled}>
           <Text style={styles.buttonText}>
-            {createDraftMutation.isPending ? "Creating draft..." : limitReached ? "Free limit reached" : "Use template"}
+            {createDraftMutation.isPending
+              ? "Creating draft..."
+              : premiumLocked
+                ? "Pro template"
+                : limitReached
+                  ? "Free limit reached"
+                  : "Use template"}
           </Text>
         </Pressable>
       </View>

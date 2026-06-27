@@ -4,12 +4,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Experience } from "@airplane/shared";
-import { Alert, FlatList, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { duplicateExperience, getExperienceForEditing, getMyExperiences, setExperienceArchived } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
 
 export default function ExperiencesScreen() {
   const [menuExperience, setMenuExperience] = useState<Experience | null>(null);
+  const [copiedExperienceId, setCopiedExperienceId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const startFromExperience = useBuilderStore((state) => state.startFromExperience);
   const experiencesQuery = useQuery({
@@ -80,6 +81,7 @@ export default function ExperiencesScreen() {
         data={experiences}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        refreshControl={<RefreshControl refreshing={experiencesQuery.isRefetching} onRefresh={() => experiencesQuery.refetch()} />}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>{experiencesQuery.isLoading ? "Loading experiences..." : "No experiences yet"}</Text>
@@ -160,7 +162,9 @@ export default function ExperiencesScreen() {
                 onPress={() => {
                   const link = `${process.env.EXPO_PUBLIC_WEB_URL ?? "https://airplane.app"}/e/${menuExperience.slug}`;
                   void Clipboard.setStringAsync(link);
+                  setCopiedExperienceId(menuExperience.id);
                   setMenuExperience(null);
+                  setTimeout(() => setCopiedExperienceId(null), 1800);
                 }}
               />
             ) : null}
@@ -182,6 +186,12 @@ export default function ExperiencesScreen() {
           </View>
         </View>
       </Modal>
+      {copiedExperienceId ? (
+        <View style={styles.toast}>
+          <Ionicons color="#ffffff" name="checkmark-circle-outline" size={18} />
+          <Text style={styles.toastText}>Link copied</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -244,5 +254,7 @@ const styles = StyleSheet.create({
   emptyCopy: { color: "#667085", lineHeight: 20 },
   primaryButton: { height: 48, borderRadius: 8, backgroundColor: "#101828", alignItems: "center", justifyContent: "center" },
   primaryButtonText: { color: "#ffffff", fontWeight: "900" },
+  toast: { position: "absolute", left: 20, right: 20, bottom: 22, minHeight: 48, borderRadius: 8, backgroundColor: "#101828", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  toastText: { color: "#ffffff", fontWeight: "900" },
   error: { color: "#b42318", lineHeight: 20 }
 });

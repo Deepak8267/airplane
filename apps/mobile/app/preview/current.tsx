@@ -24,7 +24,16 @@ export default function CurrentPreviewScreen() {
   }, [countdownTarget]);
 
   if (!draft || !activePage) {
-    return null;
+    return (
+      <View style={styles.emptyScreen}>
+        <Ionicons color="#2563eb" name="eye-outline" size={30} />
+        <Text style={styles.emptyTitle}>Nothing to preview yet.</Text>
+        <Text style={styles.emptyCopy}>Choose a template or open an existing draft first.</Text>
+        <Pressable style={styles.emptyButton} onPress={() => router.replace("/home")}>
+          <Text style={styles.emptyButtonText}>Go to templates</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   const page = activePage;
@@ -143,6 +152,11 @@ function getMobileFontFamily(fontFamily: Theme["fontFamily"]) {
 }
 
 const styles = StyleSheet.create({
+  emptyScreen: { flex: 1, padding: 24, justifyContent: "center", gap: 12 },
+  emptyTitle: { color: "#101828", fontSize: 28, lineHeight: 34, fontWeight: "900" },
+  emptyCopy: { color: "#667085", fontSize: 16, lineHeight: 23 },
+  emptyButton: { height: 52, borderRadius: 8, backgroundColor: "#101828", alignItems: "center", justifyContent: "center" },
+  emptyButtonText: { color: "#ffffff", fontWeight: "900" },
   screen: { flexGrow: 1, padding: 24, justifyContent: "center", gap: 14 },
   pageMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   coverImage: { width: "100%", aspectRatio: 4 / 5, borderRadius: 8 },
