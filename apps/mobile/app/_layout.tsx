@@ -13,6 +13,7 @@ export default function RootLayout() {
         <AuthBootstrap />
         <Stack
           screenOptions={{
+            headerShown: false,
             headerStyle: { backgroundColor: "#ffffff" },
             headerTitleStyle: { fontWeight: "700" },
             contentStyle: { backgroundColor: "#f6f7fb" }
