@@ -375,6 +375,7 @@ function PageEditor({
   validationErrors: string[];
 }) {
   const updateContent = (patch: Partial<PageContent>) => onChange({ content: { ...page.content, ...patch } });
+  const updateSettings = (patch: Record<string, unknown>) => onChange({ settings: { ...page.settings, ...patch } });
   const quizAnswers = page.content.answers ?? [];
 
   function addQuizAnswer() {
@@ -516,7 +517,29 @@ function PageEditor({
       ) : null}
 
       {page.pageType === "proposal" ? (
-        <Field label="Question" value={page.content.question ?? ""} onChangeText={(question) => updateContent({ question })} multiline />
+        <>
+          <Field label="Question" value={page.content.question ?? ""} onChangeText={(question) => updateContent({ question })} multiline />
+          <View style={styles.settingBlock}>
+            <View style={styles.settingCopy}>
+              <Text style={styles.label}>NO button behavior</Text>
+              <Text style={styles.helperText}>Moving NO tracks attempts. Fixed NO lets recipients answer no.</Text>
+            </View>
+            <View style={styles.segmentedControl}>
+              <SegmentButton
+                icon="move-outline"
+                label="Moving"
+                selected={page.settings.moveNoButton !== false}
+                onPress={() => updateSettings({ moveNoButton: true })}
+              />
+              <SegmentButton
+                icon="remove-circle-outline"
+                label="Fixed"
+                selected={page.settings.moveNoButton === false}
+                onPress={() => updateSettings({ moveNoButton: false })}
+              />
+            </View>
+          </View>
+        </>
       ) : null}
 
       {page.pageType === "final" ? (
@@ -556,6 +579,30 @@ function PresetButton({ label, onPress }: { label: string; onPress: () => void }
   return (
     <Pressable style={styles.presetButton} onPress={onPress}>
       <Text style={styles.presetButtonText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function SegmentButton({
+  icon,
+  label,
+  onPress,
+  selected
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+  selected: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      style={[styles.segmentButton, selected ? styles.segmentButtonSelected : null]}
+      onPress={onPress}
+    >
+      <Ionicons color={selected ? "#175cd3" : "#667085"} name={icon} size={18} />
+      <Text style={[styles.segmentButtonText, selected ? styles.segmentButtonTextSelected : null]}>{label}</Text>
     </Pressable>
   );
 }
@@ -717,6 +764,13 @@ const styles = StyleSheet.create({
   inlineAddButton: { height: 44, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#84adff", backgroundColor: "#eff4ff", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
   inlineAddText: { color: "#175cd3", fontWeight: "900" },
   helperText: { color: "#667085", fontSize: 13, lineHeight: 18 },
+  settingBlock: { gap: 10, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#f9fafb", padding: 12 },
+  settingCopy: { gap: 3 },
+  segmentedControl: { minHeight: 46, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", flexDirection: "row", padding: 3, gap: 3 },
+  segmentButton: { flex: 1, borderRadius: 6, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingHorizontal: 8 },
+  segmentButtonSelected: { backgroundColor: "#eff4ff" },
+  segmentButtonText: { color: "#667085", fontSize: 13, fontWeight: "900" },
+  segmentButtonTextSelected: { color: "#175cd3" },
   presetRow: { flexDirection: "row", gap: 8 },
   presetButton: { flex: 1, minHeight: 40, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   presetButtonText: { color: "#344054", fontSize: 13, fontWeight: "900" },
