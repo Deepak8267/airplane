@@ -19,6 +19,7 @@ type BuilderState = {
   updateDraft: (patch: Partial<Pick<BuilderDraft, "title" | "recipientName" | "message" | "coverPhotoUrl" | "theme">>) => void;
   updatePage: (index: number, patch: Partial<ExperiencePageDraft>) => void;
   addPage: (pageType: ExperiencePageType) => void;
+  duplicatePage: (index: number) => void;
   removePage: (index: number) => void;
   movePage: (index: number, direction: -1 | 1) => void;
 };
@@ -82,6 +83,19 @@ export const useBuilderStore = create<BuilderState>((set) => ({
         ? { ...state.draft, pages: [...state.draft.pages, createPage(pageType)] }
         : null
     })),
+  duplicatePage: (index) =>
+    set((state) => {
+      const sourcePage = state.draft?.pages[index];
+
+      if (!state.draft || !sourcePage) {
+        return state;
+      }
+
+      const pages = [...state.draft.pages];
+      pages.splice(index + 1, 0, clonePage(sourcePage));
+
+      return { draft: { ...state.draft, pages } };
+    }),
   removePage: (index) =>
     set((state) => {
       if (!state.draft || state.draft.pages.length <= 1) {
@@ -176,4 +190,27 @@ function normalizePage(page: ExperiencePageDraft): ExperiencePageDraft {
       answers: answers.map((answer, index) => ({ ...answer, isCorrect: index === 0 }))
     }
   };
+}
+
+function clonePage(page: ExperiencePageDraft): ExperiencePageDraft {
+  return normalizePage({
+    pageType: page.pageType,
+    title: `${page.title} Copy`.slice(0, 120),
+    content: cloneContent(page.content),
+    mediaUrls: [...page.mediaUrls],
+    settings: { ...page.settings }
+  });
+}
+
+function cloneContent(content: ExperiencePageDraft["content"]): ExperiencePageDraft["content"] {
+  const cloned: ExperiencePageDraft["content"] = { ...content };
+
+  if (content.answers) {
+    cloned.answers = content.answers.map((answer) => ({
+      ...answer,
+      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+    }));
+  }
+
+  return cloned;
 }

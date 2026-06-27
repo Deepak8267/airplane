@@ -27,6 +27,7 @@ export default function BuilderScreen() {
   const updateDraft = useBuilderStore((state) => state.updateDraft);
   const updatePage = useBuilderStore((state) => state.updatePage);
   const addPage = useBuilderStore((state) => state.addPage);
+  const duplicatePage = useBuilderStore((state) => state.duplicatePage);
   const removePage = useBuilderStore((state) => state.removePage);
   const movePage = useBuilderStore((state) => state.movePage);
   const saveMutation = useMutation({
@@ -207,6 +208,7 @@ export default function BuilderScreen() {
             canMoveUp={index > 0}
             canRemove={draft.pages.length > 1}
             onChange={(patch) => updatePage(index, patch)}
+            onDuplicate={() => duplicatePage(index)}
             onMoveDown={() => movePage(index, 1)}
             onMoveUp={() => movePage(index, -1)}
             onChoosePhoto={() => choosePagePhoto(index)}
@@ -345,6 +347,7 @@ function PageEditor({
   canRemove,
   index,
   onChange,
+  onDuplicate,
   onChoosePhoto,
   onMoveDown,
   onMoveUp,
@@ -360,6 +363,7 @@ function PageEditor({
   canRemove: boolean;
   index: number;
   onChange: (patch: Partial<ExperiencePageDraft>) => void;
+  onDuplicate: () => void;
   onChoosePhoto: () => void;
   onMoveDown: () => void;
   onMoveUp: () => void;
@@ -413,9 +417,10 @@ function PageEditor({
   return (
     <View style={[styles.pageEditor, validationErrors.length > 0 ? styles.pageEditorError : null]}>
       <View style={styles.pageHeader}>
-        <View>
+        <View style={styles.pageHeading}>
           <Text style={styles.pageNumber}>Page {index + 1}</Text>
           <Text style={styles.pageType}>{formatPageType(page.pageType)}</Text>
+          <Text style={styles.pageSummary} numberOfLines={1}>{getPageSummary(page)}</Text>
         </View>
         <View style={styles.pageControls}>
           <Pressable accessibilityLabel="Move page up" disabled={!canMoveUp} style={[styles.smallIconButton, !canMoveUp && styles.disabledControl]} onPress={onMoveUp}>
@@ -423,6 +428,9 @@ function PageEditor({
           </Pressable>
           <Pressable accessibilityLabel="Move page down" disabled={!canMoveDown} style={[styles.smallIconButton, !canMoveDown && styles.disabledControl]} onPress={onMoveDown}>
             <Ionicons color="#344054" name="chevron-down" size={20} />
+          </Pressable>
+          <Pressable accessibilityLabel="Duplicate page" style={styles.smallIconButton} onPress={onDuplicate}>
+            <Ionicons color="#344054" name="copy-outline" size={19} />
           </Pressable>
           <Pressable accessibilityLabel="Remove page" disabled={!canRemove} style={[styles.smallIconButton, !canRemove && styles.disabledControl]} onPress={onRemove}>
             <Ionicons color="#b42318" name="trash-outline" size={19} />
@@ -603,6 +611,26 @@ function formatPageType(pageType: ExperiencePageDraft["pageType"]) {
   return pageType.charAt(0).toUpperCase() + pageType.slice(1);
 }
 
+function getPageSummary(page: ExperiencePageDraft) {
+  if (page.pageType === "quiz") {
+    return `${page.content.answers?.length ?? 0} answers`;
+  }
+
+  if (page.pageType === "countdown") {
+    return formatTargetDate(page.content.targetDate).replace("Countdown ends ", "");
+  }
+
+  if (page.pageType === "proposal") {
+    return page.settings.moveNoButton === false ? "Fixed NO button" : "Moving NO button";
+  }
+
+  if (page.mediaUrls.length > 0) {
+    return "Photo attached";
+  }
+
+  return page.content.body ?? page.content.finalMessage ?? page.content.question ?? "No summary yet";
+}
+
 function formatFontName(fontFamily: Theme["fontFamily"]) {
   return fontFamily.charAt(0).toUpperCase() + fontFamily.slice(1);
 }
@@ -670,8 +698,10 @@ const styles = StyleSheet.create({
   pageEditorError: { borderColor: "#f04438" },
   validationList: { gap: 3 },
   pageHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  pageHeading: { flex: 1, gap: 2, paddingRight: 8 },
   pageNumber: { color: "#101828", fontWeight: "900", fontSize: 16 },
   pageType: { color: "#2563eb", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
+  pageSummary: { color: "#667085", fontSize: 12, fontWeight: "700" },
   pagePhotoSection: { gap: 8 },
   pagePhoto: { width: "100%", aspectRatio: 4 / 3, borderRadius: 8 },
   pagePhotoPlaceholder: { width: "100%", aspectRatio: 4 / 3, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#d0d5dd", backgroundColor: "#f9fafb", alignItems: "center", justifyContent: "center", gap: 8 },
@@ -690,7 +720,7 @@ const styles = StyleSheet.create({
   presetRow: { flexDirection: "row", gap: 8 },
   presetButton: { flex: 1, minHeight: 40, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   presetButtonText: { color: "#344054", fontSize: 13, fontWeight: "900" },
-  pageControls: { flexDirection: "row", gap: 6 },
+  pageControls: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: 6 },
   smallIconButton: { width: 38, height: 38, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd" },
   disabledControl: { opacity: 0.3 },
   addPageButton: { height: 52, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#84adff", backgroundColor: "#eff4ff", flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
