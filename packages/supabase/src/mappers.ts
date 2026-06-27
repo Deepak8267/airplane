@@ -1,7 +1,8 @@
-import type { Experience, ExperiencePage, Subscription, Template, Theme } from "@airplane/shared";
+import type { Experience, ExperiencePage, Subscription, Template, Theme, UserProfile } from "@airplane/shared";
 import type { Database } from "./database.types";
 
 type TemplateRow = Database["public"]["Tables"]["templates"]["Row"];
+type UserRow = Database["public"]["Tables"]["users"]["Row"];
 type ExperienceRow = Database["public"]["Tables"]["experiences"]["Row"];
 type PageRow = Database["public"]["Tables"]["experience_pages"]["Row"];
 type SubscriptionRow = Database["public"]["Tables"]["subscriptions"]["Row"];
@@ -19,6 +20,18 @@ export function mapTemplate(row: TemplateRow): Template {
     defaultTheme: row.default_theme as Theme,
     defaultPages: row.default_pages as Template["defaultPages"],
     isActive: row.is_active
+  };
+}
+
+export function mapUserProfile(row: UserRow): UserProfile {
+  return {
+    id: row.id,
+    email: row.email,
+    fullName: row.full_name,
+    avatarUrl: row.avatar_url,
+    provider: row.provider,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
   };
 }
 

@@ -3,17 +3,18 @@ import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type BottomNavKey = "home" | "library";
+type BottomNavKey = "home" | "library" | "profile";
 
 const NAV_ITEMS: Array<{
   key: BottomNavKey;
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   activeIcon: keyof typeof Ionicons.glyphMap;
-  route: "/home" | "/experiences";
+  route: "/home" | "/experiences" | "/profile";
 }> = [
   { key: "home", label: "Home", icon: "home-outline", activeIcon: "home", route: "/home" },
-  { key: "library", label: "Library", icon: "albums-outline", activeIcon: "albums", route: "/experiences" }
+  { key: "library", label: "Library", icon: "albums-outline", activeIcon: "albums", route: "/experiences" },
+  { key: "profile", label: "Profile", icon: "person-circle-outline", activeIcon: "person-circle", route: "/profile" }
 ];
 
 export function BottomNav({ active }: { active: BottomNavKey }) {
@@ -66,11 +67,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-    flexDirection: "row",
-    gap: 7,
-    paddingHorizontal: 10
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 6
   },
   activeItem: { backgroundColor: "#101828" },
-  label: { color: "#667085", fontSize: 13, fontWeight: "900" },
+  label: { color: "#667085", fontSize: 11, fontWeight: "900" },
   activeLabel: { color: "#ffffff" }
 });

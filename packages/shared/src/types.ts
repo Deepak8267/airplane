@@ -79,6 +79,16 @@ export type Subscription = {
   updatedAt: string;
 };
 
+export type UserProfile = {
+  id: string;
+  email: string | null;
+  fullName: string | null;
+  avatarUrl: string | null;
+  provider: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ExperiencePageDraft = {
   pageType: ExperiencePageType;
   title: string;
