@@ -3,14 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { BottomNav } from "@/components/bottom-nav";
-import { signOut } from "@/features/auth/auth-service";
+import { useSignOut } from "@/features/auth/use-sign-out";
 import { getMyProfile, updateMyProfile } from "@/features/profile/profile-service";
 import { useSessionStore } from "@/stores/session-store";
 
 export default function ProfileScreen() {
   const queryClient = useQueryClient();
   const session = useSessionStore((state) => state.session);
-  const localSignOut = useSessionStore((state) => state.signOut);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState(session?.user.email ?? "");
   const [showValidation, setShowValidation] = useState(false);
@@ -27,10 +26,7 @@ export default function ProfileScreen() {
       void queryClient.invalidateQueries({ queryKey: ["my-profile"] });
     }
   });
-  const signOutMutation = useMutation({
-    mutationFn: signOut,
-    onSuccess: localSignOut
-  });
+  const signOutMutation = useSignOut();
 
   useEffect(() => {
     if (!profileQuery.data) {

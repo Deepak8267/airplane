@@ -22,6 +22,7 @@ type BuilderState = {
   duplicatePage: (index: number) => void;
   removePage: (index: number) => void;
   movePage: (index: number, direction: -1 | 1) => void;
+  clearDraft: () => void;
 };
 
 export const useBuilderStore = create<BuilderState>((set) => ({
@@ -133,7 +134,8 @@ export const useBuilderStore = create<BuilderState>((set) => ({
       pages[targetIndex] = currentPage;
 
       return { draft: { ...state.draft, pages } };
-    })
+    }),
+  clearDraft: () => set({ draft: null })
 }));
 
 function createPage(pageType: ExperiencePageType): ExperiencePageDraft {

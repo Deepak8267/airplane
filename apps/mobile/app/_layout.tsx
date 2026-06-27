@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthBootstrap } from "@/components/auth-bootstrap";
+import { AuthGate } from "@/components/auth-gate";
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
@@ -11,6 +12,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <AuthBootstrap />
+        <AuthGate />
         <Stack
           screenOptions={{
             headerShown: false,

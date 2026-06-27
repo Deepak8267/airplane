@@ -1,21 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
-import { signOut } from "@/features/auth/auth-service";
+import { useSignOut } from "@/features/auth/use-sign-out";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplates } from "@/features/templates/template-service";
 import { useSessionStore } from "@/stores/session-store";
 
 export default function HomeScreen() {
   const session = useSessionStore((state) => state.session);
-  const localSignOut = useSessionStore((state) => state.signOut);
-  const signOutMutation = useMutation({
-    mutationFn: signOut,
-    onSuccess: localSignOut
-  });
+  const signOutMutation = useSignOut();
   const templatesQuery = useQuery({
     queryKey: ["templates"],
     queryFn: getTemplates
