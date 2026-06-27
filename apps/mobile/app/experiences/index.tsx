@@ -5,6 +5,7 @@ import { Link, router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Experience } from "@airplane/shared";
 import { Alert, FlatList, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { BottomNav } from "@/components/bottom-nav";
 import { duplicateExperience, getExperienceForEditing, getMyExperiences, setExperienceArchived } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
 
@@ -192,6 +193,7 @@ export default function ExperiencesScreen() {
           <Text style={styles.toastText}>Link copied</Text>
         </View>
       ) : null}
+      <BottomNav active="library" />
     </View>
   );
 }
@@ -221,11 +223,11 @@ function MenuAction({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, padding: 20 },
+  screen: { flex: 1, paddingHorizontal: 20, paddingTop: 20 },
   header: { paddingTop: 8, gap: 6 },
   eyebrow: { color: "#2563eb", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
   title: { color: "#101828", fontSize: 30, lineHeight: 36, fontWeight: "900" },
-  list: { gap: 12, paddingTop: 18, paddingBottom: 40 },
+  list: { gap: 12, paddingTop: 18, paddingBottom: 110 },
   card: { gap: 10, padding: 16, backgroundColor: "#ffffff", borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0" },
   cardHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
   cardTitle: { flex: 1, color: "#101828", fontSize: 18, fontWeight: "900" },
@@ -254,7 +256,7 @@ const styles = StyleSheet.create({
   emptyCopy: { color: "#667085", lineHeight: 20 },
   primaryButton: { height: 48, borderRadius: 8, backgroundColor: "#101828", alignItems: "center", justifyContent: "center" },
   primaryButtonText: { color: "#ffffff", fontWeight: "900" },
-  toast: { position: "absolute", left: 20, right: 20, bottom: 22, minHeight: 48, borderRadius: 8, backgroundColor: "#101828", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  toast: { position: "absolute", left: 20, right: 20, bottom: 96, minHeight: 48, borderRadius: 8, backgroundColor: "#101828", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   toastText: { color: "#ffffff", fontWeight: "900" },
   error: { color: "#b42318", lineHeight: 20 }
 });
