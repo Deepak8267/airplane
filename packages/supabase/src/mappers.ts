@@ -1,9 +1,10 @@
-import type { Experience, ExperiencePage, Template, Theme } from "@airplane/shared";
+import type { Experience, ExperiencePage, Subscription, Template, Theme } from "@airplane/shared";
 import type { Database } from "./database.types";
 
 type TemplateRow = Database["public"]["Tables"]["templates"]["Row"];
 type ExperienceRow = Database["public"]["Tables"]["experiences"]["Row"];
 type PageRow = Database["public"]["Tables"]["experience_pages"]["Row"];
+type SubscriptionRow = Database["public"]["Tables"]["subscriptions"]["Row"];
 
 export function mapTemplate(row: TemplateRow): Template {
   return {
@@ -51,6 +52,20 @@ export function mapExperiencePage(row: PageRow): ExperiencePage {
     content: row.content as ExperiencePage["content"],
     mediaUrls: row.media_urls,
     settings: row.settings as Record<string, unknown>,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+export function mapSubscription(row: SubscriptionRow): Subscription {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    plan: row.plan as Subscription["plan"],
+    status: row.status as Subscription["status"],
+    razorpaySubscriptionId: row.razorpay_subscription_id,
+    currentPeriodStart: row.current_period_start,
+    currentPeriodEnd: row.current_period_end,
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };

@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
 import { signOut } from "@/features/auth/auth-service";
+import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplates } from "@/features/templates/template-service";
 import { useSessionStore } from "@/stores/session-store";
 
@@ -17,7 +18,12 @@ export default function HomeScreen() {
     queryKey: ["templates"],
     queryFn: getTemplates
   });
+  const planUsageQuery = useQuery({
+    queryKey: ["plan-usage"],
+    queryFn: getPlanUsage
+  });
   const templates = templatesQuery.data ?? [];
+  const usage = planUsageQuery.data;
 
   return (
     <View style={styles.screen}>
@@ -36,6 +42,28 @@ export default function HomeScreen() {
         <Pressable style={styles.actionButton} onPress={() => signOutMutation.mutate()}>
           <Text style={styles.actionButtonText}>Sign out</Text>
         </Pressable>
+      </View>
+
+      <View style={styles.planCard}>
+        <View style={styles.planHeading}>
+          <Text style={styles.planLabel}>{usage?.plan === "pro" ? "Pro plan" : "Free plan"}</Text>
+          <Text style={styles.planStatus}>{usage?.status ?? "active"}</Text>
+        </View>
+        <Text style={styles.planCopy}>
+          {usage?.plan === "pro"
+            ? "Unlimited experiences are enabled."
+            : `${usage?.activeExperienceCount ?? 0}/${usage?.freeExperienceLimit ?? 3} experiences used.`}
+        </Text>
+        {usage?.plan !== "pro" ? (
+          <View style={styles.usageTrack}>
+            <View
+              style={[
+                styles.usageValue,
+                { width: `${Math.min(((usage?.activeExperienceCount ?? 0) / (usage?.freeExperienceLimit ?? 3)) * 100, 100)}%` }
+              ]}
+            />
+          </View>
+        ) : null}
       </View>
 
       <FlatList
@@ -85,6 +113,13 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", gap: 10, paddingTop: 16 },
   actionButton: { flex: 1, minHeight: 46, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
   actionButtonText: { color: "#101828", fontWeight: "800" },
+  planCard: { gap: 10, marginTop: 14, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: "#dbeafe", backgroundColor: "#eff6ff" },
+  planHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+  planLabel: { color: "#101828", fontSize: 16, fontWeight: "900", textTransform: "capitalize" },
+  planStatus: { overflow: "hidden", borderRadius: 8, backgroundColor: "#ffffff", color: "#175cd3", paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
+  planCopy: { color: "#344054", fontWeight: "700" },
+  usageTrack: { height: 8, borderRadius: 4, overflow: "hidden", backgroundColor: "#bfdbfe" },
+  usageValue: { height: "100%", borderRadius: 4, backgroundColor: "#2563eb" },
   categories: { gap: 8, paddingVertical: 18 },
   category: { overflow: "hidden", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: "#ffffff", color: "#344054", fontWeight: "700", textTransform: "capitalize" },
   list: { gap: 12, paddingBottom: 40 },

@@ -223,6 +223,74 @@ export type Database = {
         };
         Relationships: [];
       };
+      payments: {
+        Row: {
+          id: string;
+          user_id: string;
+          razorpay_payment_id: string | null;
+          razorpay_order_id: string | null;
+          razorpay_signature: string | null;
+          amount: number;
+          currency: string;
+          status: string;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          razorpay_payment_id?: string | null;
+          razorpay_order_id?: string | null;
+          razorpay_signature?: string | null;
+          amount: number;
+          currency?: string;
+          status: string;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          razorpay_payment_id?: string | null;
+          razorpay_order_id?: string | null;
+          razorpay_signature?: string | null;
+          amount?: number;
+          currency?: string;
+          status?: string;
+          metadata?: Json;
+        };
+        Relationships: [];
+      };
+      subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          plan: string;
+          status: string;
+          razorpay_subscription_id: string | null;
+          current_period_start: string | null;
+          current_period_end: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          plan?: string;
+          status?: string;
+          razorpay_subscription_id?: string | null;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          plan?: string;
+          status?: string;
+          razorpay_subscription_id?: string | null;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {};
     Functions: {

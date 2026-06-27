@@ -4,6 +4,7 @@ import type { Experience, ExperiencePage, ExperiencePageDraft, Template } from "
 import { supabase } from "@/lib/supabase";
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+const FREE_EXPERIENCE_LIMIT = 3;
 
 export type ExperienceDraftInput = {
   id: string;
@@ -127,6 +128,7 @@ export async function setExperienceArchived({ experienceId, archived }: { experi
 
 export async function createDraftExperience(template: Template): Promise<{ experience: Experience; pages: ExperiencePage[] }> {
   const userId = await ensureCreatorUserId();
+  await assertCanCreateExperience(userId, template);
 
   const { data: experienceRow, error: experienceError } = await supabase
     .from("experiences")
@@ -304,6 +306,35 @@ async function ensureUserProfile(userId: string, email: string | null) {
 
   if (error) {
     throw new Error(error.message);
+  }
+}
+
+async function assertCanCreateExperience(userId: string, template: Template) {
+  const [{ data: subscription, error: subscriptionError }, { count, error: countError }] = await Promise.all([
+    supabase.from("subscriptions").select("plan,status").eq("user_id", userId).maybeSingle(),
+    supabase
+      .from("experiences")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .neq("status", "archived")
+  ]);
+
+  if (subscriptionError) {
+    throw new Error(subscriptionError.message);
+  }
+
+  if (countError) {
+    throw new Error(countError.message);
+  }
+
+  const isPro = subscription?.plan === "pro" && subscription.status === "active";
+
+  if (template.isPremium && !isPro) {
+    throw new Error("This is a Pro template. Premium templates will unlock when payment is enabled.");
+  }
+
+  if (!isPro && (count ?? 0) >= FREE_EXPERIENCE_LIMIT) {
+    throw new Error("Free plan includes 3 active experiences. Archive one experience or upgrade when payment is enabled.");
   }
 }
 

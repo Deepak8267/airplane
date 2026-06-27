@@ -67,6 +67,18 @@ export type Experience = {
   updatedAt: string;
 };
 
+export type Subscription = {
+  id: string;
+  userId: string;
+  plan: UserPlan;
+  status: SubscriptionStatus;
+  razorpaySubscriptionId: string | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ExperiencePageDraft = {
   pageType: ExperiencePageType;
   title: string;
