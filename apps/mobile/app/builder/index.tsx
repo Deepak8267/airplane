@@ -15,6 +15,14 @@ import type { BuilderDraft } from "@/stores/builder-store";
 type AutosaveState = { status: "saved" | "pending" | "saving" | "error"; error?: string };
 type PickedImage = { contentType?: string | undefined; uri: string };
 
+const BUILDER_STEPS = [
+  { label: "Info", icon: "create-outline" as const },
+  { label: "Photos", icon: "image-outline" as const },
+  { label: "Pages", icon: "documents-outline" as const },
+  { label: "Theme", icon: "color-palette-outline" as const },
+  { label: "Publish", icon: "rocket-outline" as const }
+];
+
 export default function BuilderScreen() {
   const [pagePickerVisible, setPagePickerVisible] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
@@ -171,18 +179,28 @@ export default function BuilderScreen() {
         <AutosaveStatus state={autosaveState} />
       </View>
       <Text style={styles.title}>Personalize the experience.</Text>
+      <BuilderStepper />
       {visibleValidation && !visibleValidation.isValid ? (
         <View style={styles.validationSummary}>
           <Ionicons color="#b42318" name="alert-circle-outline" size={20} />
           <Text style={styles.validationSummaryText}>Fix the highlighted fields before previewing or publishing.</Text>
         </View>
       ) : null}
-      <Field error={visibleValidation?.title} label="Title" value={draft.title} onChangeText={(title) => updateDraft({ title })} />
-      <Field error={visibleValidation?.recipientName} label="Recipient name" value={draft.recipientName} onChangeText={(recipientName) => updateDraft({ recipientName })} />
-      <Field error={visibleValidation?.message} label="Message" value={draft.message} onChangeText={(message) => updateDraft({ message })} multiline />
-      <ThemePicker selectedTheme={draft.theme} onSelect={(theme) => updateDraft({ theme })} />
 
-      <View style={styles.coverPanel}>
+      <View style={styles.sectionCard}>
+        <SectionHeading icon="create-outline" title="01 Basic info" subtitle="Name the experience and write the opening message." />
+        <Field error={visibleValidation?.title} label="Title" value={draft.title} onChangeText={(title) => updateDraft({ title })} />
+        <Field error={visibleValidation?.recipientName} label="Recipient name" value={draft.recipientName} onChangeText={(recipientName) => updateDraft({ recipientName })} />
+        <Field error={visibleValidation?.message} label="Message" value={draft.message} onChangeText={(message) => updateDraft({ message })} multiline />
+      </View>
+
+      <View style={styles.sectionCard}>
+        <SectionHeading icon="color-palette-outline" title="02 Choose theme" subtitle="Pick the visual mood for the recipient flow." />
+      <ThemePicker selectedTheme={draft.theme} onSelect={(theme) => updateDraft({ theme })} />
+      </View>
+
+      <View style={[styles.coverPanel, styles.sectionCard]}>
+        <SectionHeading icon="image-outline" title="03 Add cover" subtitle="Upload the main photo for the experience." />
         <View style={styles.coverPreview}>
           {draft.coverPhotoUrl ? (
             <Image source={{ uri: draft.coverPhotoUrl }} style={styles.coverImage} />
@@ -212,7 +230,7 @@ export default function BuilderScreen() {
       </View>
 
       <View style={styles.pages}>
-        <Text style={styles.sectionTitle}>Pages</Text>
+        <SectionHeading icon="documents-outline" title="04 Edit pages" subtitle="Arrange memories, quizzes, countdowns, and proposal moments." />
         {draft.pages.map((page, index) => (
           <PageEditor
             index={index}
@@ -291,6 +309,35 @@ export default function BuilderScreen() {
         </View>
       </Modal>
     </ScrollView>
+  );
+}
+
+function BuilderStepper() {
+  return (
+    <View style={styles.stepper}>
+      {BUILDER_STEPS.map((step, index) => (
+        <View key={step.label} style={styles.stepItem}>
+          <View style={[styles.stepIcon, index === 0 ? styles.activeStepIcon : null]}>
+            <Ionicons color={index === 0 ? "#ffffff" : "#ec0e68"} name={step.icon} size={17} />
+          </View>
+          <Text style={styles.stepLabel}>{step.label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function SectionHeading({ icon, subtitle, title }: { icon: keyof typeof Ionicons.glyphMap; subtitle: string; title: string }) {
+  return (
+    <View style={styles.sectionHeadingBlock}>
+      <View style={styles.sectionIcon}>
+        <Ionicons color="#ec0e68" name={icon} size={19} />
+      </View>
+      <View style={styles.sectionHeadingCopy}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <Text style={styles.sectionSubtitle}>{subtitle}</Text>
+      </View>
+    </View>
   );
 }
 
@@ -732,6 +779,16 @@ const styles = StyleSheet.create({
   autosaveStatus: { minHeight: 28, flexDirection: "row", alignItems: "center", gap: 5 },
   autosaveText: { fontSize: 12, fontWeight: "900" },
   title: { fontSize: 30, lineHeight: 36, fontWeight: "900", color: "#101828" },
+  stepper: { minHeight: 82, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 10 },
+  stepItem: { flex: 1, alignItems: "center", gap: 6 },
+  stepIcon: { width: 34, height: 34, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
+  activeStepIcon: { backgroundColor: "#ec0e68", borderColor: "#ec0e68" },
+  stepLabel: { color: "#344054", fontSize: 11, fontWeight: "900" },
+  sectionCard: { gap: 12, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", padding: 14 },
+  sectionHeadingBlock: { flexDirection: "row", alignItems: "center", gap: 10 },
+  sectionIcon: { width: 38, height: 38, borderRadius: 8, backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
+  sectionHeadingCopy: { flex: 1, gap: 2 },
+  sectionSubtitle: { color: "#667085", fontSize: 13, lineHeight: 18 },
   validationSummary: { minHeight: 48, borderRadius: 8, borderWidth: 1, borderColor: "#fecdca", backgroundColor: "#fef3f2", paddingHorizontal: 12, paddingVertical: 10, flexDirection: "row", alignItems: "center", gap: 9 },
   validationSummaryText: { flex: 1, color: "#b42318", fontWeight: "800", lineHeight: 19 },
   field: { gap: 7 },
