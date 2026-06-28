@@ -137,7 +137,7 @@ export default function HomeScreen() {
 
         <View style={[styles.heroCard, isNarrow ? styles.heroCardNarrow : null]}>
           <View style={styles.heroCopy}>
-            <Text style={styles.heroTitle}>Make every moment</Text>
+            <Text style={styles.heroTitle}>Make every{"\n"}moment</Text>
             <Text style={styles.heroAccent}>unforgettable</Text>
             <Text style={styles.heroBody}>Create beautiful, interactive experiences in minutes.</Text>
             <Link href={"/templates" as never} asChild>
@@ -158,7 +158,7 @@ export default function HomeScreen() {
             <Ionicons color="#fda4c7" name="heart" size={16} style={styles.heroSmallHeart} />
             <Ionicons color="#ffffff" name="paper-plane" size={18} style={styles.heroPlane} />
           </View>
-          <View style={styles.heroDots}>
+          <View style={[styles.heroDots, isNarrow ? styles.heroDotsNarrow : null]}>
             <View style={styles.activeHeroDot} />
             <View style={styles.heroDot} />
             <View style={styles.heroDot} />
@@ -399,35 +399,36 @@ const styles = StyleSheet.create({
   categoryIcon: { width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
   categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 9, lineHeight: 11, textAlign: "center" },
   heroCard: {
-    height: 150,
+    height: 176,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: "#FBCFE8",
     backgroundColor: "#FFE5EF",
     overflow: "hidden",
-    paddingHorizontal: 15,
-    paddingVertical: 14,
+    paddingHorizontal: 16,
+    paddingTop: 18,
+    paddingBottom: 18,
     flexDirection: "row"
   },
-  heroCardNarrow: { height: 142, paddingHorizontal: 13, paddingVertical: 12 },
-  heroCopy: { flex: 1.18, gap: 4, justifyContent: "center", zIndex: 2 },
-  heroTitle: { color: COLORS.text, fontFamily: FONT.regular, fontSize: 16, lineHeight: 20 },
-  heroAccent: { color: COLORS.primary, fontFamily: FONT.bold, fontSize: 19, lineHeight: 23 },
-  heroBody: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 15, maxWidth: 148 },
+  heroCardNarrow: { height: 168, paddingHorizontal: 14, paddingTop: 16, paddingBottom: 18 },
+  heroCopy: { flex: 1.2, gap: 5, justifyContent: "center", paddingBottom: 8, zIndex: 2 },
+  heroTitle: { color: COLORS.text, fontFamily: FONT.regular, fontSize: 18, lineHeight: 25 },
+  heroAccent: { color: COLORS.primary, fontFamily: FONT.bold, fontSize: 20, lineHeight: 26 },
+  heroBody: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 11, lineHeight: 17, maxWidth: 150 },
   heroButton: {
-    marginTop: 4,
-    height: 34,
+    marginTop: 3,
+    height: 36,
     alignSelf: "flex-start",
     borderRadius: 11,
     backgroundColor: COLORS.primary,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    paddingVertical: 7,
+    paddingVertical: 8,
     paddingLeft: 13,
     paddingRight: 5
   },
-  heroButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 11 },
+  heroButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 12, lineHeight: 16 },
   heroArrow: { width: 22, height: 22, borderRadius: 11, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
   heroArt: { flex: 0.92, alignItems: "center", justifyContent: "center", minWidth: 92 },
   heroArtNarrow: { flex: 0.82, minWidth: 78 },
@@ -451,7 +452,8 @@ const styles = StyleSheet.create({
   heroHeart: { position: "absolute", bottom: 17, left: 4 },
   heroSmallHeart: { position: "absolute", top: 14, left: 4 },
   heroPlane: { position: "absolute", top: 9, right: -2, transform: [{ rotate: "25deg" }] },
-  heroDots: { position: "absolute", bottom: 8, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 5 },
+  heroDots: { position: "absolute", bottom: 12, left: "50%", flexDirection: "row", justifyContent: "center", gap: 5, transform: [{ translateX: -12 }] },
+  heroDotsNarrow: { bottom: 10 },
   activeHeroDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.primary },
   heroDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#D1D5DB" },
   sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -6 },
