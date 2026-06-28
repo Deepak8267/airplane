@@ -149,9 +149,9 @@ export default function HomeScreen() {
               </Pressable>
             </Link>
           </View>
-          <View style={styles.heroArt}>
-            <View style={styles.envelopeBack} />
-            <View style={styles.envelope}>
+          <View style={[styles.heroArt, isNarrow ? styles.heroArtNarrow : null]}>
+            <View style={[styles.envelopeBack, isNarrow ? styles.envelopeBackNarrow : null]} />
+            <View style={[styles.envelope, isNarrow ? styles.envelopeNarrow : null]}>
               <Text style={styles.envelopeText}>Will you{"\n"}marry me?</Text>
             </View>
             <Ionicons color="#f43f7f" name="heart" size={24} style={styles.heroHeart} />
@@ -399,23 +399,24 @@ const styles = StyleSheet.create({
   categoryIcon: { width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
   categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 9, lineHeight: 11, textAlign: "center" },
   heroCard: {
-    height: 132,
+    height: 150,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: "#FBCFE8",
     backgroundColor: "#FFE5EF",
     overflow: "hidden",
-    padding: 13,
+    paddingHorizontal: 15,
+    paddingVertical: 14,
     flexDirection: "row"
   },
-  heroCardNarrow: { height: 124, padding: 12 },
-  heroCopy: { flex: 1.12, gap: 3, justifyContent: "center", zIndex: 2 },
-  heroTitle: { color: COLORS.text, fontFamily: FONT.regular, fontSize: 15, lineHeight: 19 },
-  heroAccent: { color: COLORS.primary, fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
-  heroBody: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 15, maxWidth: 140 },
+  heroCardNarrow: { height: 142, paddingHorizontal: 13, paddingVertical: 12 },
+  heroCopy: { flex: 1.18, gap: 4, justifyContent: "center", zIndex: 2 },
+  heroTitle: { color: COLORS.text, fontFamily: FONT.regular, fontSize: 16, lineHeight: 20 },
+  heroAccent: { color: COLORS.primary, fontFamily: FONT.bold, fontSize: 19, lineHeight: 23 },
+  heroBody: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 15, maxWidth: 148 },
   heroButton: {
-    marginTop: 2,
-    height: 32,
+    marginTop: 4,
+    height: 34,
     alignSelf: "flex-start",
     borderRadius: 11,
     backgroundColor: COLORS.primary,
@@ -428,11 +429,13 @@ const styles = StyleSheet.create({
   },
   heroButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 11 },
   heroArrow: { width: 22, height: 22, borderRadius: 11, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
-  heroArt: { flex: 1, alignItems: "center", justifyContent: "center" },
-  envelopeBack: { position: "absolute", width: 76, height: 54, borderRadius: 14, backgroundColor: "#f78db3", transform: [{ rotate: "-18deg" }] },
+  heroArt: { flex: 0.92, alignItems: "center", justifyContent: "center", minWidth: 92 },
+  heroArtNarrow: { flex: 0.82, minWidth: 78 },
+  envelopeBack: { position: "absolute", width: 86, height: 62, borderRadius: 15, backgroundColor: "#f78db3", transform: [{ rotate: "-18deg" }] },
+  envelopeBackNarrow: { width: 76, height: 56 },
   envelope: {
-    width: 76,
-    height: 54,
+    width: 86,
+    height: 62,
     borderRadius: 12,
     backgroundColor: "#FFF7FB",
     alignItems: "center",
@@ -443,6 +446,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 }
   },
+  envelopeNarrow: { width: 76, height: 56 },
   envelopeText: { color: "#9f1239", fontFamily: FONT.semibold, fontSize: 9, lineHeight: 13, fontStyle: "italic", textAlign: "center" },
   heroHeart: { position: "absolute", bottom: 17, left: 4 },
   heroSmallHeart: { position: "absolute", top: 14, left: 4 },
