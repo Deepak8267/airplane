@@ -22,7 +22,7 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.shell, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+    <View style={[styles.shell, { paddingBottom: Math.max(insets.bottom, 10) }]}>
       <View style={styles.nav}>
         {NAV_ITEMS.slice(0, 2).map((item) => {
           const selected = item.key === active;
@@ -67,20 +67,20 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
 const styles = StyleSheet.create({
   shell: {
     backgroundColor: "transparent",
-    paddingHorizontal: 16,
-    paddingTop: 6
+    paddingHorizontal: 14,
+    paddingTop: 4
   },
   nav: {
-    minHeight: 78,
-    borderRadius: 30,
+    minHeight: 68,
+    borderRadius: 26,
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#eaecf0",
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 7,
     shadowColor: "#101828",
     shadowOpacity: 0.12,
     shadowRadius: 18,
@@ -90,25 +90,25 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 5,
+    gap: 4,
     paddingHorizontal: 4,
     paddingVertical: 6
   },
   createButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 62,
+    height: 62,
+    borderRadius: 31,
     backgroundColor: "#ec0e68",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -34,
-    borderWidth: 7,
+    marginTop: -30,
+    borderWidth: 6,
     borderColor: "#fff7fb",
     shadowColor: "#ec0e68",
     shadowOpacity: 0.28,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 }
   },
-  label: { color: "#475467", fontSize: 11, fontWeight: "800", textAlign: "center" },
+  label: { color: "#475467", fontSize: 10, fontWeight: "800", textAlign: "center" },
   activeLabel: { color: "#ec0e68" }
 });
