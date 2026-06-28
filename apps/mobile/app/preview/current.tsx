@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { getCountdownParts } from "@airplane/shared";
-import type { Theme } from "@airplane/shared";
+import type { ExperiencePageDraft, Theme } from "@airplane/shared";
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { useBuilderStore } from "@/stores/builder-store";
@@ -26,10 +26,13 @@ export default function CurrentPreviewScreen() {
   if (!draft || !activePage) {
     return (
       <View style={styles.emptyScreen}>
-        <Ionicons color="#ec0e68" name="eye-outline" size={30} />
+        <View style={styles.emptyIcon}>
+          <Ionicons color="#ec0e68" name="eye-outline" size={30} />
+        </View>
         <Text style={styles.emptyTitle}>Nothing to preview yet.</Text>
         <Text style={styles.emptyCopy}>Choose a template or open an existing draft first.</Text>
         <Pressable style={styles.emptyButton} onPress={() => router.replace("/home")}>
+          <Ionicons color="#ffffff" name="sparkles-outline" size={19} />
           <Text style={styles.emptyButtonText}>Go to templates</Text>
         </Pressable>
       </View>
@@ -38,44 +41,114 @@ export default function CurrentPreviewScreen() {
 
   const page = activePage;
   const isLast = index === draft.pages.length - 1;
-  const primaryText = page.content.question ?? page.title;
-  const supportingText = page.content.body ?? page.content.finalMessage;
+  const progress = Math.round(((index + 1) / draft.pages.length) * 100);
   const pagePhotoUrl = page.mediaUrls[0] ?? (page.pageType === "cover" ? draft.coverPhotoUrl : null);
   const themedFont = { fontFamily: getMobileFontFamily(draft.theme.fontFamily) };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.screen}
-      style={{ backgroundColor: draft.theme.background }}
-    >
-      <View style={styles.pageMeta}>
-        <Text style={[styles.recipient, themedFont, { color: draft.theme.accent }]}>{draft.recipientName || "Recipient"}</Text>
-        <Text style={[styles.counter, themedFont, { color: draft.theme.foreground }]}>{index + 1} / {draft.pages.length}</Text>
-      </View>
+    <View style={[styles.root, { backgroundColor: draft.theme.background }]}>
+      <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
+        <View style={styles.topBar}>
+          <Pressable accessibilityLabel="Back to editor" style={styles.topIconButton} onPress={() => router.back()}>
+            <Ionicons color="#101828" name="create-outline" size={21} />
+          </Pressable>
+          <View style={styles.previewBadge}>
+            <Ionicons color={draft.theme.accent} name="eye-outline" size={17} />
+            <Text style={[styles.previewBadgeText, { color: draft.theme.accent }]}>Preview</Text>
+          </View>
+        </View>
 
+        <View style={styles.progressShell}>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: draft.theme.accent }]} />
+          </View>
+          <Text style={styles.progressText}>{index + 1}/{draft.pages.length}</Text>
+        </View>
+
+        <View style={styles.phoneCard}>
+          <PreviewPageBody
+            coverPhotoUrl={draft.coverPhotoUrl}
+            fontFamily={themedFont.fontFamily}
+            page={page}
+            pagePhotoUrl={pagePhotoUrl}
+            recipientName={draft.recipientName}
+            theme={draft.theme}
+            now={now}
+          />
+
+          <PageDots activeIndex={index} count={draft.pages.length} accent={draft.theme.accent} />
+          <Text style={styles.watermark}>Made with AIRPLANE</Text>
+        </View>
+
+        <View style={styles.navigation}>
+          <Pressable
+            accessibilityLabel="Previous page"
+            disabled={index === 0}
+            style={[styles.navIconButton, index === 0 && styles.disabledButton]}
+            onPress={() => setIndex((value) => Math.max(value - 1, 0))}
+          >
+            <Ionicons color="#101828" name="chevron-back" size={24} />
+          </Pressable>
+          <Pressable
+            style={[styles.button, { backgroundColor: draft.theme.accent }]}
+            onPress={() => (isLast ? router.push("/publish") : setIndex((value) => Math.min(value + 1, draft.pages.length - 1)))}
+          >
+            <Text style={[styles.buttonText, themedFont]}>{isLast ? "Looks good" : page.content.ctaLabel || "Next"}</Text>
+            <Ionicons color="#ffffff" name={isLast ? "checkmark" : "chevron-forward"} size={20} />
+          </Pressable>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+function PreviewPageBody({
+  fontFamily,
+  now,
+  page,
+  pagePhotoUrl,
+  recipientName,
+  theme
+}: {
+  coverPhotoUrl: string | null;
+  fontFamily: string;
+  now: number;
+  page: ExperiencePageDraft;
+  pagePhotoUrl: string | null;
+  recipientName: string;
+  theme: Theme;
+}) {
+  const primaryText = page.content.question ?? page.title;
+  const supportingText = page.content.body ?? page.content.finalMessage;
+  const themedFont = { fontFamily };
+
+  return (
+    <View style={styles.cardContent}>
       {pagePhotoUrl ? (
-        <Image source={{ uri: pagePhotoUrl }} style={page.pageType === "cover" ? styles.coverImage : styles.pageImage} />
-      ) : null}
+        <View style={styles.mediaFrame}>
+          <Image source={{ uri: pagePhotoUrl }} style={page.pageType === "cover" ? styles.coverImage : styles.pageImage} />
+        </View>
+      ) : (
+        <View style={[styles.placeholderMedia, { backgroundColor: theme.muted }]}>
+          <Ionicons color={theme.accent} name={getPageIcon(page.pageType)} size={34} />
+        </View>
+      )}
 
-      {page.content.question ? <Text style={[styles.pageLabel, themedFont, { color: draft.theme.accent }]}>{page.title}</Text> : null}
-      <Text style={[styles.title, themedFont, { color: draft.theme.foreground }]}>{primaryText}</Text>
-      {supportingText ? <Text style={[styles.copy, themedFont, { color: draft.theme.foreground }]}>{supportingText}</Text> : null}
+      <Text style={[styles.recipient, themedFont, { color: theme.accent }]}>{recipientName || "Recipient"}</Text>
+      {page.content.question ? <Text style={[styles.pageLabel, themedFont, { color: theme.foreground }]}>{page.title}</Text> : null}
+      <Text style={[styles.title, themedFont, { color: theme.foreground }]}>{primaryText}</Text>
+      {supportingText ? <Text style={[styles.copy, themedFont, { color: theme.foreground }]}>{supportingText}</Text> : null}
 
       {page.pageType === "countdown" && page.content.targetDate ? (
-        <CountdownPanel
-          accent={draft.theme.accent}
-          foreground={draft.theme.foreground}
-          fontFamily={themedFont.fontFamily}
-          now={now}
-          targetDate={page.content.targetDate}
-        />
+        <CountdownPanel accent={theme.accent} fontFamily={fontFamily} foreground={theme.foreground} now={now} targetDate={page.content.targetDate} />
       ) : null}
 
       {page.pageType === "quiz" ? (
         <View style={styles.options}>
-          {(page.content.answers ?? []).map((answer) => (
-            <View key={answer.id} style={[styles.option, { backgroundColor: draft.theme.muted }]}>
-              <Text style={[styles.optionText, themedFont, { color: draft.theme.foreground }]}>{answer.label}</Text>
+          {(page.content.answers ?? []).map((answer, answerIndex) => (
+            <View key={answer.id} style={[styles.option, { backgroundColor: theme.muted }]}>
+              <Text style={[styles.optionLetter, { color: theme.accent }]}>{String.fromCharCode(65 + answerIndex)}</Text>
+              <Text style={[styles.optionText, themedFont, { color: theme.foreground }]}>{answer.label}</Text>
             </View>
           ))}
         </View>
@@ -83,29 +156,15 @@ export default function CurrentPreviewScreen() {
 
       {page.pageType === "proposal" ? (
         <View style={styles.proposalActions}>
-          <View style={[styles.proposalButton, { backgroundColor: draft.theme.accent }]}><Text style={[styles.buttonText, themedFont]}>YES</Text></View>
-          <View style={[styles.noButton, { backgroundColor: draft.theme.muted }]}><Text style={[styles.noButtonText, themedFont, { color: draft.theme.foreground }]}>NO</Text></View>
+          <View style={[styles.proposalButton, { backgroundColor: theme.accent }]}>
+            <Text style={[styles.proposalButtonText, themedFont]}>YES</Text>
+          </View>
+          <View style={[styles.noButton, { backgroundColor: theme.muted }]}>
+            <Text style={[styles.noButtonText, themedFont, { color: theme.foreground }]}>NO</Text>
+          </View>
         </View>
       ) : null}
-
-      <View style={styles.navigation}>
-        <Pressable accessibilityLabel="Back to editor" style={styles.iconButton} onPress={() => router.back()}>
-          <Ionicons color="#101828" name="create-outline" size={22} />
-        </Pressable>
-        {index > 0 ? (
-          <Pressable accessibilityLabel="Previous page" style={styles.iconButton} onPress={() => setIndex((value) => value - 1)}>
-            <Ionicons color="#101828" name="chevron-back" size={24} />
-          </Pressable>
-        ) : null}
-        <Pressable
-          style={[styles.button, { backgroundColor: draft.theme.accent }]}
-          onPress={() => isLast ? router.push("/publish") : setIndex((value) => value + 1)}
-        >
-          <Text style={[styles.buttonText, themedFont]}>{isLast ? "Looks good" : page.content.ctaLabel || "Next"}</Text>
-          <Ionicons color="#ffffff" name={isLast ? "checkmark" : "chevron-forward"} size={20} />
-        </Pressable>
-      </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -117,7 +176,7 @@ function CountdownPanel({ accent, fontFamily, foreground, now, targetDate }: { a
   }
 
   if (countdown.isComplete) {
-    return <Text style={[styles.countdownMessage, { color: accent, fontFamily }]}>It&apos;s time!</Text>;
+    return <Text style={[styles.countdownMessage, { color: accent, fontFamily }]}>It's time!</Text>;
   }
 
   const units = [
@@ -139,6 +198,49 @@ function CountdownPanel({ accent, fontFamily, foreground, now, targetDate }: { a
   );
 }
 
+function PageDots({ activeIndex, count, accent }: { activeIndex: number; count: number; accent: string }) {
+  return (
+    <View style={styles.dots}>
+      {Array.from({ length: count }).map((_, index) => (
+        <View
+          key={index}
+          style={[
+            styles.dot,
+            {
+              width: index === activeIndex ? 18 : 6,
+              backgroundColor: index === activeIndex ? accent : "rgba(16, 24, 40, 0.18)"
+            }
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
+
+function getPageIcon(pageType: ExperiencePageDraft["pageType"]): keyof typeof Ionicons.glyphMap {
+  if (pageType === "cover") {
+    return "sparkles-outline";
+  }
+
+  if (pageType === "memory") {
+    return "image-outline";
+  }
+
+  if (pageType === "quiz") {
+    return "help-circle-outline";
+  }
+
+  if (pageType === "countdown") {
+    return "timer-outline";
+  }
+
+  if (pageType === "proposal") {
+    return "heart-outline";
+  }
+
+  return "checkmark-circle-outline";
+}
+
 function getMobileFontFamily(fontFamily: Theme["fontFamily"]) {
   if (fontFamily === "serif") {
     return Platform.select({ android: "serif", ios: "Georgia", default: "Georgia" }) ?? "serif";
@@ -152,34 +254,52 @@ function getMobileFontFamily(fontFamily: Theme["fontFamily"]) {
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
   emptyScreen: { flex: 1, padding: 24, justifyContent: "center", gap: 12, backgroundColor: "#fff7fb" },
+  emptyIcon: { width: 58, height: 58, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", alignItems: "center", justifyContent: "center" },
   emptyTitle: { color: "#101828", fontSize: 28, lineHeight: 34, fontWeight: "900" },
   emptyCopy: { color: "#667085", fontSize: 16, lineHeight: 23 },
-  emptyButton: { height: 52, borderRadius: 8, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center" },
+  emptyButton: { height: 52, borderRadius: 8, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   emptyButtonText: { color: "#ffffff", fontWeight: "900" },
-  screen: { flexGrow: 1, padding: 24, justifyContent: "center", gap: 14 },
-  pageMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  coverImage: { width: "100%", aspectRatio: 4 / 5, borderRadius: 8 },
-  pageImage: { width: "100%", aspectRatio: 4 / 3, borderRadius: 8 },
-  recipient: { fontSize: 16, fontWeight: "900" },
-  counter: { fontSize: 13, fontWeight: "800", opacity: 0.6 },
-  pageLabel: { fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
-  title: { fontSize: 38, lineHeight: 44, fontWeight: "900" },
-  copy: { fontSize: 18, lineHeight: 27 },
+  screen: { flexGrow: 1, padding: 20, paddingBottom: 28, justifyContent: "center", gap: 14 },
+  topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  topIconButton: { width: 42, height: 42, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)" },
+  previewBadge: { minHeight: 36, borderRadius: 8, backgroundColor: "rgba(255, 255, 255, 0.82)", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.08)", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
+  previewBadgeText: { fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
+  progressShell: { minHeight: 40, borderRadius: 20, backgroundColor: "rgba(255, 255, 255, 0.72)", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.08)", flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 12 },
+  progressTrack: { flex: 1, height: 7, borderRadius: 999, overflow: "hidden", backgroundColor: "rgba(16, 24, 40, 0.1)" },
+  progressFill: { height: "100%", borderRadius: 999 },
+  progressText: { color: "#667085", fontSize: 12, fontWeight: "900" },
+  phoneCard: { gap: 14, padding: 16, borderRadius: 8, backgroundColor: "rgba(255, 255, 255, 0.82)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.88)", shadowColor: "#101828", shadowOpacity: 0.1, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
+  cardContent: { gap: 12 },
+  mediaFrame: { overflow: "hidden", borderRadius: 8, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.84)", backgroundColor: "#ffffff" },
+  coverImage: { width: "100%", aspectRatio: 4 / 5 },
+  pageImage: { width: "100%", aspectRatio: 4 / 3 },
+  placeholderMedia: { height: 118, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  recipient: { fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
+  pageLabel: { fontSize: 12, fontWeight: "900", textTransform: "uppercase", opacity: 0.58 },
+  title: { fontSize: 34, lineHeight: 40, fontWeight: "900" },
+  copy: { fontSize: 16, lineHeight: 24, opacity: 0.78 },
   countdownGrid: { flexDirection: "row", gap: 6 },
-  countdownUnit: { flex: 1, minWidth: 0, height: 74, borderRadius: 8, backgroundColor: "rgba(255, 255, 255, 0.72)", alignItems: "center", justifyContent: "center", gap: 3 },
-  countdownValue: { fontSize: 23, fontWeight: "900" },
-  countdownLabel: { fontSize: 10, fontWeight: "800", opacity: 0.65 },
+  countdownUnit: { flex: 1, minWidth: 0, height: 74, borderRadius: 8, backgroundColor: "rgba(255, 255, 255, 0.72)", alignItems: "center", justifyContent: "center", gap: 3, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.06)" },
+  countdownValue: { fontSize: 22, fontWeight: "900" },
+  countdownLabel: { fontSize: 9, fontWeight: "800", opacity: 0.65 },
   countdownMessage: { fontSize: 28, fontWeight: "900" },
   options: { gap: 10 },
-  option: { minHeight: 52, borderRadius: 8, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.14)", justifyContent: "center", paddingHorizontal: 16 },
-  optionText: { fontSize: 16, fontWeight: "800" },
+  option: { minHeight: 54, borderRadius: 8, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)", flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 12 },
+  optionLetter: { width: 30, height: 30, borderRadius: 15, backgroundColor: "rgba(255, 255, 255, 0.78)", textAlign: "center", lineHeight: 30, fontSize: 12, fontWeight: "900" },
+  optionText: { flex: 1, fontSize: 15, fontWeight: "800" },
   proposalActions: { flexDirection: "row", gap: 10 },
   proposalButton: { flex: 1, height: 54, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  noButton: { flex: 1, height: 54, borderRadius: 8, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.14)" },
+  proposalButtonText: { color: "#ffffff", fontWeight: "900" },
+  noButton: { flex: 1, height: 54, borderRadius: 8, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)" },
   noButtonText: { fontWeight: "900" },
-  navigation: { flexDirection: "row", gap: 10, marginTop: 8 },
-  iconButton: { width: 54, height: 54, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd" },
+  dots: { flexDirection: "row", justifyContent: "center", gap: 6, paddingTop: 2 },
+  dot: { height: 6, borderRadius: 999 },
+  watermark: { color: "#667085", textAlign: "center", fontSize: 11, fontWeight: "800" },
+  navigation: { flexDirection: "row", gap: 10 },
+  navIconButton: { width: 54, height: 54, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd" },
+  disabledButton: { opacity: 0.35 },
   button: { flex: 1, height: 54, borderRadius: 8, flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
   buttonText: { color: "#ffffff", fontWeight: "900", fontSize: 16 }
 });
