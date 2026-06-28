@@ -39,6 +39,8 @@ export type AnalyticsDashboard = {
     completions: number;
     completionRate: number;
     publishedExperiences: number;
+    averageCompletionTimeSeconds: number;
+    totalNoAttempts: number;
   };
   items: AnalyticsDashboardItem[];
 };
@@ -95,6 +97,11 @@ export async function getAnalyticsDashboard(): Promise<AnalyticsDashboard> {
   const views = items.reduce((sum, item) => sum + item.summary.views, 0);
   const uniqueVisitors = items.reduce((sum, item) => sum + item.summary.uniqueVisitors, 0);
   const completions = items.reduce((sum, item) => sum + item.summary.completions, 0);
+  const totalNoAttempts = items.reduce((sum, item) => sum + item.summary.totalNoAttempts, 0);
+  const weightedCompletionTime = items.reduce(
+    (sum, item) => sum + item.summary.averageCompletionTimeSeconds * item.summary.completions,
+    0
+  );
 
   return {
     totals: {
@@ -102,7 +109,9 @@ export async function getAnalyticsDashboard(): Promise<AnalyticsDashboard> {
       uniqueVisitors,
       completions,
       completionRate: getRate(completions, views),
-      publishedExperiences: items.length
+      publishedExperiences: items.length,
+      averageCompletionTimeSeconds: completions > 0 ? weightedCompletionTime / completions : 0,
+      totalNoAttempts
     },
     items
   };
