@@ -19,13 +19,17 @@ export async function getMyProfile(): Promise<UserProfile> {
     .from("users")
     .select("*")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return mapUserProfile(data);
+  if (data) {
+    return mapUserProfile(data);
+  }
+
+  return ensureUserProfile(user.id, user.email ?? null);
 }
 
 export async function updateMyProfile(input: ProfileInput): Promise<UserProfile> {
@@ -49,11 +53,12 @@ export async function updateMyProfile(input: ProfileInput): Promise<UserProfile>
 
   const { data, error } = await supabase
     .from("users")
-    .update({
+    .upsert({
+      id: user.id,
       full_name: fullName,
-      email
+      email,
+      provider: user.app_metadata.provider ?? "email"
     })
-    .eq("id", user.id)
     .select("*")
     .single();
 
@@ -66,4 +71,22 @@ export async function updateMyProfile(input: ProfileInput): Promise<UserProfile>
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+async function ensureUserProfile(userId: string, email: string | null): Promise<UserProfile> {
+  const { data, error } = await supabase
+    .from("users")
+    .upsert({
+      id: userId,
+      email,
+      provider: email ? "email" : "anonymous"
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return mapUserProfile(data);
 }
