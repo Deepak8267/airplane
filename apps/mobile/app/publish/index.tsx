@@ -75,8 +75,8 @@ export default function PublishScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.statusBadge}>
-        <Ionicons color={link ? "#067647" : "#2563eb"} name={link ? "checkmark-circle" : "rocket-outline"} size={20} />
-        <Text style={[styles.eyebrow, { color: link ? "#067647" : "#2563eb" }]}>{link ? "Published" : "Ready to publish"}</Text>
+        <Ionicons color={link ? "#067647" : "#ec0e68"} name={link ? "checkmark-circle" : "rocket-outline"} size={20} />
+        <Text style={[styles.eyebrow, { color: link ? "#067647" : "#ec0e68" }]}>{link ? "Published" : "Ready to publish"}</Text>
       </View>
       <Text style={styles.title}>{link ? "Your link is live." : `${draft?.title ?? "Your experience"} is ready.`}</Text>
       <Text style={styles.copy}>
@@ -135,7 +135,7 @@ export default function PublishScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, padding: 24, justifyContent: "center", gap: 16 },
+  screen: { flex: 1, padding: 24, justifyContent: "center", gap: 16, backgroundColor: "#fff7fb" },
   statusBadge: { alignSelf: "flex-start", minHeight: 34, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", paddingHorizontal: 10, flexDirection: "row", alignItems: "center", gap: 7 },
   eyebrow: { fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
   title: { color: "#101828", fontSize: 32, lineHeight: 38, fontWeight: "900" },
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   link: { color: "#101828", fontWeight: "800", lineHeight: 20 },
   publishedActions: { gap: 10 },
   actionGrid: { flexDirection: "row", gap: 10 },
-  button: { height: 54, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#101828", flexDirection: "row", gap: 8 },
+  button: { height: 54, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ec0e68", flexDirection: "row", gap: 8 },
   buttonText: { color: "#ffffff", fontWeight: "900", fontSize: 16 },
   secondaryButton: { flex: 1, height: 50, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   secondaryButtonFull: { height: 50, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },

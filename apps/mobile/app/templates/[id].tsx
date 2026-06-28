@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -61,6 +62,10 @@ export default function TemplateDetailScreen() {
   return (
     <View style={[styles.screen, { backgroundColor: template.defaultTheme.background }]}>
       <View style={styles.panel}>
+        <View style={styles.previewCard}>
+          <Ionicons color="#ec0e68" name="heart" size={34} />
+          <Text style={styles.previewText}>{template.name}</Text>
+        </View>
         <Text style={styles.category}>{template.category}</Text>
         <Text style={styles.title}>{template.name}</Text>
         <Text style={styles.copy}>{template.description}</Text>
@@ -80,7 +85,7 @@ export default function TemplateDetailScreen() {
           </View>
         ) : null}
         {createDraftMutation.error instanceof Error ? <Text style={styles.error}>{createDraftMutation.error.message}</Text> : null}
-        <Pressable style={[styles.button, { backgroundColor: template.defaultTheme.accent, opacity: disabled ? 0.7 : 1 }]} onPress={start} disabled={disabled}>
+        <Pressable style={[styles.button, { opacity: disabled ? 0.7 : 1 }]} onPress={start} disabled={disabled}>
           <Text style={styles.buttonText}>
             {createDraftMutation.isPending
               ? "Creating draft..."
@@ -98,15 +103,17 @@ export default function TemplateDetailScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, padding: 20, justifyContent: "center" },
-  panel: { gap: 14, padding: 20, backgroundColor: "#ffffff", borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0" },
-  category: { fontSize: 13, color: "#2563eb", fontWeight: "800", textTransform: "uppercase" },
+  panel: { gap: 14, padding: 20, backgroundColor: "#ffffff", borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8" },
+  previewCard: { height: 168, borderRadius: 8, backgroundColor: "#fff1f7", borderWidth: 1, borderColor: "#fbcfe8", alignItems: "center", justifyContent: "center", gap: 10 },
+  previewText: { color: "#101828", fontSize: 18, fontWeight: "900" },
+  category: { fontSize: 13, color: "#ec0e68", fontWeight: "800", textTransform: "uppercase" },
   title: { fontSize: 32, lineHeight: 38, color: "#101828", fontWeight: "900" },
   copy: { fontSize: 16, lineHeight: 23, color: "#475467" },
   meta: { color: "#667085", fontWeight: "700" },
-  planNotice: { gap: 5, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: "#dbeafe", backgroundColor: "#eff6ff" },
+  planNotice: { gap: 5, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7" },
   planNoticeTitle: { color: "#101828", fontWeight: "900" },
   planNoticeCopy: { color: "#344054", lineHeight: 20 },
   error: { color: "#b42318", lineHeight: 20 },
-  button: { height: 52, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  button: { height: 52, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ec0e68" },
   buttonText: { color: "#ffffff", fontSize: 16, fontWeight: "800" }
 });

@@ -116,7 +116,7 @@ export default function AnalyticsScreen() {
 function Metric({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
   return (
     <View style={styles.metric}>
-      <Ionicons color="#2563eb" name={icon} size={22} />
+      <Ionicons color="#ec0e68" name={icon} size={22} />
       <Text style={styles.metricValue}>{value}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
     </View>
@@ -213,11 +213,11 @@ function formatEventDetail(eventType: string, metadata: Record<string, unknown>)
 }
 
 const styles = StyleSheet.create({
-  screen: { flexGrow: 1, padding: 20, gap: 20 },
+  screen: { flexGrow: 1, padding: 20, gap: 20, backgroundColor: "#f6f7fb" },
   stateText: { color: "#667085", textAlign: "center", paddingTop: 40 },
   error: { color: "#b42318", lineHeight: 20, paddingTop: 20 },
   header: { gap: 5 },
-  eyebrow: { color: "#2563eb", fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
+  eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
   title: { color: "#101828", fontSize: 30, lineHeight: 36, fontWeight: "900" },
   recipient: { color: "#667085", fontSize: 15, fontWeight: "700" },
   metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
@@ -228,8 +228,8 @@ const styles = StyleSheet.create({
   sectionHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   sectionTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
   rate: { color: "#067647", fontSize: 20, fontWeight: "900" },
-  progressTrack: { height: 10, borderRadius: 5, overflow: "hidden", backgroundColor: "#d1fadf" },
-  progressValue: { height: "100%", borderRadius: 5, backgroundColor: "#12b76a" },
+  progressTrack: { height: 10, borderRadius: 5, overflow: "hidden", backgroundColor: "#fbcfe8" },
+  progressValue: { height: "100%", borderRadius: 5, backgroundColor: "#ec0e68" },
   sectionHint: { color: "#667085", fontSize: 13, lineHeight: 18 },
   insightsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   insight: { minWidth: 145, flexBasis: "47%", flexGrow: 1, minHeight: 84, borderRadius: 8, borderWidth: 1, padding: 13, justifyContent: "space-between" },
@@ -239,8 +239,8 @@ const styles = StyleSheet.create({
   successInsightText: { color: "#067647" },
   dangerInsight: { backgroundColor: "#fef3f2", borderColor: "#fecdca" },
   dangerInsightText: { color: "#b42318" },
-  infoInsight: { backgroundColor: "#eff4ff", borderColor: "#b2ccff" },
-  infoInsightText: { color: "#175cd3" },
+  infoInsight: { backgroundColor: "#fff1f7", borderColor: "#fbcfe8" },
+  infoInsightText: { color: "#ec0e68" },
   neutralInsight: { backgroundColor: "#f9fafb", borderColor: "#eaecf0" },
   neutralInsightText: { color: "#344054" },
   noAttemptsCard: { gap: 14, borderRadius: 8, backgroundColor: "#fffaeb", borderWidth: 1, borderColor: "#fedf89", padding: 15 },
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   activitySection: { gap: 4 },
   emptyActivity: { color: "#667085", paddingVertical: 18 },
   activityRow: { minHeight: 60, flexDirection: "row", alignItems: "center", gap: 12, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
-  activityDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#2563eb" },
+  activityDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#ec0e68" },
   activityCopy: { flex: 1, gap: 2 },
   activityTitle: { color: "#101828", fontWeight: "800" },
   activityDetail: { color: "#344054", fontSize: 13, fontWeight: "700" },

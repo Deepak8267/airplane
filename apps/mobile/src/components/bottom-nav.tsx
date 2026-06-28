@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 6
   },
-  activeItem: { backgroundColor: "#101828" },
+  activeItem: { backgroundColor: "#ec0e68" },
   label: { color: "#667085", fontSize: 11, fontWeight: "900" },
   activeLabel: { color: "#ffffff" }
 });

@@ -26,7 +26,7 @@ export default function CurrentPreviewScreen() {
   if (!draft || !activePage) {
     return (
       <View style={styles.emptyScreen}>
-        <Ionicons color="#2563eb" name="eye-outline" size={30} />
+        <Ionicons color="#ec0e68" name="eye-outline" size={30} />
         <Text style={styles.emptyTitle}>Nothing to preview yet.</Text>
         <Text style={styles.emptyCopy}>Choose a template or open an existing draft first.</Text>
         <Pressable style={styles.emptyButton} onPress={() => router.replace("/home")}>
@@ -152,10 +152,10 @@ function getMobileFontFamily(fontFamily: Theme["fontFamily"]) {
 }
 
 const styles = StyleSheet.create({
-  emptyScreen: { flex: 1, padding: 24, justifyContent: "center", gap: 12 },
+  emptyScreen: { flex: 1, padding: 24, justifyContent: "center", gap: 12, backgroundColor: "#fff7fb" },
   emptyTitle: { color: "#101828", fontSize: 28, lineHeight: 34, fontWeight: "900" },
   emptyCopy: { color: "#667085", fontSize: 16, lineHeight: 23 },
-  emptyButton: { height: 52, borderRadius: 8, backgroundColor: "#101828", alignItems: "center", justifyContent: "center" },
+  emptyButton: { height: 52, borderRadius: 8, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center" },
   emptyButtonText: { color: "#ffffff", fontWeight: "900" },
   screen: { flexGrow: 1, padding: 24, justifyContent: "center", gap: 14 },
   pageMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },

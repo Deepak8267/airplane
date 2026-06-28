@@ -234,7 +234,7 @@ export default function BuilderScreen() {
           />
         ))}
         <Pressable style={styles.addPageButton} onPress={() => setPagePickerVisible(true)}>
-          <Ionicons color="#2563eb" name="add-circle-outline" size={22} />
+          <Ionicons color="#ec0e68" name="add-circle-outline" size={22} />
           <Text style={styles.addPageText}>Add page</Text>
         </Pressable>
       </View>
@@ -278,7 +278,7 @@ export default function BuilderScreen() {
                 }}
               >
                 <View style={styles.pageOptionIcon}>
-                  <Ionicons color="#2563eb" name="document-text-outline" size={21} />
+                  <Ionicons color="#ec0e68" name="document-text-outline" size={21} />
                 </View>
                 <View style={styles.pageOptionCopy}>
                   <Text style={styles.pageOptionTitle}>{option.label}</Text>
@@ -465,7 +465,7 @@ function PageEditor({
           )}
           <View style={styles.pagePhotoActions}>
             <Pressable disabled={photoUploading} style={styles.photoButton} onPress={onChoosePhoto}>
-              <Ionicons color="#175cd3" name="image-outline" size={19} />
+              <Ionicons color="#ec0e68" name="image-outline" size={19} />
               <Text style={styles.photoButtonText}>{photoUploading ? "Uploading..." : page.mediaUrls[0] ? "Replace" : "Choose photo"}</Text>
             </Pressable>
             {page.mediaUrls[0] ? (
@@ -523,7 +523,7 @@ function PageEditor({
             </View>
           ))}
           <Pressable style={styles.inlineAddButton} onPress={addQuizAnswer}>
-            <Ionicons color="#175cd3" name="add-circle-outline" size={20} />
+            <Ionicons color="#ec0e68" name="add-circle-outline" size={20} />
             <Text style={styles.inlineAddText}>Add answer</Text>
           </Pressable>
         </>
@@ -614,7 +614,7 @@ function SegmentButton({
       style={[styles.segmentButton, selected ? styles.segmentButtonSelected : null]}
       onPress={onPress}
     >
-      <Ionicons color={selected ? "#175cd3" : "#667085"} name={icon} size={18} />
+      <Ionicons color={selected ? "#ec0e68" : "#667085"} name={icon} size={18} />
       <Text style={[styles.segmentButtonText, selected ? styles.segmentButtonTextSelected : null]}>{label}</Text>
     </Pressable>
   );
@@ -639,7 +639,7 @@ function AutosaveStatus({ state }: { state: AutosaveState }) {
   const config = {
     saved: { color: "#067647", icon: "cloud-done-outline" as const, label: "Saved" },
     pending: { color: "#b54708", icon: "cloud-upload-outline" as const, label: "Unsaved" },
-    saving: { color: "#175cd3", icon: "sync-outline" as const, label: "Saving..." },
+    saving: { color: "#ec0e68", icon: "sync-outline" as const, label: "Saving..." },
     error: { color: "#b42318", icon: "alert-circle-outline" as const, label: "Save failed" }
   }[state.status];
 
@@ -725,10 +725,10 @@ const PAGE_TYPES: Array<{ type: ExperiencePageType; label: string; description: 
 ];
 
 const styles = StyleSheet.create({
-  screen: { padding: 20, gap: 16 },
+  screen: { padding: 20, gap: 16, backgroundColor: "#f6f7fb" },
   empty: { flex: 1, padding: 20, justifyContent: "center", gap: 16 },
   builderMeta: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-  eyebrow: { color: "#2563eb", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
+  eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
   autosaveStatus: { minHeight: 28, flexDirection: "row", alignItems: "center", gap: 5 },
   autosaveText: { fontSize: 12, fontWeight: "900" },
   title: { fontSize: 30, lineHeight: 36, fontWeight: "900", color: "#101828" },
@@ -762,49 +762,49 @@ const styles = StyleSheet.create({
   pageHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   pageHeading: { flex: 1, gap: 2, paddingRight: 8 },
   pageNumber: { color: "#101828", fontWeight: "900", fontSize: 16 },
-  pageType: { color: "#2563eb", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
+  pageType: { color: "#ec0e68", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
   pageSummary: { color: "#667085", fontSize: 12, fontWeight: "700" },
   pagePhotoSection: { gap: 8 },
   pagePhoto: { width: "100%", aspectRatio: 4 / 3, borderRadius: 8 },
   pagePhotoPlaceholder: { width: "100%", aspectRatio: 4 / 3, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#d0d5dd", backgroundColor: "#f9fafb", alignItems: "center", justifyContent: "center", gap: 8 },
   pagePhotoActions: { flexDirection: "row", gap: 8 },
-  photoButton: { flex: 1, height: 42, borderRadius: 8, borderWidth: 1, borderColor: "#84adff", backgroundColor: "#eff4ff", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
-  photoButtonText: { color: "#175cd3", fontWeight: "900" },
+  photoButton: { flex: 1, height: 42, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
+  photoButtonText: { color: "#ec0e68", fontWeight: "900" },
   answerEditor: { gap: 8, paddingBottom: 4 },
   answerHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   correctAnswerButton: { alignSelf: "flex-start", minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", paddingHorizontal: 10, flexDirection: "row", gap: 6, alignItems: "center" },
   correctAnswerSelected: { borderColor: "#75e0a7", backgroundColor: "#ecfdf3" },
   correctAnswerText: { color: "#667085", fontSize: 13, fontWeight: "800" },
   correctAnswerTextSelected: { color: "#067647" },
-  inlineAddButton: { height: 44, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#84adff", backgroundColor: "#eff4ff", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
-  inlineAddText: { color: "#175cd3", fontWeight: "900" },
+  inlineAddButton: { height: 44, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#fbcfe8", backgroundColor: "#fff1f7", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
+  inlineAddText: { color: "#ec0e68", fontWeight: "900" },
   helperText: { color: "#667085", fontSize: 13, lineHeight: 18 },
   settingBlock: { gap: 10, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#f9fafb", padding: 12 },
   settingCopy: { gap: 3 },
   segmentedControl: { minHeight: 46, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", flexDirection: "row", padding: 3, gap: 3 },
   segmentButton: { flex: 1, borderRadius: 6, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingHorizontal: 8 },
-  segmentButtonSelected: { backgroundColor: "#eff4ff" },
+  segmentButtonSelected: { backgroundColor: "#fff1f7" },
   segmentButtonText: { color: "#667085", fontSize: 13, fontWeight: "900" },
-  segmentButtonTextSelected: { color: "#175cd3" },
+  segmentButtonTextSelected: { color: "#ec0e68" },
   presetRow: { flexDirection: "row", gap: 8 },
   presetButton: { flex: 1, minHeight: 40, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   presetButtonText: { color: "#344054", fontSize: 13, fontWeight: "900" },
   pageControls: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: 6 },
   smallIconButton: { width: 38, height: 38, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd" },
   disabledControl: { opacity: 0.3 },
-  addPageButton: { height: 52, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#84adff", backgroundColor: "#eff4ff", flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
-  addPageText: { color: "#175cd3", fontWeight: "900" },
+  addPageButton: { height: 52, borderRadius: 8, borderWidth: 1, borderStyle: "dashed", borderColor: "#fbcfe8", backgroundColor: "#fff1f7", flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
+  addPageText: { color: "#ec0e68", fontWeight: "900" },
   modalOverlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(16, 24, 40, 0.45)" },
   pagePicker: { backgroundColor: "#ffffff", padding: 20, paddingBottom: 32, gap: 8, borderTopLeftRadius: 8, borderTopRightRadius: 8 },
   pagePickerHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
   pagePickerTitle: { color: "#101828", fontSize: 22, fontWeight: "900" },
   pageOption: { minHeight: 62, borderBottomWidth: 1, borderBottomColor: "#eaecf0", flexDirection: "row", alignItems: "center", gap: 12 },
-  pageOptionIcon: { width: 38, height: 38, borderRadius: 8, backgroundColor: "#eff4ff", alignItems: "center", justifyContent: "center" },
+  pageOptionIcon: { width: 38, height: 38, borderRadius: 8, backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
   pageOptionCopy: { flex: 1, gap: 2 },
   pageOptionTitle: { color: "#101828", fontSize: 16, fontWeight: "900" },
   pageOptionDescription: { color: "#667085", fontSize: 13 },
   actions: { flexDirection: "row", gap: 10 },
-  button: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#101828", justifyContent: "center", alignItems: "center" },
+  button: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#ec0e68", justifyContent: "center", alignItems: "center" },
   buttonText: { color: "#ffffff", fontWeight: "800" },
   secondaryButton: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd", justifyContent: "center", alignItems: "center", flexDirection: "row", gap: 7 },
   secondaryButtonText: { color: "#101828", fontWeight: "800" },

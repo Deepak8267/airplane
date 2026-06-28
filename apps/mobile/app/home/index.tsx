@@ -73,7 +73,7 @@ export default function HomeScreen() {
             <View style={styles.planCard}>
               <View style={styles.planHeading}>
                 <View style={styles.planTitleRow}>
-                  <Ionicons color="#175cd3" name={usage?.plan === "pro" ? "sparkles-outline" : "paper-plane-outline"} size={19} />
+                  <Ionicons color="#ec0e68" name={usage?.plan === "pro" ? "sparkles-outline" : "paper-plane-outline"} size={19} />
                   <Text style={styles.planLabel}>{usage?.plan === "pro" ? "Pro plan" : "Free plan"}</Text>
                 </View>
                 <Text style={styles.planStatus}>{usage?.status ?? "active"}</Text>
@@ -150,8 +150,8 @@ const styles = StyleSheet.create({
   headerContent: { gap: 14 },
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingTop: 8 },
   brandBlock: { flex: 1, gap: 3 },
-  logo: { color: "#2563eb", fontSize: 14, fontWeight: "900", letterSpacing: 0 },
-  eyebrow: { color: "#2563eb", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
+  logo: { color: "#ec0e68", fontSize: 14, fontWeight: "900", letterSpacing: 0 },
+  eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
   title: { color: "#101828", fontSize: 34, lineHeight: 40, fontWeight: "900" },
   subtitle: { color: "#475467", fontSize: 16, lineHeight: 23 },
   account: { color: "#667085", fontWeight: "700" },
@@ -162,28 +162,28 @@ const styles = StyleSheet.create({
   statBox: { flex: 1, minHeight: 86, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", padding: 14, justifyContent: "space-between" },
   statLabel: { color: "#667085", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
   statValue: { color: "#101828", fontSize: 26, fontWeight: "900" },
-  planCard: { gap: 10, marginTop: 14, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: "#dbeafe", backgroundColor: "#eff6ff" },
+  planCard: { gap: 10, marginTop: 14, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7" },
   planHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
   planTitleRow: { flexDirection: "row", alignItems: "center", gap: 7 },
   planLabel: { color: "#101828", fontSize: 16, fontWeight: "900", textTransform: "capitalize" },
-  planStatus: { overflow: "hidden", borderRadius: 8, backgroundColor: "#ffffff", color: "#175cd3", paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
+  planStatus: { overflow: "hidden", borderRadius: 8, backgroundColor: "#ffffff", color: "#ec0e68", paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
   planCopy: { color: "#344054", fontWeight: "700" },
   planError: { color: "#b42318", lineHeight: 19 },
-  usageTrack: { height: 8, borderRadius: 4, overflow: "hidden", backgroundColor: "#bfdbfe" },
-  usageValue: { height: "100%", borderRadius: 4, backgroundColor: "#2563eb" },
+  usageTrack: { height: 8, borderRadius: 4, overflow: "hidden", backgroundColor: "#fbcfe8" },
+  usageValue: { height: "100%", borderRadius: 4, backgroundColor: "#ec0e68" },
   categories: { gap: 8, paddingVertical: 18 },
   category: { overflow: "hidden", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: "#ffffff", color: "#344054", fontWeight: "700", textTransform: "capitalize" },
   sectionHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingBottom: 2 },
   sectionTitle: { color: "#101828", fontSize: 20, fontWeight: "900" },
-  libraryLink: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#b2ccff", backgroundColor: "#eff4ff", flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10 },
-  libraryLinkText: { color: "#175cd3", fontSize: 13, fontWeight: "900" },
+  libraryLink: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7", flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10 },
+  libraryLinkText: { color: "#ec0e68", fontSize: 13, fontWeight: "900" },
   list: { gap: 12, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 110 },
   card: { minHeight: 104, flexDirection: "row", alignItems: "center", gap: 14, padding: 16, backgroundColor: "#ffffff", borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0" },
   swatch: { width: 48, height: 48, borderRadius: 8 },
   cardText: { flex: 1, gap: 4 },
   cardTitle: { color: "#101828", fontSize: 17, fontWeight: "800" },
   cardCopy: { color: "#667085", fontSize: 14, lineHeight: 20 },
-  pro: { color: "#7c3aed", fontWeight: "900", fontSize: 12 }
+  pro: { color: "#ec0e68", fontWeight: "900", fontSize: 12 }
   ,
   emptyState: { padding: 16, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", gap: 6 },
   emptyTitle: { color: "#101828", fontSize: 16, fontWeight: "900" },

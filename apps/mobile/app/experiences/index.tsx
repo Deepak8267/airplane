@@ -223,12 +223,12 @@ function MenuAction({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, paddingHorizontal: 20, paddingTop: 20 },
+  screen: { flex: 1, paddingHorizontal: 20, paddingTop: 20, backgroundColor: "#f6f7fb" },
   header: { paddingTop: 8, gap: 6 },
-  eyebrow: { color: "#2563eb", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
+  eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
   title: { color: "#101828", fontSize: 30, lineHeight: 36, fontWeight: "900" },
   list: { gap: 12, paddingTop: 18, paddingBottom: 110 },
-  card: { gap: 10, padding: 16, backgroundColor: "#ffffff", borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0" },
+  card: { gap: 10, padding: 16, backgroundColor: "#ffffff", borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8" },
   cardHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
   cardTitle: { flex: 1, color: "#101828", fontSize: 18, fontWeight: "900" },
   status: { overflow: "hidden", borderRadius: 8, paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
@@ -254,9 +254,9 @@ const styles = StyleSheet.create({
   emptyState: { padding: 16, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", gap: 10 },
   emptyTitle: { color: "#101828", fontSize: 17, fontWeight: "900" },
   emptyCopy: { color: "#667085", lineHeight: 20 },
-  primaryButton: { height: 48, borderRadius: 8, backgroundColor: "#101828", alignItems: "center", justifyContent: "center" },
+  primaryButton: { height: 48, borderRadius: 8, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center" },
   primaryButtonText: { color: "#ffffff", fontWeight: "900" },
-  toast: { position: "absolute", left: 20, right: 20, bottom: 96, minHeight: 48, borderRadius: 8, backgroundColor: "#101828", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  toast: { position: "absolute", left: 20, right: 20, bottom: 96, minHeight: 48, borderRadius: 8, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   toastText: { color: "#ffffff", fontWeight: "900" },
   error: { color: "#b42318", lineHeight: 20 }
 });
