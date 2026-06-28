@@ -78,7 +78,7 @@ export default function HomeScreen() {
         <View style={styles.topBar}>
           <View style={styles.brandRow}>
             <View style={styles.logoMark}>
-              <Ionicons color="#ffffff" name="paper-plane" size={26} />
+              <Ionicons color="#ffffff" name="paper-plane" size={21} />
             </View>
             <View>
               <Text style={styles.logo}>AIRPLANE</Text>
@@ -88,12 +88,12 @@ export default function HomeScreen() {
           <View style={styles.topActions}>
             <Link href={"/subscription" as never} asChild>
               <Pressable style={styles.proPill}>
-                <Ionicons color="#f59e0b" name="diamond" size={16} />
+                <Ionicons color="#f59e0b" name="diamond" size={14} />
                 <Text style={styles.proText}>{usage?.plan === "pro" ? "Pro" : "Pro"}</Text>
               </Pressable>
             </Link>
             <Pressable accessibilityLabel="Notifications" style={styles.bellButton}>
-              <Ionicons color={COLORS.text} name="notifications-outline" size={24} />
+              <Ionicons color={COLORS.text} name="notifications-outline" size={20} />
               <View style={styles.notificationDot} />
             </Pressable>
           </View>
@@ -101,7 +101,7 @@ export default function HomeScreen() {
 
         <View style={styles.searchRow}>
           <Pressable style={styles.searchBox} onPress={() => router.push("/templates" as never)}>
-            <Ionicons color="#9CA3AF" name="search-outline" size={20} />
+            <Ionicons color="#9CA3AF" name="search-outline" size={17} />
             <TextInput
               editable={false}
               pointerEvents="none"
@@ -111,7 +111,7 @@ export default function HomeScreen() {
             />
           </Pressable>
           <Pressable accessibilityLabel="Discover templates" style={styles.sparkleButton} onPress={() => router.push("/templates" as never)}>
-            <Ionicons color={COLORS.primary} name="sparkles-outline" size={24} />
+            <Ionicons color={COLORS.primary} name="sparkles-outline" size={20} />
           </Pressable>
         </View>
 
@@ -119,7 +119,7 @@ export default function HomeScreen() {
           {HOME_CATEGORIES.map((category) => (
             <Pressable key={category.label} style={styles.categoryTile} onPress={() => router.push("/templates" as never)}>
               <View style={[styles.categoryIcon, { backgroundColor: category.tone }]}>
-                <Ionicons color={COLORS.primary} name={category.icon} size={28} />
+                <Ionicons color={COLORS.primary} name={category.icon} size={21} />
               </View>
               <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.categoryLabel}>
                 {category.label}
@@ -137,7 +137,7 @@ export default function HomeScreen() {
               <Pressable style={styles.heroButton}>
                 <Text style={styles.heroButtonText}>Create Now</Text>
                 <View style={styles.heroArrow}>
-                  <Ionicons color={COLORS.primary} name="arrow-forward" size={20} />
+                  <Ionicons color={COLORS.primary} name="arrow-forward" size={16} />
                 </View>
               </Pressable>
             </Link>
@@ -147,9 +147,9 @@ export default function HomeScreen() {
             <View style={styles.envelope}>
               <Text style={styles.envelopeText}>Will you{"\n"}marry me?</Text>
             </View>
-            <Ionicons color="#f43f7f" name="heart" size={32} style={styles.heroHeart} />
-            <Ionicons color="#fda4c7" name="heart" size={21} style={styles.heroSmallHeart} />
-            <Ionicons color="#ffffff" name="paper-plane" size={24} style={styles.heroPlane} />
+            <Ionicons color="#f43f7f" name="heart" size={24} style={styles.heroHeart} />
+            <Ionicons color="#fda4c7" name="heart" size={16} style={styles.heroSmallHeart} />
+            <Ionicons color="#ffffff" name="paper-plane" size={18} style={styles.heroPlane} />
           </View>
           <View style={styles.heroDots}>
             <View style={styles.activeHeroDot} />
@@ -183,7 +183,7 @@ export default function HomeScreen() {
         <Link href={"/subscription" as never} asChild>
           <Pressable style={styles.premiumBanner}>
             <View style={styles.crownBox}>
-              <Ionicons color="#f59e0b" name="diamond" size={28} />
+              <Ionicons color="#f59e0b" name="diamond" size={22} />
             </View>
             <View style={styles.premiumCopy}>
               <Text style={styles.premiumTitle}>Unlock Premium Templates</Text>
@@ -265,7 +265,7 @@ function VisualPanel({ accent, background, category }: { accent: string; backgro
   return (
     <View style={[styles.cardImage, styles.visualPanel, { backgroundColor: background }]}>
       <View style={[styles.visualCircle, { backgroundColor: accent }]} />
-      <Ionicons color={accent} name={getTemplateIcon(category)} size={40} />
+      <Ionicons color={accent} name={getTemplateIcon(category)} size={32} />
       <View style={[styles.visualLine, { backgroundColor: accent }]} />
     </View>
   );
@@ -274,7 +274,7 @@ function VisualPanel({ accent, background, category }: { accent: string; backgro
 function LoadingCard({ label }: { label: string }) {
   return (
     <View style={styles.loadingCard}>
-      <Ionicons color={COLORS.primary} name="sparkles-outline" size={22} />
+      <Ionicons color={COLORS.primary} name="sparkles-outline" size={18} />
       <Text style={styles.loadingText}>{label}</Text>
     </View>
   );
@@ -314,66 +314,66 @@ const softShadow = {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.background },
-  content: { gap: 16, paddingHorizontal: 16, paddingTop: 6, paddingBottom: 98 },
-  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
-  brandRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
+  content: { gap: 12, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 88 },
+  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  brandRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
   logoMark: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
+    width: 34,
+    height: 34,
+    borderRadius: 11,
     backgroundColor: COLORS.primary,
     alignItems: "center",
     justifyContent: "center",
     transform: [{ rotate: "-10deg" }]
   },
-  logo: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 26, lineHeight: 30, letterSpacing: 0 },
-  tagline: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 12, lineHeight: 16 },
-  topActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  logo: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 22, lineHeight: 25, letterSpacing: 0 },
+  tagline: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
+  topActions: { flexDirection: "row", alignItems: "center", gap: 6 },
   proPill: {
-    height: 34,
-    borderRadius: 17,
+    height: 30,
+    borderRadius: 15,
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.background,
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     ...softShadow
   },
-  proText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 11 },
-  bellButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
+  proText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 10 },
+  bellButton: { width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
   notificationDot: { position: "absolute", right: 8, top: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
-  searchRow: { flexDirection: "row", gap: 10 },
+  searchRow: { flexDirection: "row", gap: 8 },
   searchBox: {
     flex: 1,
-    height: 46,
-    borderRadius: 16,
+    height: 40,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.background,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     ...softShadow
   },
-  searchInput: { flex: 1, color: COLORS.text, fontFamily: FONT.regular, fontSize: 13, padding: 0 },
+  searchInput: { flex: 1, color: COLORS.text, fontFamily: FONT.regular, fontSize: 12, padding: 0 },
   sparkleButton: {
-    width: 46,
-    height: 46,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: "#FCE7F3",
     backgroundColor: "#FFF1F7",
     alignItems: "center",
     justifyContent: "center"
   },
-  categoryRail: { gap: 10, paddingRight: 4 },
+  categoryRail: { gap: 8, paddingRight: 4 },
   categoryTile: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.background,
@@ -383,43 +383,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     ...softShadow
   },
-  categoryIcon: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
-  categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 11, lineHeight: 14, textAlign: "center" },
+  categoryIcon: { width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
+  categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 9, lineHeight: 11, textAlign: "center" },
   heroCard: {
-    height: 158,
-    borderRadius: 20,
+    height: 132,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: "#FBCFE8",
     backgroundColor: "#FFE5EF",
     overflow: "hidden",
-    padding: 16,
+    padding: 13,
     flexDirection: "row"
   },
-  heroCopy: { flex: 1.1, gap: 5, justifyContent: "center", zIndex: 2 },
-  heroTitle: { color: COLORS.text, fontFamily: FONT.regular, fontSize: 17, lineHeight: 22 },
-  heroAccent: { color: COLORS.primary, fontFamily: FONT.bold, fontSize: 20, lineHeight: 25 },
-  heroBody: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 12, lineHeight: 18, maxWidth: 160 },
+  heroCopy: { flex: 1.12, gap: 3, justifyContent: "center", zIndex: 2 },
+  heroTitle: { color: COLORS.text, fontFamily: FONT.regular, fontSize: 15, lineHeight: 19 },
+  heroAccent: { color: COLORS.primary, fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
+  heroBody: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 15, maxWidth: 140 },
   heroButton: {
-    marginTop: 3,
-    height: 38,
+    marginTop: 2,
+    height: 32,
     alignSelf: "flex-start",
-    borderRadius: 13,
+    borderRadius: 11,
     backgroundColor: COLORS.primary,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingVertical: 9,
-    paddingLeft: 16,
-    paddingRight: 6
+    gap: 6,
+    paddingVertical: 7,
+    paddingLeft: 13,
+    paddingRight: 5
   },
-  heroButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 13 },
-  heroArrow: { width: 26, height: 26, borderRadius: 13, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  heroButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 11 },
+  heroArrow: { width: 22, height: 22, borderRadius: 11, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
   heroArt: { flex: 1, alignItems: "center", justifyContent: "center" },
-  envelopeBack: { position: "absolute", width: 92, height: 66, borderRadius: 16, backgroundColor: "#f78db3", transform: [{ rotate: "-18deg" }] },
+  envelopeBack: { position: "absolute", width: 76, height: 54, borderRadius: 14, backgroundColor: "#f78db3", transform: [{ rotate: "-18deg" }] },
   envelope: {
-    width: 92,
-    height: 66,
-    borderRadius: 14,
+    width: 76,
+    height: 54,
+    borderRadius: 12,
     backgroundColor: "#FFF7FB",
     alignItems: "center",
     justifyContent: "center",
@@ -429,67 +429,67 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 }
   },
-  envelopeText: { color: "#9f1239", fontFamily: FONT.semibold, fontSize: 11, lineHeight: 16, fontStyle: "italic", textAlign: "center" },
-  heroHeart: { position: "absolute", bottom: 22, left: 4 },
-  heroSmallHeart: { position: "absolute", top: 18, left: 4 },
-  heroPlane: { position: "absolute", top: 12, right: -2, transform: [{ rotate: "25deg" }] },
-  heroDots: { position: "absolute", bottom: 10, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 6 },
-  activeHeroDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: COLORS.primary },
-  heroDot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: "#D1D5DB" },
-  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -8 },
-  sectionTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 18, lineHeight: 23 },
-  seeAll: { color: COLORS.primary, fontFamily: FONT.medium, fontSize: 12 },
-  cardRail: { gap: 10, paddingRight: 4 },
+  envelopeText: { color: "#9f1239", fontFamily: FONT.semibold, fontSize: 9, lineHeight: 13, fontStyle: "italic", textAlign: "center" },
+  heroHeart: { position: "absolute", bottom: 17, left: 4 },
+  heroSmallHeart: { position: "absolute", top: 14, left: 4 },
+  heroPlane: { position: "absolute", top: 9, right: -2, transform: [{ rotate: "25deg" }] },
+  heroDots: { position: "absolute", bottom: 8, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 5 },
+  activeHeroDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.primary },
+  heroDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#D1D5DB" },
+  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -6 },
+  sectionTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
+  seeAll: { color: COLORS.primary, fontFamily: FONT.medium, fontSize: 11 },
+  cardRail: { gap: 8, paddingRight: 4 },
   templateCard: {
-    width: 140,
-    height: 188,
-    borderRadius: 16,
+    width: 122,
+    height: 162,
+    borderRadius: 14,
     backgroundColor: COLORS.background,
     borderWidth: 1,
     borderColor: COLORS.border,
     overflow: "hidden",
-    padding: 10,
+    padding: 8,
     ...softShadow
   },
-  cardImage: { width: "100%", height: 98, borderRadius: 13 },
+  cardImage: { width: "100%", height: 82, borderRadius: 11 },
   visualPanel: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
   visualCircle: { position: "absolute", width: 86, height: 86, borderRadius: 43, opacity: 0.14 },
   visualLine: { position: "absolute", bottom: 0, left: 0, right: 0, height: 3, opacity: 0.7 },
-  templateInfo: { gap: 3, paddingTop: 9, paddingRight: 16 },
-  templateTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
-  templateMeta: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 11, lineHeight: 15 },
-  moreIcon: { position: "absolute", right: 10, bottom: 20 },
+  templateInfo: { gap: 2, paddingTop: 7, paddingRight: 14 },
+  templateTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 12, lineHeight: 16 },
+  templateMeta: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
+  moreIcon: { position: "absolute", right: 8, bottom: 17 },
   badge: {
     position: "absolute",
-    left: 16,
-    top: 16,
+    left: 12,
+    top: 12,
     overflow: "hidden",
     borderRadius: 10,
     color: "#ffffff",
-    paddingHorizontal: 8,
-    paddingVertical: 5,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
     fontFamily: FONT.semibold,
-    fontSize: 10
+    fontSize: 9
   },
   popularBadge: { backgroundColor: COLORS.primary },
   newBadge: { backgroundColor: "#22C55E" },
   premiumBanner: {
-    height: 76,
-    borderRadius: 16,
+    height: 64,
+    borderRadius: 14,
     backgroundColor: "#FFF8E7",
     borderWidth: 1,
     borderColor: "#FFF1C2",
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    padding: 14
+    gap: 8,
+    padding: 12
   },
-  crownBox: { width: 36, height: 36, borderRadius: 12, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
+  crownBox: { width: 30, height: 30, borderRadius: 10, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
   premiumCopy: { flex: 1, gap: 3 },
-  premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
-  premiumText: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 14 },
-  upgradePill: { height: 34, borderRadius: 12, borderWidth: 1, borderColor: "#FBCFE8", backgroundColor: "#FFF1F7", alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
-  upgradeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 11 },
-  loadingCard: { minHeight: 78, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", gap: 8 },
-  loadingText: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 12 }
+  premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 11, lineHeight: 15 },
+  premiumText: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 9, lineHeight: 12 },
+  upgradePill: { height: 28, borderRadius: 10, borderWidth: 1, borderColor: "#FBCFE8", backgroundColor: "#FFF1F7", alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
+  upgradeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 10 },
+  loadingCard: { minHeight: 66, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", gap: 6 },
+  loadingText: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 11 }
 });

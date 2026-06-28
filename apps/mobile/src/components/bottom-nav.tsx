@@ -40,13 +40,13 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
               onPress={() => router.push(item.route as never)}
               style={styles.item}
             >
-              <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={24} />
+              <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={21} />
               <Text style={[styles.label, selected ? styles.activeLabel : null]}>{item.label}</Text>
             </Pressable>
           );
         })}
         <Pressable accessibilityLabel="Create experience" style={styles.createButton} onPress={() => router.push("/templates" as never)}>
-          <Ionicons color="#ffffff" name="add" size={38} />
+          <Ionicons color="#ffffff" name="add" size={32} />
         </Pressable>
         {NAV_ITEMS.slice(2).map((item) => {
           const selected = item.key === active;
@@ -59,7 +59,7 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
               onPress={() => router.push(item.route as never)}
               style={styles.item}
             >
-              <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={24} />
+              <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={21} />
               <Text style={[styles.label, selected ? styles.activeLabel : null]}>{item.label}</Text>
             </Pressable>
           );
@@ -76,11 +76,11 @@ const styles = StyleSheet.create({
     paddingTop: 0
   },
   nav: {
-    height: 68,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
+    height: 60,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: BORDER,
@@ -104,13 +104,13 @@ const styles = StyleSheet.create({
     paddingVertical: 4
   },
   createButton: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: PRIMARY,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -27,
+    marginTop: -24,
     borderWidth: 5,
     borderColor: "#fff7fb",
     shadowColor: PRIMARY,
@@ -119,6 +119,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 3
   },
-  label: { color: TEXT_MUTED, fontFamily: FONT_MEDIUM, fontSize: 10, lineHeight: 13, textAlign: "center" },
+  label: { color: TEXT_MUTED, fontFamily: FONT_MEDIUM, fontSize: 9, lineHeight: 12, textAlign: "center" },
   activeLabel: { color: PRIMARY }
 });
