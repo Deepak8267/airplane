@@ -39,7 +39,15 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 ## Supabase SQL Order
 
-Run these in Supabase SQL editor in order:
+For a fresh Supabase project, the easiest path is to run:
+
+```text
+supabase/setup.sql
+```
+
+That consolidated file includes schema, storage, policies, functions, and seed templates.
+
+If you prefer applying files one by one, run these in Supabase SQL editor in order:
 
 1. `supabase/migrations/202606160001_initial_schema.sql`
 2. `supabase/migrations/202606160002_storage.sql`
