@@ -16,7 +16,7 @@ insert into public.templates (
     false,
     'date_proposal',
     '{"id":"rose","name":"Rose","background":"#fff7f5","foreground":"#2f1b1b","accent":"#e85d75","muted":"#f7d8dc","fontFamily":"serif"}',
-    '[{"pageType":"cover","title":"A little question","content":{"body":"I made something for you."},"mediaUrls":[],"settings":{}},{"pageType":"proposal","title":"Will you go on a date with me?","content":{"question":"Will you go on a date with me?"},"mediaUrls":[],"settings":{}},{"pageType":"final","title":"Can’t wait","content":{"finalMessage":"This is going to be lovely."},"mediaUrls":[],"settings":{}}]'
+    '[{"pageType":"cover","title":"A little question","content":{"body":"I made something for you."},"mediaUrls":[],"settings":{}},{"pageType":"proposal","title":"Will you go on a date with me?","content":{"question":"Will you go on a date with me?"},"mediaUrls":[],"settings":{}},{"pageType":"final","title":"Can''t wait","content":{"finalMessage":"This is going to be lovely."},"mediaUrls":[],"settings":{}}]'
   ),
   (
     'Marriage Proposal',
@@ -56,7 +56,7 @@ insert into public.templates (
     false,
     'friendship_quiz',
     '{"id":"mint","name":"Mint","background":"#f4fff8","foreground":"#10231b","accent":"#10b981","muted":"#bbf7d0","fontFamily":"rounded"}',
-    '[{"pageType":"cover","title":"Friendship check","content":{"body":"Let’s see how well you know me."},"mediaUrls":[],"settings":{}},{"pageType":"quiz","title":"First question","content":{"question":"What is my go-to comfort food?","answers":[{"id":"a","label":"Pizza"},{"id":"b","label":"Noodles"},{"id":"c","label":"Ice cream"}]},"mediaUrls":[],"settings":{}},{"pageType":"final","title":"You made it","content":{"finalMessage":"Certified friend energy."},"mediaUrls":[],"settings":{}}]'
+    '[{"pageType":"cover","title":"Friendship check","content":{"body":"Let''s see how well you know me."},"mediaUrls":[],"settings":{}},{"pageType":"quiz","title":"First question","content":{"question":"What is my go-to comfort food?","answers":[{"id":"a","label":"Pizza"},{"id":"b","label":"Noodles"},{"id":"c","label":"Ice cream"}]},"mediaUrls":[],"settings":{}},{"pageType":"final","title":"You made it","content":{"finalMessage":"Certified friend energy."},"mediaUrls":[],"settings":{}}]'
   ),
   (
     'Best Friend Challenge',
