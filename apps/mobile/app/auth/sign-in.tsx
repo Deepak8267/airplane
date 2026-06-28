@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useState } from "react";
 import { signInWithEmail, signUpWithEmail } from "@/features/auth/auth-service";
 
@@ -9,13 +9,26 @@ export default function SignInScreen() {
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showValidation, setShowValidation] = useState(false);
   const authMutation = useMutation({
     mutationFn: () => (mode === "sign-in" ? signInWithEmail(email.trim(), password) : signUpWithEmail(email.trim(), password)),
     onSuccess: () => router.replace("/home")
   });
+  const emailError = showValidation && !isValidEmail(email.trim()) ? "Enter a valid email." : undefined;
+  const passwordError = showValidation && password.length < 6 ? "Password must be at least 6 characters." : undefined;
 
   function submit() {
+    setShowValidation(true);
+
+    if (!isValidEmail(email.trim()) || password.length < 6) {
+      return;
+    }
+
     authMutation.mutate();
+  }
+
+  function showProviderComingSoon(provider: string) {
+    Alert.alert(`${provider} login`, "This login method is part of the planned auth setup. Use email for now.");
   }
 
   return (
@@ -26,45 +39,61 @@ export default function SignInScreen() {
         </View>
         <View>
           <Text style={styles.logo}>AIRPLANE</Text>
-          <Text style={styles.tagline}>Premium · Personal · Interactive</Text>
+          <Text style={styles.tagline}>Premium - Personal - Interactive</Text>
         </View>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.title}>{mode === "sign-in" ? "Welcome back 👋" : "Create account"}</Text>
-        <Text style={styles.copy}>Login to continue building shareable moments.</Text>
+        <View style={styles.heroIcon}>
+          <Ionicons color="#ec0e68" name={mode === "sign-in" ? "lock-open-outline" : "person-add-outline"} size={28} />
+        </View>
+        <Text style={styles.title}>{mode === "sign-in" ? "Welcome back" : "Create account"}</Text>
+        <Text style={styles.copy}>
+          {mode === "sign-in" ? "Sign in to keep building and publishing shareable moments." : "Create your creator account to save experiences."}
+        </Text>
 
         <View style={styles.socialStack}>
-          <AuthProvider icon="logo-google" label="Continue with Google" />
-          <AuthProvider icon="logo-apple" label="Continue with Apple" />
+          <AuthProvider icon="logo-google" label="Continue with Google" onPress={() => showProviderComingSoon("Google")} />
+          <AuthProvider icon="logo-apple" label="Continue with Apple" onPress={() => showProviderComingSoon("Apple")} />
         </View>
 
         <View style={styles.dividerRow}>
           <View style={styles.divider} />
-          <Text style={styles.dividerText}>or</Text>
+          <Text style={styles.dividerText}>or use email</Text>
           <View style={styles.divider} />
         </View>
 
-        <TextInput
-          autoCapitalize="none"
-          keyboardType="email-address"
-          onChangeText={setEmail}
-          placeholder="Email address"
-          placeholderTextColor="#98a2b3"
-          style={styles.input}
-          value={email}
-        />
-        <TextInput
-          autoCapitalize="none"
-          onChangeText={setPassword}
-          placeholder="Password"
-          placeholderTextColor="#98a2b3"
-          secureTextEntry
-          style={styles.input}
-          value={password}
-        />
+        <View style={styles.field}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            autoCapitalize="none"
+            keyboardType="email-address"
+            onChangeText={setEmail}
+            placeholder="you@example.com"
+            placeholderTextColor="#98a2b3"
+            style={[styles.input, emailError ? styles.inputError : null]}
+            value={email}
+          />
+          {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            autoCapitalize="none"
+            onChangeText={setPassword}
+            placeholder="Minimum 6 characters"
+            placeholderTextColor="#98a2b3"
+            secureTextEntry
+            style={[styles.input, passwordError ? styles.inputError : null]}
+            value={password}
+          />
+          {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
+        </View>
+
         {authMutation.error instanceof Error ? <Text style={styles.error}>{authMutation.error.message}</Text> : null}
         <Pressable style={[styles.primaryButton, { opacity: authMutation.isPending ? 0.7 : 1 }]} onPress={submit} disabled={authMutation.isPending}>
+          <Ionicons color="#ffffff" name={authMutation.isPending ? "hourglass-outline" : "arrow-forward"} size={20} />
           <Text style={styles.primaryButtonText}>
             {authMutation.isPending ? "Please wait..." : mode === "sign-in" ? "Sign in" : "Create account"}
           </Text>
@@ -79,13 +108,18 @@ export default function SignInScreen() {
   );
 }
 
-function AuthProvider({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+function AuthProvider({ icon, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
   return (
-    <View style={styles.providerButton}>
+    <Pressable style={styles.providerButton} onPress={onPress}>
       <Ionicons color="#101828" name={icon} size={20} />
       <Text style={styles.providerText}>{label}</Text>
-    </View>
+      <Text style={styles.soonBadge}>Soon</Text>
+    </Pressable>
   );
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 const styles = StyleSheet.create({
@@ -95,16 +129,22 @@ const styles = StyleSheet.create({
   logo: { fontSize: 19, fontWeight: "900", letterSpacing: 0, color: "#101828" },
   tagline: { color: "#667085", fontSize: 11, fontWeight: "900" },
   card: { gap: 14, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 18 },
+  heroIcon: { alignSelf: "center", width: 62, height: 62, borderRadius: 8, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
   title: { fontSize: 30, lineHeight: 36, fontWeight: "900", color: "#101828", textAlign: "center" },
   copy: { fontSize: 15, lineHeight: 22, color: "#667085", textAlign: "center" },
   socialStack: { gap: 10 },
-  providerButton: { height: 50, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 },
-  providerText: { color: "#101828", fontWeight: "900" },
+  providerButton: { height: 50, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingHorizontal: 12 },
+  providerText: { flex: 1, color: "#101828", fontWeight: "900", textAlign: "center" },
+  soonBadge: { overflow: "hidden", borderRadius: 8, backgroundColor: "#f2f4f7", color: "#667085", paddingHorizontal: 7, paddingVertical: 3, fontSize: 10, fontWeight: "900", textTransform: "uppercase" },
   dividerRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   divider: { flex: 1, height: 1, backgroundColor: "#eaecf0" },
   dividerText: { color: "#98a2b3", fontSize: 12, fontWeight: "800" },
+  field: { gap: 7 },
+  label: { color: "#344054", fontWeight: "900" },
   input: { height: 52, borderWidth: 1, borderColor: "#eaecf0", borderRadius: 8, paddingHorizontal: 14, backgroundColor: "#f9fafb", fontSize: 16, color: "#101828" },
-  primaryButton: { height: 52, borderRadius: 8, backgroundColor: "#ec0e68", justifyContent: "center", alignItems: "center" },
+  inputError: { borderColor: "#f04438" },
+  fieldError: { color: "#b42318", fontSize: 12, lineHeight: 17 },
+  primaryButton: { height: 52, borderRadius: 8, backgroundColor: "#ec0e68", justifyContent: "center", alignItems: "center", flexDirection: "row", gap: 8 },
   primaryButtonText: { color: "#ffffff", fontWeight: "900", fontSize: 16 },
   oauthButton: { height: 48, borderRadius: 8, backgroundColor: "#fff1f7", justifyContent: "center", alignItems: "center" },
   oauthButtonText: { color: "#ec0e68", fontWeight: "900", fontSize: 15 },
