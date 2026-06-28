@@ -2,7 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import type { Experience, Template, TemplateCategory } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
 import { getMyExperiences } from "@/features/experiences/experience-service";
@@ -40,6 +41,7 @@ const HOME_CATEGORIES: HomeCategory[] = [
 ];
 
 export default function HomeScreen() {
+  const { width } = useWindowDimensions();
   const templatesQuery = useQuery({
     queryKey: ["templates"],
     queryFn: getTemplates
@@ -57,6 +59,7 @@ export default function HomeScreen() {
   const usage = planUsageQuery.data;
   const refreshing = templatesQuery.isRefetching || experiencesQuery.isRefetching || planUsageQuery.isRefetching;
   const recentExperiences = experiences.slice(0, 6);
+  const isNarrow = width < 370;
   const trendingTemplates = useMemo(() => {
     const sorted = [...templates].sort((left, right) => Number(right.isPremium) - Number(left.isPremium));
     return sorted.slice(0, 8);
@@ -69,9 +72,9 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView edges={["top"]} style={styles.screen}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, isNarrow ? styles.contentNarrow : null]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
         showsVerticalScrollIndicator={false}
       >
@@ -80,9 +83,13 @@ export default function HomeScreen() {
             <View style={styles.logoMark}>
               <Ionicons color="#ffffff" name="paper-plane" size={21} />
             </View>
-            <View>
-              <Text style={styles.logo}>AIRPLANE</Text>
-              <Text style={styles.tagline}>Create moments that fly</Text>
+            <View style={styles.brandCopy}>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.logo, isNarrow ? styles.logoNarrow : null]}>
+                AIRPLANE
+              </Text>
+              <Text numberOfLines={1} style={styles.tagline}>
+                Create moments that fly
+              </Text>
             </View>
           </View>
           <View style={styles.topActions}>
@@ -117,7 +124,7 @@ export default function HomeScreen() {
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRail}>
           {HOME_CATEGORIES.map((category) => (
-            <Pressable key={category.label} style={styles.categoryTile} onPress={() => router.push("/templates" as never)}>
+            <Pressable key={category.label} style={[styles.categoryTile, isNarrow ? styles.categoryTileNarrow : null]} onPress={() => router.push("/templates" as never)}>
               <View style={[styles.categoryIcon, { backgroundColor: category.tone }]}>
                 <Ionicons color={COLORS.primary} name={category.icon} size={21} />
               </View>
@@ -128,7 +135,7 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        <View style={styles.heroCard}>
+        <View style={[styles.heroCard, isNarrow ? styles.heroCardNarrow : null]}>
           <View style={styles.heroCopy}>
             <Text style={styles.heroTitle}>Make every moment</Text>
             <Text style={styles.heroAccent}>unforgettable</Text>
@@ -163,7 +170,7 @@ export default function HomeScreen() {
           <LoadingCard label="Loading experiences..." />
         ) : recentExperiences.length > 0 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRail}>
-            {recentExperiences.map((experience) => <RecentCard key={experience.id} experience={experience} />)}
+            {recentExperiences.map((experience) => <RecentCard compact={isNarrow} experience={experience} key={experience.id} />)}
           </ScrollView>
         ) : (
           <LoadingCard label="Create your first experience to see it here." />
@@ -175,7 +182,7 @@ export default function HomeScreen() {
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRail}>
             {trendingTemplates.map((template, index) => (
-              <TrendingCard key={template.id} rank={index} template={template} />
+              <TrendingCard compact={isNarrow} key={template.id} rank={index} template={template} />
             ))}
           </ScrollView>
         )}
@@ -196,7 +203,7 @@ export default function HomeScreen() {
         </Link>
       </ScrollView>
       <BottomNav active="home" />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -211,10 +218,10 @@ function SectionHeader({ onSeeAll, title }: { onSeeAll: () => void; title: strin
   );
 }
 
-function RecentCard({ experience }: { experience: Experience }) {
+function RecentCard({ compact, experience }: { compact: boolean; experience: Experience }) {
   return (
-    <Pressable style={styles.templateCard} onPress={() => router.push("/experiences" as never)}>
-      <CardImage accent={experience.theme.accent} background={experience.theme.background} category="love" uri={experience.coverPhotoUrl} />
+    <Pressable style={[styles.templateCard, compact ? styles.templateCardNarrow : null]} onPress={() => router.push("/experiences" as never)}>
+      <CardImage accent={experience.theme.accent} background={experience.theme.background} category="love" compact={compact} uri={experience.coverPhotoUrl} />
       <View style={styles.templateInfo}>
         <Text numberOfLines={1} style={styles.templateTitle}>
           {experience.title || "Untitled experience"}
@@ -226,11 +233,11 @@ function RecentCard({ experience }: { experience: Experience }) {
   );
 }
 
-function TrendingCard({ rank, template }: { rank: number; template: Template }) {
+function TrendingCard({ compact, rank, template }: { compact: boolean; rank: number; template: Template }) {
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
-      <Pressable style={styles.templateCard}>
-        <CardImage accent={template.defaultTheme.accent} background={template.defaultTheme.background} category={template.category} uri={template.thumbnailUrl} />
+      <Pressable style={[styles.templateCard, compact ? styles.templateCardNarrow : null]}>
+        <CardImage accent={template.defaultTheme.accent} background={template.defaultTheme.background} category={template.category} compact={compact} uri={template.thumbnailUrl} />
         <Text style={[styles.badge, rank < 2 ? styles.popularBadge : styles.newBadge]}>{rank < 2 ? "Popular" : "New"}</Text>
         <View style={styles.templateInfo}>
           <Text numberOfLines={1} style={styles.templateTitle}>
@@ -247,23 +254,25 @@ function CardImage({
   accent,
   background,
   category,
+  compact,
   uri
 }: {
   accent: string;
   background: string;
   category: TemplateCategory | "love";
+  compact: boolean;
   uri: string | null;
 }) {
   if (uri) {
-    return <Image resizeMode="cover" source={{ uri }} style={styles.cardImage} />;
+    return <Image resizeMode="cover" source={{ uri }} style={[styles.cardImage, compact ? styles.cardImageNarrow : null]} />;
   }
 
-  return <VisualPanel accent={accent} background={background} category={category} />;
+  return <VisualPanel accent={accent} background={background} category={category} compact={compact} />;
 }
 
-function VisualPanel({ accent, background, category }: { accent: string; background: string; category: TemplateCategory | "love" }) {
+function VisualPanel({ accent, background, category, compact }: { accent: string; background: string; category: TemplateCategory | "love"; compact: boolean }) {
   return (
-    <View style={[styles.cardImage, styles.visualPanel, { backgroundColor: background }]}>
+    <View style={[styles.cardImage, compact ? styles.cardImageNarrow : null, styles.visualPanel, { backgroundColor: background }]}>
       <View style={[styles.visualCircle, { backgroundColor: accent }]} />
       <Ionicons color={accent} name={getTemplateIcon(category)} size={32} />
       <View style={[styles.visualLine, { backgroundColor: accent }]} />
@@ -315,8 +324,10 @@ const softShadow = {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.background },
   content: { gap: 12, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 88 },
+  contentNarrow: { paddingHorizontal: 12 },
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   brandRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
+  brandCopy: { flex: 1, minWidth: 0 },
   logoMark: {
     width: 34,
     height: 34,
@@ -327,8 +338,9 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-10deg" }]
   },
   logo: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 22, lineHeight: 25, letterSpacing: 0 },
+  logoNarrow: { fontSize: 20, lineHeight: 23 },
   tagline: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
-  topActions: { flexDirection: "row", alignItems: "center", gap: 6 },
+  topActions: { flexShrink: 0, flexDirection: "row", alignItems: "center", gap: 6 },
   proPill: {
     height: 30,
     borderRadius: 15,
@@ -383,6 +395,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     ...softShadow
   },
+  categoryTileNarrow: { width: 52, height: 54 },
   categoryIcon: { width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
   categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 9, lineHeight: 11, textAlign: "center" },
   heroCard: {
@@ -395,6 +408,7 @@ const styles = StyleSheet.create({
     padding: 13,
     flexDirection: "row"
   },
+  heroCardNarrow: { height: 124, padding: 12 },
   heroCopy: { flex: 1.12, gap: 3, justifyContent: "center", zIndex: 2 },
   heroTitle: { color: COLORS.text, fontFamily: FONT.regular, fontSize: 15, lineHeight: 19 },
   heroAccent: { color: COLORS.primary, fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
@@ -451,7 +465,9 @@ const styles = StyleSheet.create({
     padding: 8,
     ...softShadow
   },
+  templateCardNarrow: { width: 112, height: 154 },
   cardImage: { width: "100%", height: 82, borderRadius: 11 },
+  cardImageNarrow: { height: 76 },
   visualPanel: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
   visualCircle: { position: "absolute", width: 86, height: 86, borderRadius: 43, opacity: 0.14 },
   visualLine: { position: "absolute", bottom: 0, left: 0, right: 0, height: 3, opacity: 0.7 },
