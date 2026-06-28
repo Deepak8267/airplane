@@ -67,20 +67,20 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
 const styles = StyleSheet.create({
   shell: {
     backgroundColor: "transparent",
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingTop: 4
   },
   nav: {
-    minHeight: 68,
-    borderRadius: 26,
+    minHeight: 60,
+    borderRadius: 22,
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#eaecf0",
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 7,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
     shadowColor: "#101828",
     shadowOpacity: 0.12,
     shadowRadius: 18,
@@ -95,20 +95,20 @@ const styles = StyleSheet.create({
     paddingVertical: 6
   },
   createButton: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     backgroundColor: "#ec0e68",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -30,
-    borderWidth: 6,
+    marginTop: -25,
+    borderWidth: 5,
     borderColor: "#fff7fb",
     shadowColor: "#ec0e68",
     shadowOpacity: 0.28,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 }
   },
-  label: { color: "#475467", fontSize: 10, fontWeight: "800", textAlign: "center" },
+  label: { color: "#475467", fontSize: 9, fontWeight: "800", textAlign: "center" },
   activeLabel: { color: "#ec0e68" }
 });
