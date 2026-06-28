@@ -72,23 +72,23 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
 const styles = StyleSheet.create({
   shell: {
     backgroundColor: "transparent",
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingTop: 0
   },
   nav: {
-    height: 82,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    height: 68,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: BORDER,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
     shadowColor: "#111827",
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -99,18 +99,18 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
+    gap: 3,
     paddingHorizontal: 4,
-    paddingVertical: 6
+    paddingVertical: 4
   },
   createButton: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     backgroundColor: PRIMARY,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -31,
+    marginTop: -27,
     borderWidth: 5,
     borderColor: "#fff7fb",
     shadowColor: PRIMARY,
@@ -119,6 +119,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 3
   },
-  label: { color: TEXT_MUTED, fontFamily: FONT_MEDIUM, fontSize: 11, lineHeight: 14, textAlign: "center" },
+  label: { color: TEXT_MUTED, fontFamily: FONT_MEDIUM, fontSize: 10, lineHeight: 13, textAlign: "center" },
   activeLabel: { color: PRIMARY }
 });
