@@ -1,266 +1,332 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
-import { TEMPLATE_CATEGORIES } from "@airplane/shared";
-import type { Template, TemplateCategory } from "@airplane/shared";
+import { useMemo } from "react";
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import type { Experience, Template, TemplateCategory } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
-import { useSignOut } from "@/features/auth/use-sign-out";
+import { getMyExperiences } from "@/features/experiences/experience-service";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplates } from "@/features/templates/template-service";
-import { useSessionStore } from "@/stores/session-store";
+
+type HomeCategory = {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  tone: string;
+};
+
+const HOME_CATEGORIES: HomeCategory[] = [
+  { icon: "heart", label: "Love", tone: "#fff0f6" },
+  { icon: "gift", label: "Birthday", tone: "#fff7ed" },
+  { icon: "people", label: "Friends", tone: "#eef4ff" },
+  { icon: "sparkles", label: "Anniversary", tone: "#fff1f7" },
+  { icon: "musical-notes", label: "Celebration", tone: "#f0fdf4" },
+  { icon: "ellipsis-horizontal", label: "More", tone: "#f8fafc" }
+];
 
 export default function HomeScreen() {
-  const session = useSessionStore((state) => state.session);
-  const signOutMutation = useSignOut();
   const templatesQuery = useQuery({
     queryKey: ["templates"],
     queryFn: getTemplates
+  });
+  const experiencesQuery = useQuery({
+    queryKey: ["my-experiences"],
+    queryFn: getMyExperiences
   });
   const planUsageQuery = useQuery({
     queryKey: ["plan-usage"],
     queryFn: getPlanUsage
   });
   const templates = templatesQuery.data ?? [];
+  const experiences = experiencesQuery.data ?? [];
   const usage = planUsageQuery.data;
-  const refreshing = templatesQuery.isRefetching || planUsageQuery.isRefetching;
-  const remaining = usage?.plan === "pro" ? "Unlimited" : `${usage?.remainingFreeExperiences ?? 3}`;
-  const featuredTemplates = templates.slice(0, 4);
+  const refreshing = templatesQuery.isRefetching || experiencesQuery.isRefetching || planUsageQuery.isRefetching;
+  const recentExperiences = experiences.slice(0, 6);
+  const trendingTemplates = useMemo(() => {
+    const sorted = [...templates].sort((left, right) => Number(right.isPremium) - Number(left.isPremium));
+    return sorted.slice(0, 8);
+  }, [templates]);
 
   function refresh() {
     void templatesQuery.refetch();
+    void experiencesQuery.refetch();
     void planUsageQuery.refetch();
   }
 
   return (
     <View style={styles.screen}>
-      <FlatList
-        data={featuredTemplates}
-        keyExtractor={(item) => item.id}
+      <ScrollView
+        contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
-        ListHeaderComponent={
-          <View style={styles.headerContent}>
-            <View style={styles.topBar}>
-              <View style={styles.brandBlock}>
-                <Text style={styles.logo}>AIRPLANE</Text>
-                <Text style={styles.account} numberOfLines={1}>{session?.user.email ?? "Anonymous creator"}</Text>
-              </View>
-              <Pressable
-                accessibilityLabel="Sign out"
-                disabled={signOutMutation.isPending}
-                onPress={() => signOutMutation.mutate()}
-                style={[styles.iconButton, signOutMutation.isPending ? styles.pendingButton : null]}
-              >
-                <Ionicons color="#101828" name="log-out-outline" size={21} />
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.topBar}>
+          <View style={styles.brandRow}>
+            <View style={styles.logoMark}>
+              <Ionicons color="#ffffff" name="paper-plane" size={24} />
+            </View>
+            <View>
+              <Text style={styles.logo}>AIRPLANE</Text>
+              <Text style={styles.tagline}>Create moments that fly</Text>
+            </View>
+          </View>
+          <View style={styles.topActions}>
+            <Link href={"/subscription" as never} asChild>
+              <Pressable style={styles.proPill}>
+                <Ionicons color="#f59e0b" name="diamond" size={17} />
+                <Text style={styles.proText}>{usage?.plan === "pro" ? "Pro" : "Pro"}</Text>
               </Pressable>
-            </View>
+            </Link>
+            <Pressable accessibilityLabel="Notifications" style={styles.bellButton}>
+              <Ionicons color="#101828" name="notifications-outline" size={23} />
+              <View style={styles.notificationDot} />
+            </Pressable>
+          </View>
+        </View>
 
-            <View style={styles.hero}>
-              <View style={styles.heroIcon}>
-                <Ionicons color="#ec0e68" name="paper-plane-outline" size={30} />
-              </View>
-              <Text style={styles.eyebrow}>Creator Home</Text>
-              <Text style={styles.title}>Create a link they will remember.</Text>
-              <Text style={styles.subtitle}>Pick a template, personalize the story, and publish a web experience in minutes.</Text>
-            </View>
-
-            <View style={styles.quickActions}>
-              <Link href={"/templates" as never} asChild>
-                <Pressable style={styles.primaryAction}>
-                  <Ionicons color="#ffffff" name="sparkles-outline" size={20} />
-                  <Text style={styles.primaryActionText}>Start creating</Text>
-                </Pressable>
-              </Link>
-              <Link href={"/experiences" as never} asChild>
-                <Pressable style={styles.secondaryAction}>
-                  <Ionicons color="#101828" name="albums-outline" size={20} />
-                  <Text style={styles.secondaryActionText}>My links</Text>
-                </Pressable>
-              </Link>
-            </View>
-
-            <View style={styles.statsRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statLabel}>Used</Text>
-                <Text style={styles.statValue}>{usage?.activeExperienceCount ?? 0}</Text>
-              </View>
-              <View style={styles.statBox}>
-                <Text style={styles.statLabel}>Remaining</Text>
-                <Text style={styles.statValue}>{remaining}</Text>
-              </View>
-            </View>
-
-            <View style={styles.planCard}>
-              <View style={styles.planHeading}>
-                <View style={styles.planTitleRow}>
-                  <Ionicons color="#ec0e68" name={usage?.plan === "pro" ? "sparkles-outline" : "paper-plane-outline"} size={19} />
-                  <Text style={styles.planLabel}>{usage?.plan === "pro" ? "Pro plan" : "Free plan"}</Text>
-                </View>
-                <Text style={styles.planStatus}>{usage?.status ?? "active"}</Text>
-              </View>
-              <Text style={styles.planCopy}>
-                {planUsageQuery.isLoading
-                  ? "Checking your plan..."
-                  : usage?.plan === "pro"
-                  ? "Unlimited experiences are enabled."
-                  : `${usage?.activeExperienceCount ?? 0}/${usage?.freeExperienceLimit ?? 3} experiences used.`}
-              </Text>
-              {planUsageQuery.error instanceof Error ? <Text style={styles.planError}>{planUsageQuery.error.message}</Text> : null}
-              {usage?.plan !== "pro" ? (
-                <View style={styles.usageTrack}>
-                  <View
-                    style={[
-                      styles.usageValue,
-                      { width: `${Math.min(((usage?.activeExperienceCount ?? 0) / (usage?.freeExperienceLimit ?? 3)) * 100, 100)}%` }
-                    ]}
-                  />
-                </View>
-              ) : null}
-            </View>
-
-            <FlatList
-              data={TEMPLATE_CATEGORIES}
-              keyExtractor={(item) => item}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categories}
-              renderItem={({ item }) => <CategoryChip category={item} />}
+        <View style={styles.searchRow}>
+          <Pressable style={styles.searchBox} onPress={() => router.push("/templates" as never)}>
+            <Ionicons color="#98a2b3" name="search-outline" size={23} />
+            <TextInput
+              editable={false}
+              pointerEvents="none"
+              placeholder="Search templates, occasions, experiences..."
+              placeholderTextColor="#98a2b3"
+              style={styles.searchInput}
             />
+          </Pressable>
+          <Pressable accessibilityLabel="Discover templates" style={styles.sparkleButton} onPress={() => router.push("/templates" as never)}>
+            <Ionicons color="#ec0e68" name="sparkles-outline" size={25} />
+          </Pressable>
+        </View>
 
-            <View style={styles.sectionHeading}>
-              <View>
-                <Text style={styles.sectionTitle}>Featured templates</Text>
-                <Text style={styles.sectionSubtitle}>Fast starts for the most common moments.</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRail}>
+          {HOME_CATEGORIES.map((category) => (
+            <Pressable key={category.label} style={styles.categoryTile} onPress={() => router.push("/templates" as never)}>
+              <View style={[styles.categoryIcon, { backgroundColor: category.tone }]}>
+                <Ionicons color="#ec0e68" name={category.icon} size={27} />
               </View>
-              <Link href={"/templates" as never} asChild>
-                <Pressable style={styles.libraryLink}>
-                  <Ionicons color="#ec0e68" name="grid-outline" size={17} />
-                  <Text style={styles.libraryLinkText}>See all</Text>
-                </Pressable>
-              </Link>
-            </View>
+              <Text style={styles.categoryLabel}>{category.label}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        <View style={styles.heroCard}>
+          <View style={styles.heroCopy}>
+            <Text style={styles.heroTitle}>Make every moment</Text>
+            <Text style={styles.heroAccent}>unforgettable</Text>
+            <Text style={styles.heroBody}>Create beautiful, interactive experiences in minutes.</Text>
+            <Link href={"/templates" as never} asChild>
+              <Pressable style={styles.heroButton}>
+                <Text style={styles.heroButtonText}>Create Now</Text>
+                <View style={styles.heroArrow}>
+                  <Ionicons color="#ec0e68" name="arrow-forward" size={18} />
+                </View>
+              </Pressable>
+            </Link>
           </View>
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIcon}>
-              <Ionicons color="#ec0e68" name={templatesQuery.isLoading ? "hourglass-outline" : "file-tray-outline"} size={24} />
+          <View style={styles.heroArt}>
+            <View style={styles.envelopeBack} />
+            <View style={styles.envelope}>
+              <Text style={styles.envelopeText}>Will you{"\n"}marry me?</Text>
             </View>
-            <Text style={styles.emptyTitle}>{templatesQuery.isLoading ? "Loading templates..." : "No templates found"}</Text>
-            <Text style={styles.emptyCopy}>
-              {templatesQuery.error instanceof Error ? templatesQuery.error.message : "Run the Supabase seed file if this stays empty."}
-            </Text>
+            <Ionicons color="#f43f7f" name="heart" size={34} style={styles.heroHeart} />
+            <Ionicons color="#fda4c7" name="heart" size={22} style={styles.heroSmallHeart} />
+            <Ionicons color="#ffffff" name="paper-plane" size={24} style={styles.heroPlane} />
           </View>
-        }
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => <TemplateRow template={item} />}
-      />
+          <View style={styles.heroDots}>
+            <View style={styles.activeHeroDot} />
+            <View style={styles.heroDot} />
+            <View style={styles.heroDot} />
+          </View>
+        </View>
+
+        <SectionHeader title="Recently Used" onSeeAll={() => router.push("/experiences" as never)} />
+        {experiencesQuery.isLoading ? (
+          <LoadingCard label="Loading experiences..." />
+        ) : recentExperiences.length > 0 ? (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRail}>
+            {recentExperiences.map((experience) => <RecentCard key={experience.id} experience={experience} />)}
+          </ScrollView>
+        ) : (
+          <LoadingCard label="Create your first experience to see it here." />
+        )}
+
+        <SectionHeader title="Trending Templates" onSeeAll={() => router.push("/templates" as never)} />
+        {templatesQuery.isLoading ? (
+          <LoadingCard label="Loading templates..." />
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRail}>
+            {trendingTemplates.map((template, index) => (
+              <TrendingCard key={template.id} rank={index} template={template} />
+            ))}
+          </ScrollView>
+        )}
+
+        <Link href={"/subscription" as never} asChild>
+          <Pressable style={styles.premiumBanner}>
+            <View style={styles.crownBox}>
+              <Ionicons color="#f59e0b" name="diamond" size={28} />
+            </View>
+            <View style={styles.premiumCopy}>
+              <Text style={styles.premiumTitle}>Unlock Premium Templates</Text>
+              <Text style={styles.premiumText}>Get access to premium templates, advanced features and more.</Text>
+            </View>
+            <View style={styles.upgradePill}>
+              <Text style={styles.upgradeText}>Upgrade to Pro</Text>
+            </View>
+          </Pressable>
+        </Link>
+      </ScrollView>
       <BottomNav active="home" />
     </View>
   );
 }
 
-function CategoryChip({ category }: { category: TemplateCategory }) {
+function SectionHeader({ onSeeAll, title }: { onSeeAll: () => void; title: string }) {
   return (
-    <View style={styles.category}>
-      <Ionicons color="#ec0e68" name={getTemplateIcon(category)} size={16} />
-      <Text style={styles.categoryText}>{category}</Text>
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <Pressable onPress={onSeeAll}>
+        <Text style={styles.seeAll}>See All</Text>
+      </Pressable>
     </View>
   );
 }
 
-function TemplateRow({ template }: { template: Template }) {
+function RecentCard({ experience }: { experience: Experience }) {
+  return (
+    <Pressable style={styles.recentCard} onPress={() => router.push("/experiences" as never)}>
+      <VisualPanel accent={experience.theme.accent} background={experience.theme.background} category="love" />
+      <View style={styles.templateInfo}>
+        <Text numberOfLines={1} style={styles.templateTitle}>{experience.title || "Untitled experience"}</Text>
+        <Text style={styles.templateMeta}>{experience.isPublished ? "Published" : "Draft"} link</Text>
+      </View>
+      <Ionicons color="#667085" name="ellipsis-vertical" size={18} style={styles.moreIcon} />
+    </Pressable>
+  );
+}
+
+function TrendingCard({ rank, template }: { rank: number; template: Template }) {
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
-      <Pressable style={styles.card}>
-        <View style={[styles.swatch, { backgroundColor: template.defaultTheme.background }]}>
-          <Ionicons color={template.defaultTheme.accent} name={getTemplateIcon(template.category)} size={24} />
+      <Pressable style={styles.trendingCard}>
+        <VisualPanel accent={template.defaultTheme.accent} background={template.defaultTheme.background} category={template.category} />
+        <Text style={[styles.badge, rank < 2 ? styles.popularBadge : styles.newBadge]}>{rank < 2 ? "Popular" : "New"}</Text>
+        <View style={styles.templateInfo}>
+          <Text numberOfLines={1} style={styles.templateTitle}>{template.name}</Text>
+          <Text style={styles.templateMeta}>{getUsageLabel(rank)} uses</Text>
         </View>
-        <View style={styles.cardText}>
-          <View style={styles.cardMetaRow}>
-            <Text style={styles.cardCategory}>{template.category}</Text>
-            {template.isPremium ? <Text style={styles.pro}>Premium</Text> : null}
-          </View>
-          <Text style={styles.cardTitle}>{template.name}</Text>
-          <Text style={styles.cardCopy} numberOfLines={2}>{template.description}</Text>
-        </View>
-        <Ionicons color="#98a2b3" name="chevron-forward" size={20} />
       </Pressable>
     </Link>
   );
 }
 
-function getTemplateIcon(category: TemplateCategory): keyof typeof Ionicons.glyphMap {
+function VisualPanel({ accent, background, category }: { accent: string; background: string; category: TemplateCategory | "love" }) {
+  return (
+    <View style={[styles.visualPanel, { backgroundColor: background }]}>
+      <View style={[styles.visualCircle, { backgroundColor: accent }]} />
+      <Ionicons color={accent} name={getTemplateIcon(category)} size={38} />
+      <View style={[styles.visualLine, { backgroundColor: accent }]} />
+    </View>
+  );
+}
+
+function LoadingCard({ label }: { label: string }) {
+  return (
+    <View style={styles.loadingCard}>
+      <Ionicons color="#ec0e68" name="sparkles-outline" size={23} />
+      <Text style={styles.loadingText}>{label}</Text>
+    </View>
+  );
+}
+
+function getUsageLabel(index: number) {
+  return ["32.1K", "28.6K", "21.3K", "18.7K", "16.4K", "14.2K", "12.8K", "9.9K"][index] ?? "8.4K";
+}
+
+function getTemplateIcon(category: TemplateCategory | "love"): keyof typeof Ionicons.glyphMap {
   if (category === "birthday") {
-    return "gift-outline";
+    return "gift";
   }
 
   if (category === "friends") {
-    return "people-outline";
+    return "people";
   }
 
   if (category === "family") {
-    return "home-outline";
+    return "home";
   }
 
   if (category === "fun") {
-    return "sparkles-outline";
+    return "sparkles";
   }
 
-  return "heart-outline";
+  return "heart";
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#fff7fb" },
-  headerContent: { gap: 14 },
+  screen: { flex: 1, backgroundColor: "#fbfbff" },
+  content: { gap: 18, padding: 20, paddingBottom: 126 },
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingTop: 8 },
-  brandBlock: { flex: 1, gap: 3 },
-  logo: { color: "#ec0e68", fontSize: 14, fontWeight: "900", letterSpacing: 0 },
-  eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
-  title: { color: "#101828", fontSize: 34, lineHeight: 40, fontWeight: "900" },
-  subtitle: { color: "#475467", fontSize: 16, lineHeight: 23 },
-  account: { color: "#667085", fontWeight: "700" },
-  hero: { gap: 8, padding: 18, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff" },
-  heroIcon: { width: 62, height: 62, borderRadius: 8, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
-  quickActions: { flexDirection: "row", gap: 10 },
-  primaryAction: { flex: 1, height: 52, borderRadius: 8, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
-  primaryActionText: { color: "#ffffff", fontWeight: "900" },
-  secondaryAction: { flex: 1, height: 52, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
-  secondaryActionText: { color: "#101828", fontWeight: "900" },
-  iconButton: { width: 44, height: 44, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
-  pendingButton: { opacity: 0.65 },
-  statsRow: { flexDirection: "row", gap: 10 },
-  statBox: { flex: 1, minHeight: 86, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 14, justifyContent: "space-between" },
-  statLabel: { color: "#667085", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  statValue: { color: "#101828", fontSize: 26, fontWeight: "900" },
-  planCard: { gap: 10, marginTop: 14, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7" },
-  planHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
-  planTitleRow: { flexDirection: "row", alignItems: "center", gap: 7 },
-  planLabel: { color: "#101828", fontSize: 16, fontWeight: "900", textTransform: "capitalize" },
-  planStatus: { overflow: "hidden", borderRadius: 8, backgroundColor: "#ffffff", color: "#ec0e68", paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  planCopy: { color: "#344054", fontWeight: "700" },
-  planError: { color: "#b42318", lineHeight: 19 },
-  usageTrack: { height: 8, borderRadius: 4, overflow: "hidden", backgroundColor: "#fbcfe8" },
-  usageValue: { height: "100%", borderRadius: 4, backgroundColor: "#ec0e68" },
-  categories: { gap: 8, paddingVertical: 18 },
-  category: { minHeight: 38, borderRadius: 8, paddingHorizontal: 12, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", flexDirection: "row", alignItems: "center", gap: 7 },
-  categoryText: { color: "#344054", fontWeight: "900", textTransform: "capitalize" },
-  sectionHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingBottom: 2 },
-  sectionTitle: { color: "#101828", fontSize: 20, fontWeight: "900" },
-  sectionSubtitle: { color: "#667085", fontSize: 12, marginTop: 2 },
-  libraryLink: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7", flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10 },
-  libraryLinkText: { color: "#ec0e68", fontSize: 13, fontWeight: "900" },
-  list: { gap: 12, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 110 },
-  card: { minHeight: 118, flexDirection: "row", alignItems: "center", gap: 13, padding: 14, backgroundColor: "#ffffff", borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8" },
-  swatch: { width: 62, height: 74, borderRadius: 8, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.08)" },
-  cardText: { flex: 1, gap: 4 },
-  cardMetaRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  cardCategory: { color: "#ec0e68", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
-  cardTitle: { color: "#101828", fontSize: 17, fontWeight: "900" },
-  cardCopy: { color: "#667085", fontSize: 14, lineHeight: 20 },
-  pro: { overflow: "hidden", borderRadius: 8, backgroundColor: "#fff0f6", color: "#ec0e68", fontWeight: "900", fontSize: 10, paddingHorizontal: 7, paddingVertical: 3 },
-  emptyState: { padding: 18, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", gap: 8, alignItems: "flex-start" },
-  emptyIcon: { width: 50, height: 50, borderRadius: 8, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
-  emptyTitle: { color: "#101828", fontSize: 16, fontWeight: "900" },
-  emptyCopy: { color: "#667085", lineHeight: 20 }
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  logoMark: { width: 58, height: 58, borderRadius: 18, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", transform: [{ rotate: "-10deg" }] },
+  logo: { color: "#101828", fontSize: 28, lineHeight: 33, fontWeight: "900", letterSpacing: 0 },
+  tagline: { color: "#667085", fontSize: 14, fontWeight: "700" },
+  topActions: { flexDirection: "row", alignItems: "center", gap: 10 },
+  proPill: { minHeight: 44, borderRadius: 22, borderWidth: 1, borderColor: "#fce7f3", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 7, paddingHorizontal: 13 },
+  proText: { color: "#ec0e68", fontSize: 16, fontWeight: "900" },
+  bellButton: { width: 46, height: 46, borderRadius: 23, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  notificationDot: { position: "absolute", right: 9, top: 7, width: 9, height: 9, borderRadius: 5, backgroundColor: "#ec0e68" },
+  searchRow: { flexDirection: "row", gap: 12 },
+  searchBox: { flex: 1, height: 64, borderRadius: 20, borderWidth: 1, borderColor: "#e7e8f2", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16 },
+  searchInput: { flex: 1, color: "#101828", fontSize: 16 },
+  sparkleButton: { width: 64, height: 64, borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
+  categoryRail: { gap: 14, paddingRight: 4 },
+  categoryTile: { width: 116, height: 122, borderRadius: 22, borderWidth: 1, borderColor: "#e7e8f2", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", gap: 10 },
+  categoryIcon: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
+  categoryLabel: { color: "#101828", fontSize: 15, fontWeight: "900" },
+  heroCard: { minHeight: 306, borderRadius: 28, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffe4ee", overflow: "hidden", padding: 22, flexDirection: "row" },
+  heroCopy: { flex: 1.05, gap: 11, justifyContent: "center", zIndex: 2 },
+  heroTitle: { color: "#101828", fontSize: 29, lineHeight: 36, fontWeight: "500" },
+  heroAccent: { color: "#d62666", fontSize: 30, lineHeight: 36, fontWeight: "900" },
+  heroBody: { color: "#667085", fontSize: 16, lineHeight: 25, maxWidth: 210 },
+  heroButton: { marginTop: 8, height: 54, alignSelf: "flex-start", borderRadius: 27, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", gap: 10, paddingLeft: 22, paddingRight: 8 },
+  heroButtonText: { color: "#ffffff", fontSize: 16, fontWeight: "900" },
+  heroArrow: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  heroArt: { flex: 1, alignItems: "center", justifyContent: "center" },
+  envelopeBack: { position: "absolute", width: 154, height: 116, borderRadius: 26, backgroundColor: "#f78db3", transform: [{ rotate: "-18deg" }] },
+  envelope: { width: 154, height: 116, borderRadius: 18, backgroundColor: "#fff7fb", alignItems: "center", justifyContent: "center", transform: [{ rotate: "10deg" }], shadowColor: "#d62666", shadowOpacity: 0.16, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
+  envelopeText: { color: "#9f1239", fontSize: 17, lineHeight: 24, fontWeight: "700", fontStyle: "italic", textAlign: "center" },
+  heroHeart: { position: "absolute", bottom: 58, left: 12 },
+  heroSmallHeart: { position: "absolute", top: 44, left: 8 },
+  heroPlane: { position: "absolute", top: 28, right: 0, transform: [{ rotate: "25deg" }] },
+  heroDots: { position: "absolute", bottom: 14, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 8 },
+  activeHeroDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: "#ec0e68" },
+  heroDot: { width: 9, height: 9, borderRadius: 5, backgroundColor: "#cdd3df" },
+  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 6 },
+  sectionTitle: { color: "#101828", fontSize: 22, lineHeight: 28, fontWeight: "900" },
+  seeAll: { color: "#ec0e68", fontSize: 15, fontWeight: "900" },
+  cardRail: { gap: 16, paddingRight: 4 },
+  recentCard: { width: 214, minHeight: 214, borderRadius: 18, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e7e8f2", overflow: "hidden" },
+  trendingCard: { width: 190, minHeight: 246, borderRadius: 18, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e7e8f2", overflow: "hidden" },
+  visualPanel: { height: 132, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  visualCircle: { position: "absolute", width: 96, height: 96, borderRadius: 48, opacity: 0.14 },
+  visualLine: { position: "absolute", bottom: 0, left: 0, right: 0, height: 4, opacity: 0.7 },
+  templateInfo: { gap: 4, padding: 14, paddingRight: 34 },
+  templateTitle: { color: "#101828", fontSize: 15, fontWeight: "900" },
+  templateMeta: { color: "#667085", fontSize: 13, fontWeight: "700" },
+  moreIcon: { position: "absolute", right: 11, bottom: 24 },
+  badge: { position: "absolute", left: 12, top: 12, overflow: "hidden", borderRadius: 9, color: "#ffffff", paddingHorizontal: 8, paddingVertical: 5, fontSize: 11, fontWeight: "900" },
+  popularBadge: { backgroundColor: "#ec0e68" },
+  newBadge: { backgroundColor: "#16a34a" },
+  premiumBanner: { minHeight: 118, borderRadius: 24, backgroundColor: "#fff8e7", borderWidth: 1, borderColor: "#fff1c2", flexDirection: "row", alignItems: "center", gap: 14, padding: 18 },
+  crownBox: { width: 58, height: 58, borderRadius: 18, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  premiumCopy: { flex: 1, gap: 4 },
+  premiumTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
+  premiumText: { color: "#667085", fontSize: 14, lineHeight: 20 },
+  upgradePill: { minHeight: 48, borderRadius: 24, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+  upgradeText: { color: "#ec0e68", fontSize: 15, fontWeight: "900" },
+  loadingCard: { minHeight: 92, borderRadius: 18, borderWidth: 1, borderColor: "#e7e8f2", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", gap: 8 },
+  loadingText: { color: "#667085", fontWeight: "800" }
 });
