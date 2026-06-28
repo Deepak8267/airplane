@@ -4,56 +4,66 @@ import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 
+const FREE_FEATURES = ["3 active experiences", "AIRPLANE watermark", "Basic templates", "Basic sharing"];
 const PRO_FEATURES = ["Unlimited experiences", "Premium templates", "Remove watermark", "Advanced analytics", "Priority support"];
 
 export default function SubscriptionScreen() {
   const planQuery = useQuery({ queryKey: ["plan-usage"], queryFn: getPlanUsage });
   const usage = planQuery.data;
+  const isPro = usage?.plan === "pro";
 
   return (
-    <ScrollView contentContainerStyle={styles.screen}>
-      <Header title="Subscription" subtitle="Choose the plan for your creator workflow." />
-
-      <View style={styles.heroCard}>
-        <View style={styles.crown}>
-          <Ionicons color="#ec0e68" name="diamond-outline" size={30} />
+    <View style={styles.root}>
+      <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
+        <View style={styles.topBar}>
+          <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
+            <Ionicons color="#101828" name="chevron-back" size={22} />
+          </Pressable>
+          <View style={styles.badge}>
+            <Ionicons color="#ec0e68" name="diamond-outline" size={17} />
+            <Text style={styles.badgeText}>Plan</Text>
+          </View>
         </View>
-        <Text style={styles.heroTitle}>Unlock Pro</Text>
-        <Text style={styles.heroCopy}>Create unlimited personalized experiences and remove AIRPLANE branding.</Text>
+
+        <View style={styles.heroCard}>
+          <View style={styles.crown}>
+            <Ionicons color="#ec0e68" name="diamond-outline" size={32} />
+          </View>
+          <Text style={styles.heroTitle}>{isPro ? "You are on Pro." : "Unlock Pro"}</Text>
+          <Text style={styles.heroCopy}>Create unlimited personalized experiences, remove AIRPLANE branding, and unlock deeper analytics.</Text>
+          <View style={styles.usageCard}>
+            <Text style={styles.usageLabel}>Free usage</Text>
+            <Text style={styles.usageValue}>
+              {usage ? `${usage.activeExperienceCount}/${usage.freeExperienceLimit} active experiences` : "Loading usage..."}
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.billingTabs}>
           <Text style={styles.billingActive}>Monthly</Text>
-          <Text style={styles.billingInactive}>Yearly soon</Text>
+          <Text style={styles.billingInactive}>Yearly later</Text>
         </View>
-      </View>
 
-      <View style={styles.planGrid}>
-        <PlanCard
-          active={usage?.plan !== "pro"}
-          name="Free"
-          price="₹0"
-          features={["3 active experiences", "AIRPLANE watermark", "Basic templates"]}
-        />
-        <PlanCard active={usage?.plan === "pro"} name="Pro" price="₹199/mo" features={PRO_FEATURES} highlighted />
-      </View>
+        {planQuery.error instanceof Error ? <Text style={styles.error}>{planQuery.error.message}</Text> : null}
 
-      <Pressable disabled style={styles.disabledButton}>
-        <Ionicons color="#ffffff" name="card-outline" size={20} />
-        <Text style={styles.disabledButtonText}>Razorpay coming soon</Text>
-      </Pressable>
+        <View style={styles.planGrid}>
+          <PlanCard active={!isPro} name="Free" price="Rs 0" features={FREE_FEATURES} />
+          <PlanCard active={isPro} name="Pro" price="Rs 199/mo" features={PRO_FEATURES} highlighted />
+        </View>
 
-      <Pressable style={styles.secondaryButton} onPress={() => router.back()}>
-        <Text style={styles.secondaryButtonText}>Back</Text>
-      </Pressable>
-    </ScrollView>
-  );
-}
+        <View style={styles.noticeCard}>
+          <Ionicons color="#b54708" name="information-circle-outline" size={22} />
+          <View style={styles.noticeCopy}>
+            <Text style={styles.noticeTitle}>Payments later</Text>
+            <Text style={styles.noticeText}>Razorpay integration is planned, but payment activation is intentionally paused for now.</Text>
+          </View>
+        </View>
 
-function Header({ subtitle, title }: { subtitle: string; title: string }) {
-  return (
-    <View style={styles.header}>
-      <Text style={styles.eyebrow}>AIRPLANE</Text>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
+        <Pressable disabled style={styles.disabledButton}>
+          <Ionicons color="#ffffff" name="card-outline" size={20} />
+          <Text style={styles.disabledButtonText}>Razorpay coming soon</Text>
+        </Pressable>
+      </ScrollView>
     </View>
   );
 }
@@ -62,44 +72,56 @@ function PlanCard({ active, features, highlighted = false, name, price }: { acti
   return (
     <View style={[styles.planCard, highlighted ? styles.proCard : null]}>
       <View style={styles.planHeader}>
-        <Text style={styles.planName}>{name}</Text>
+        <View>
+          <Text style={styles.planName}>{name}</Text>
+          <Text style={styles.price}>{price}</Text>
+        </View>
         {active ? <Text style={styles.activeBadge}>Current</Text> : null}
       </View>
-      <Text style={styles.price}>{price}</Text>
-      {features.map((feature) => (
-        <View key={feature} style={styles.featureRow}>
-          <Ionicons color="#067647" name="checkmark-circle" size={18} />
-          <Text style={styles.featureText}>{feature}</Text>
-        </View>
-      ))}
+      <View style={styles.featureList}>
+        {features.map((feature) => (
+          <View key={feature} style={styles.featureRow}>
+            <Ionicons color="#067647" name="checkmark-circle" size={18} />
+            <Text style={styles.featureText}>{feature}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flexGrow: 1, gap: 16, padding: 20, backgroundColor: "#fff7fb" },
-  header: { gap: 6, paddingTop: 8 },
-  eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
-  title: { color: "#101828", fontSize: 32, lineHeight: 38, fontWeight: "900" },
-  subtitle: { color: "#667085", fontSize: 15, lineHeight: 22 },
+  root: { flex: 1, backgroundColor: "#fff7fb" },
+  screen: { flexGrow: 1, gap: 16, padding: 20, paddingBottom: 34 },
+  topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  iconButton: { width: 42, height: 42, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  badge: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
+  badgeText: { color: "#ec0e68", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
   heroCard: { gap: 12, alignItems: "center", borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 18 },
-  crown: { width: 58, height: 58, borderRadius: 8, backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
-  heroTitle: { color: "#101828", fontSize: 26, fontWeight: "900" },
-  heroCopy: { color: "#667085", textAlign: "center", lineHeight: 21 },
-  billingTabs: { height: 40, flexDirection: "row", borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff7fb", padding: 3 },
-  billingActive: { minWidth: 104, borderRadius: 6, backgroundColor: "#ec0e68", color: "#ffffff", textAlign: "center", textAlignVertical: "center", fontWeight: "900" },
-  billingInactive: { minWidth: 104, color: "#667085", textAlign: "center", textAlignVertical: "center", fontWeight: "900" },
+  crown: { width: 66, height: 66, borderRadius: 8, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
+  heroTitle: { color: "#101828", fontSize: 30, lineHeight: 36, fontWeight: "900", textAlign: "center" },
+  heroCopy: { color: "#667085", textAlign: "center", lineHeight: 22 },
+  usageCard: { alignSelf: "stretch", minHeight: 62, borderRadius: 8, backgroundColor: "#fff7fb", borderWidth: 1, borderColor: "#fbcfe8", padding: 12, justifyContent: "center", gap: 3 },
+  usageLabel: { color: "#667085", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
+  usageValue: { color: "#101828", fontWeight: "900" },
+  billingTabs: { height: 42, flexDirection: "row", borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 3 },
+  billingActive: { flex: 1, borderRadius: 6, backgroundColor: "#ec0e68", color: "#ffffff", textAlign: "center", textAlignVertical: "center", fontWeight: "900" },
+  billingInactive: { flex: 1, color: "#667085", textAlign: "center", textAlignVertical: "center", fontWeight: "900" },
   planGrid: { gap: 12 },
-  planCard: { gap: 10, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", padding: 15 },
+  planCard: { gap: 13, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", padding: 15 },
   proCard: { borderColor: "#fbcfe8", backgroundColor: "#fff1f7" },
-  planHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  planName: { color: "#101828", fontSize: 18, fontWeight: "900" },
+  planHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
+  planName: { color: "#101828", fontSize: 19, fontWeight: "900" },
   activeBadge: { overflow: "hidden", borderRadius: 8, backgroundColor: "#dcfae6", color: "#067647", paddingHorizontal: 8, paddingVertical: 4, fontSize: 11, fontWeight: "900" },
-  price: { color: "#101828", fontSize: 27, fontWeight: "900" },
+  price: { color: "#101828", fontSize: 29, fontWeight: "900", marginTop: 4 },
+  featureList: { gap: 9 },
   featureRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   featureText: { color: "#344054", fontWeight: "800" },
+  noticeCard: { minHeight: 78, borderRadius: 8, borderWidth: 1, borderColor: "#fedf89", backgroundColor: "#fffaeb", padding: 13, flexDirection: "row", gap: 10 },
+  noticeCopy: { flex: 1, gap: 3 },
+  noticeTitle: { color: "#7a2e0e", fontWeight: "900" },
+  noticeText: { color: "#7a2e0e", lineHeight: 19 },
   disabledButton: { height: 54, borderRadius: 8, backgroundColor: "#ec0e68", opacity: 0.65, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   disabledButtonText: { color: "#ffffff", fontSize: 16, fontWeight: "900" },
-  secondaryButton: { height: 50, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
-  secondaryButtonText: { color: "#101828", fontWeight: "900" }
+  error: { color: "#b42318", lineHeight: 20 }
 });

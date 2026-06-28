@@ -1,55 +1,96 @@
 import { Ionicons } from "@expo/vector-icons";
 import { EXPERIENCE_THEMES } from "@airplane/shared";
+import type { Theme } from "@airplane/shared";
 import { router } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function ThemesScreen() {
   return (
     <View style={styles.screen}>
+      <View style={styles.topBar}>
+        <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
+          <Ionicons color="#101828" name="chevron-back" size={22} />
+        </Pressable>
+        <View style={styles.badge}>
+          <Ionicons color="#ec0e68" name="color-palette-outline" size={17} />
+          <Text style={styles.badgeText}>Themes</Text>
+        </View>
+      </View>
+
       <View style={styles.header}>
         <Text style={styles.eyebrow}>Theme previews</Text>
         <Text style={styles.title}>Choose a mood</Text>
-        <Text style={styles.subtitle}>Themes can be applied inside the builder.</Text>
+        <Text style={styles.subtitle}>Themes can be applied inside the builder to shape the recipient link.</Text>
       </View>
+
       <FlatList
         data={EXPERIENCE_THEMES}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <View style={[styles.themeCard, { backgroundColor: item.background }]}>
-            <View style={styles.themeTop}>
-              <Text style={[styles.themeName, { color: item.foreground }]}>{item.name}</Text>
-              <View style={[styles.themeDot, { backgroundColor: item.accent }]} />
-            </View>
-            <View style={styles.previewStage}>
-              <Ionicons color={item.accent} name="heart" size={34} />
-              <Text style={[styles.previewTitle, { color: item.foreground }]}>Will you marry me?</Text>
-              <Text style={[styles.previewCopy, { color: item.foreground }]}>You mean the world to me.</Text>
-            </View>
-          </View>
-        )}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => <ThemeCard theme={item} />}
       />
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backButtonText}>Back</Text>
-      </Pressable>
+    </View>
+  );
+}
+
+function ThemeCard({ theme }: { theme: Theme }) {
+  return (
+    <View style={[styles.themeCard, { backgroundColor: theme.background }]}>
+      <View style={styles.themeTop}>
+        <View>
+          <Text style={[styles.themeName, { color: theme.foreground }]}>{theme.name}</Text>
+          <Text style={[styles.themeMeta, { color: theme.foreground }]}>{theme.fontFamily} font</Text>
+        </View>
+        <View style={styles.swatches}>
+          <View style={[styles.swatch, { backgroundColor: theme.muted }]} />
+          <View style={[styles.swatch, { backgroundColor: theme.accent }]} />
+        </View>
+      </View>
+
+      <View style={styles.previewStage}>
+        <View style={[styles.previewIcon, { backgroundColor: theme.muted }]}>
+          <Ionicons color={theme.accent} name="heart" size={30} />
+        </View>
+        <Text style={[styles.previewTitle, { color: theme.foreground }]}>Will you marry me?</Text>
+        <Text style={[styles.previewCopy, { color: theme.foreground }]}>You mean the world to me.</Text>
+        <View style={styles.previewActions}>
+          <View style={[styles.yesButton, { backgroundColor: theme.accent }]}>
+            <Text style={styles.yesText}>YES</Text>
+          </View>
+          <View style={[styles.noButton, { backgroundColor: theme.muted }]}>
+            <Text style={[styles.noText, { color: theme.foreground }]}>NO</Text>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, padding: 20, backgroundColor: "#fff7fb" },
-  header: { gap: 6, paddingTop: 8 },
+  topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  iconButton: { width: 42, height: 42, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  badge: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
+  badgeText: { color: "#ec0e68", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
+  header: { gap: 6, paddingTop: 18 },
   eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
   title: { color: "#101828", fontSize: 32, lineHeight: 38, fontWeight: "900" },
   subtitle: { color: "#667085", fontSize: 15, lineHeight: 22 },
-  list: { gap: 12, paddingTop: 18, paddingBottom: 90 },
-  themeCard: { minHeight: 210, borderRadius: 8, borderWidth: 1, borderColor: "#eaecf0", padding: 14, justifyContent: "space-between" },
-  themeTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  themeName: { fontSize: 17, fontWeight: "900" },
-  themeDot: { width: 30, height: 30, borderRadius: 15 },
-  previewStage: { alignItems: "center", gap: 8 },
-  previewTitle: { fontSize: 24, lineHeight: 29, fontWeight: "900", textAlign: "center" },
+  list: { gap: 12, paddingTop: 18, paddingBottom: 28 },
+  themeCard: { minHeight: 260, borderRadius: 8, borderWidth: 1, borderColor: "#ffffff", padding: 15, justifyContent: "space-between", shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
+  themeTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  themeName: { fontSize: 18, fontWeight: "900" },
+  themeMeta: { marginTop: 2, fontSize: 12, fontWeight: "800", opacity: 0.62, textTransform: "capitalize" },
+  swatches: { flexDirection: "row", gap: 8 },
+  swatch: { width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)" },
+  previewStage: { alignItems: "center", gap: 9, borderRadius: 8, backgroundColor: "rgba(255, 255, 255, 0.5)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.7)", padding: 18 },
+  previewIcon: { width: 58, height: 58, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  previewTitle: { fontSize: 25, lineHeight: 30, fontWeight: "900", textAlign: "center" },
   previewCopy: { fontSize: 14, opacity: 0.75 },
-  backButton: { position: "absolute", left: 20, right: 20, bottom: 20, height: 52, borderRadius: 8, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center" },
-  backButtonText: { color: "#ffffff", fontSize: 16, fontWeight: "900" }
+  previewActions: { alignSelf: "stretch", flexDirection: "row", gap: 8, marginTop: 5 },
+  yesButton: { flex: 1, height: 44, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  yesText: { color: "#ffffff", fontWeight: "900" },
+  noButton: { flex: 1, height: 44, borderRadius: 8, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.1)" },
+  noText: { fontWeight: "900" }
 });
