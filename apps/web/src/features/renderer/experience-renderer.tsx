@@ -184,28 +184,32 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
   if (completed) {
     return (
       <main
-        className="min-h-dvh overflow-hidden px-5 py-6"
+        className="min-h-dvh overflow-hidden px-4 py-5 sm:px-6"
         style={{ background: theme.background, color: theme.foreground, fontFamily: getThemeFontFamily(theme.fontFamily) }}
       >
-        <div className="mx-auto flex min-h-[calc(100dvh-3rem)] max-w-xl flex-col justify-center gap-5">
+        <div className="mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full max-w-[430px] flex-col justify-center gap-5">
           <motion.section
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col gap-5"
+            className="relative overflow-hidden rounded-[28px] border border-white/70 bg-white/80 px-6 py-8 text-center shadow-2xl shadow-black/10 backdrop-blur"
             initial={{ opacity: 0, y: 18 }}
             transition={{ duration: 0.32, ease: "easeOut" }}
           >
-            <p className="text-sm font-black uppercase text-current opacity-60">Complete</p>
-            <h1 className="text-5xl font-black leading-tight tracking-normal sm:text-6xl">Thank you.</h1>
-            <p className="text-lg leading-8 opacity-80">
+            <FloatingMarks accent={theme.accent} />
+            <div className="mx-auto flex size-20 items-center justify-center rounded-full text-4xl font-black text-white shadow-xl shadow-black/10" style={{ background: theme.accent }}>
+              Y
+            </div>
+            <p className="mt-6 text-xs font-black uppercase tracking-[0.18em] text-current opacity-60">Complete</p>
+            <h1 className="mt-2 text-4xl font-black leading-tight tracking-normal sm:text-5xl">Thank you.</h1>
+            <p className="mx-auto mt-3 max-w-sm text-base leading-7 opacity-75">
               {payload.experience.recipientName ? `${payload.experience.recipientName}, this experience is complete.` : "This experience is complete."}
             </p>
             {quizAnswered > 0 ? (
-              <div className="flex items-end justify-between border-y border-current/15 py-4">
+              <div className="mt-6 flex items-end justify-between rounded-2xl border border-current/10 bg-white/70 px-4 py-4 text-left">
                 <p className="text-sm font-bold uppercase opacity-60">Quiz score</p>
                 <p className="text-3xl font-black tabular-nums">{quizScore} / {quizAnswered}</p>
               </div>
             ) : null}
-            {payload.experience.watermarkEnabled ? <p className="pt-2 text-center text-xs font-bold opacity-60">Made with AIRPLANE</p> : null}
+            {payload.experience.watermarkEnabled ? <Watermark /> : null}
           </motion.section>
         </div>
       </main>
@@ -214,25 +218,28 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
 
   return (
     <main
-      className="min-h-dvh overflow-hidden px-5 py-6"
+      className="min-h-dvh overflow-hidden px-4 py-5 sm:px-6"
       style={{ background: theme.background, color: theme.foreground, fontFamily: getThemeFontFamily(theme.fontFamily) }}
     >
-      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-xl flex-col justify-center gap-6">
-        <div aria-label={`Page ${index + 1} of ${payload.pages.length}`} className="flex items-center gap-3">
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/10">
-            <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: theme.accent }} />
+      <div className="mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full max-w-[430px] flex-col justify-center gap-4">
+        <div aria-label={`Page ${index + 1} of ${payload.pages.length}`} className="rounded-full border border-white/70 bg-white/65 px-3 py-3 shadow-lg shadow-black/5 backdrop-blur">
+          <div className="flex items-center gap-3">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/10">
+              <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: theme.accent }} />
+            </div>
+            <span className="text-xs font-black tabular-nums opacity-60">{index + 1}/{payload.pages.length}</span>
           </div>
-          <span className="text-xs font-black tabular-nums opacity-60">{index + 1}/{payload.pages.length}</span>
         </div>
         <AnimatePresence mode="wait">
           <motion.section
             key={page.id}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="flex flex-col gap-5"
+            className="relative overflow-hidden rounded-[30px] border border-white/70 bg-white/80 p-5 shadow-2xl shadow-black/10 backdrop-blur"
             exit={{ opacity: 0, y: -18, scale: 0.98 }}
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             transition={{ duration: 0.32, ease: "easeOut" }}
           >
+            <FloatingMarks accent={theme.accent} />
             <PageBody
               coverPhotoUrl={payload.experience.coverPhotoUrl}
               onQuizAnswer={handleQuizAnswer}
@@ -243,13 +250,13 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
               theme={theme}
             />
             {page.pageType === "proposal" ? (
-              <div className="relative mt-2 flex min-h-28 items-center gap-3">
-                <button className="h-14 flex-1 rounded-lg px-5 text-base font-black text-white shadow-lg shadow-black/10" style={{ background: theme.accent }} onClick={handleYes}>
+              <div className="relative z-10 mt-3 flex min-h-28 items-center gap-3">
+                <button className="h-14 flex-1 rounded-2xl px-5 text-base font-black text-white shadow-lg shadow-black/10 transition hover:-translate-y-0.5 active:translate-y-0" style={{ background: theme.accent }} onClick={handleYes}>
                   YES
                 </button>
                 <motion.button
                   animate={{ x: noPosition.x, y: noPosition.y }}
-                  className="h-14 flex-1 rounded-lg border border-black/15 bg-white px-5 text-base font-black shadow-lg shadow-black/5"
+                  className="h-14 flex-1 rounded-2xl border border-black/10 bg-white px-5 text-base font-black shadow-lg shadow-black/5"
                   onClick={page.settings.moveNoButton === false ? handleNoAnswer : handleNoAttempt}
                   style={{ background: theme.muted, color: theme.foreground }}
                   transition={{ type: "spring", stiffness: 320, damping: 18 }}
@@ -258,11 +265,12 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
                 </motion.button>
               </div>
             ) : (
-              <button className="mt-2 h-14 rounded-lg px-5 text-base font-black text-white shadow-lg shadow-black/10" style={{ background: theme.accent }} onClick={handleContinue}>
+              <button className="relative z-10 mt-5 h-14 rounded-2xl px-5 text-base font-black text-white shadow-lg shadow-black/10 transition hover:-translate-y-0.5 active:translate-y-0" style={{ background: theme.accent }} onClick={handleContinue}>
                 {isLast ? "Finish" : page.content.ctaLabel ?? "Continue"}
               </button>
             )}
-            {payload.experience.watermarkEnabled ? <p className="pt-2 text-center text-xs font-bold opacity-60">Made with AIRPLANE</p> : null}
+            <PageDots activeIndex={index} count={payload.pages.length} accent={theme.accent} />
+            {payload.experience.watermarkEnabled ? <Watermark /> : null}
           </motion.section>
         </AnimatePresence>
       </div>
@@ -304,41 +312,44 @@ function PageBody({
     const hasMarkedCorrectAnswer = answers.some((answer) => answer.isCorrect);
 
     return (
-      <>
-        <p className="text-sm font-black uppercase text-current opacity-60">{recipientName}</p>
-        <h1 className="text-4xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>
+      <div className="relative z-10 flex flex-col gap-5">
+        <PageEyebrow label={recipientName || "Quick question"} />
+        <h1 className="text-3xl font-black leading-tight tracking-normal sm:text-4xl">{page.content.question ?? page.title}</h1>
         <div className="grid gap-3">
           {answers.map((answer, answerIndex) => (
             <button
               key={answer.id}
-              className="rounded-lg border border-black/10 p-4 text-left font-bold"
+              className="flex min-h-14 items-center gap-3 rounded-2xl border border-black/10 p-4 text-left font-bold shadow-sm shadow-black/5 transition hover:-translate-y-0.5 active:translate-y-0"
               onClick={() => onQuizAnswer(answer.id, answer.label, hasMarkedCorrectAnswer ? Boolean(answer.isCorrect) : answerIndex === 0)}
               style={{ background: theme.muted, color: theme.foreground }}
             >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/80 text-xs font-black">{String.fromCharCode(65 + answerIndex)}</span>
               {answer.label}
             </button>
           ))}
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="relative z-10 flex flex-col gap-4">
       {mediaUrl ? (
-        <img alt="" className="mb-2 max-h-[48dvh] w-full rounded-lg object-cover shadow-xl shadow-black/10" src={mediaUrl} />
+        <div className="overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-xl shadow-black/10">
+          <img alt="" className="max-h-[44dvh] w-full object-cover" src={mediaUrl} />
+        </div>
       ) : null}
-      <p className="text-sm font-black uppercase text-current opacity-60">{recipientName}</p>
-      <h1 className="text-5xl font-black leading-tight tracking-normal">{page.content.question ?? page.title}</h1>
-      <p className="text-lg leading-8 opacity-80">{page.content.body ?? page.content.finalMessage}</p>
+      <PageEyebrow label={recipientName || page.pageType} />
+      <h1 className="text-4xl font-black leading-tight tracking-normal sm:text-5xl">{page.content.question ?? page.title}</h1>
+      <p className="text-base leading-7 opacity-80 sm:text-lg sm:leading-8">{page.content.body ?? page.content.finalMessage}</p>
       {page.pageType === "countdown" && page.content.targetDate ? <CountdownPanel targetDate={page.content.targetDate} /> : null}
       {page.pageType === "final" && quizAnswered > 0 ? (
-        <div className="flex items-end justify-between border-y border-current/15 py-4">
+        <div className="flex items-end justify-between rounded-2xl border border-current/10 bg-white/70 px-4 py-4">
           <p className="text-sm font-bold uppercase opacity-60">Quiz score</p>
           <p className="text-3xl font-black tabular-nums">{quizScore} / {quizAnswered}</p>
         </div>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -381,7 +392,7 @@ function CountdownPanel({ targetDate }: { targetDate: string }) {
 
 function CountdownUnit({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex h-20 min-w-0 flex-col items-center justify-center rounded-lg bg-white/70 px-1">
+    <div className="flex h-20 min-w-0 flex-col items-center justify-center rounded-2xl border border-black/5 bg-white/75 px-1 shadow-sm shadow-black/5">
       <span className="text-2xl font-black tabular-nums">{value}</span>
       <span className="text-[10px] font-bold uppercase opacity-60">{label}</span>
     </div>
@@ -389,6 +400,40 @@ function CountdownUnit({ label, value }: { label: string; value: string }) {
 }
 
 const COUNTDOWN_LABELS = ["Days", "Hours", "Minutes", "Seconds"];
+
+function PageEyebrow({ label }: { label: string }) {
+  return <p className="text-xs font-black uppercase tracking-[0.18em] text-current opacity-60">{label}</p>;
+}
+
+function PageDots({ activeIndex, count, accent }: { activeIndex: number; count: number; accent: string }) {
+  return (
+    <div className="relative z-10 mt-2 flex justify-center gap-1.5" aria-hidden="true">
+      {Array.from({ length: count }).map((_, index) => (
+        <span
+          key={index}
+          className="h-1.5 rounded-full transition-all duration-300"
+          style={{ width: index === activeIndex ? 18 : 6, background: index === activeIndex ? accent : "rgba(16, 24, 40, 0.18)" }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Watermark() {
+  return <p className="relative z-10 pt-2 text-center text-xs font-bold opacity-60">Made with AIRPLANE</p>;
+}
+
+function FloatingMarks({ accent }: { accent: string }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <span className="absolute -right-8 top-8 size-28 rounded-full opacity-10 blur-2xl" style={{ background: accent }} />
+      <span className="absolute -left-10 bottom-20 size-24 rounded-full opacity-10 blur-2xl" style={{ background: accent }} />
+      <span className="absolute right-8 top-20 h-10 w-10 rotate-12 rounded-[12px] border border-current/10 opacity-30" />
+      <span className="absolute left-7 top-10 h-3 w-3 rounded-full opacity-30" style={{ background: accent }} />
+      <span className="absolute bottom-8 right-14 h-2 w-2 rounded-full opacity-30" style={{ background: accent }} />
+    </div>
+  );
+}
 
 function getThemeFontFamily(fontFamily: Theme["fontFamily"]) {
   if (fontFamily === "serif") {
