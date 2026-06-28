@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { BottomNav } from "@/components/bottom-nav";
@@ -127,6 +128,18 @@ export default function ProfileScreen() {
           <DetailRow icon="calendar-outline" label="Created" value={formatDate(profile?.createdAt)} />
         </View>
 
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>More</Text>
+          <Text style={styles.sectionHint}>Manage plan, support, and app preferences.</Text>
+        </View>
+
+        <View style={styles.detailsCard}>
+          <MenuRow icon="diamond-outline" label="My subscription" onPress={() => router.push("/subscription" as never)} />
+          <MenuRow icon="settings-outline" label="Account settings" onPress={() => router.push("/settings" as never)} />
+          <MenuRow icon="help-circle-outline" label="Help & support" onPress={() => router.push("/help" as never)} />
+          <MenuRow icon="information-circle-outline" label="About AIRPLANE" onPress={() => router.push("/themes" as never)} />
+        </View>
+
         {saveMutation.error instanceof Error ? <Text style={styles.error}>{saveMutation.error.message}</Text> : null}
         {saveMutation.isSuccess ? (
           <View style={styles.successRow}>
@@ -172,6 +185,18 @@ function DetailRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMa
         <Text numberOfLines={1} style={styles.detailValue}>{value}</Text>
       </View>
     </View>
+  );
+}
+
+function MenuRow({ icon, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
+  return (
+    <Pressable style={styles.detailRow} onPress={onPress}>
+      <View style={styles.detailIcon}>
+        <Ionicons color="#ec0e68" name={icon} size={18} />
+      </View>
+      <Text style={styles.menuLabel}>{label}</Text>
+      <Ionicons color="#98a2b3" name="chevron-forward" size={19} />
+    </Pressable>
   );
 }
 
@@ -273,6 +298,7 @@ const styles = StyleSheet.create({
   detailCopy: { flex: 1, gap: 2 },
   detailLabel: { color: "#667085", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
   detailValue: { color: "#101828", fontWeight: "800" },
+  menuLabel: { flex: 1, color: "#101828", fontWeight: "900" },
   stateText: { color: "#667085", textAlign: "center", paddingVertical: 8 },
   successRow: { minHeight: 42, borderRadius: 8, backgroundColor: "#ecfdf3", borderWidth: 1, borderColor: "#abefc6", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   successText: { color: "#067647", fontWeight: "900" },

@@ -109,10 +109,10 @@ export default function HomeScreen() {
 
             <View style={styles.sectionHeading}>
               <Text style={styles.sectionTitle}>Templates</Text>
-              <Link href={"/experiences" as never} asChild>
+              <Link href={"/themes" as never} asChild>
                 <Pressable style={styles.libraryLink}>
-                  <Ionicons color="#175cd3" name="albums-outline" size={17} />
-                  <Text style={styles.libraryLinkText}>Library</Text>
+                  <Ionicons color="#ec0e68" name="color-palette-outline" size={17} />
+                  <Text style={styles.libraryLinkText}>Themes</Text>
                 </Pressable>
               </Link>
             </View>
