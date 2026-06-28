@@ -3,17 +3,18 @@ import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-type BottomNavKey = "home" | "library" | "profile";
+type BottomNavKey = "home" | "library" | "analytics" | "profile";
 
 const NAV_ITEMS: Array<{
   key: BottomNavKey;
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   activeIcon: keyof typeof Ionicons.glyphMap;
-  route: "/home" | "/experiences" | "/profile";
+  route: "/home" | "/experiences" | "/analytics" | "/profile";
 }> = [
   { key: "home", label: "Home", icon: "home-outline", activeIcon: "home", route: "/home" },
   { key: "library", label: "Library", icon: "albums-outline", activeIcon: "albums", route: "/experiences" },
+  { key: "analytics", label: "Analytics", icon: "bar-chart-outline", activeIcon: "bar-chart", route: "/analytics" },
   { key: "profile", label: "Profile", icon: "person-circle-outline", activeIcon: "person-circle", route: "/profile" }
 ];
 
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#eaecf0",
     flexDirection: "row",
-    gap: 8,
+    gap: 4,
     padding: 6
   },
   item: {

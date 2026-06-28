@@ -27,6 +27,87 @@ export type ExperienceAnalytics = {
   recentActivity: AnalyticsActivity[];
 };
 
+export type AnalyticsDashboardItem = {
+  experience: Experience;
+  summary: AnalyticsSummary;
+};
+
+export type AnalyticsDashboard = {
+  totals: {
+    views: number;
+    uniqueVisitors: number;
+    completions: number;
+    completionRate: number;
+    publishedExperiences: number;
+  };
+  items: AnalyticsDashboardItem[];
+};
+
+type AnalyticsRow = {
+  experience_id: string;
+  views: number;
+  unique_visitors: number;
+  completions: number;
+  average_completion_time_seconds: number;
+  total_no_attempts: number;
+};
+
+export async function getAnalyticsDashboard(): Promise<AnalyticsDashboard> {
+  const [experiencesResult, analyticsResult] = await Promise.all([
+    supabase
+      .from("experiences")
+      .select("*")
+      .eq("is_published", true)
+      .eq("status", "published")
+      .order("published_at", { ascending: false }),
+    supabase.from("analytics").select("experience_id,views,unique_visitors,completions,average_completion_time_seconds,total_no_attempts")
+  ]);
+
+  if (experiencesResult.error) {
+    throw new Error(experiencesResult.error.message);
+  }
+
+  if (analyticsResult.error) {
+    throw new Error(analyticsResult.error.message);
+  }
+
+  const rows = new Map((analyticsResult.data ?? []).map((row) => [row.experience_id, row as AnalyticsRow]));
+  const items = (experiencesResult.data ?? []).map((row) => {
+    const experience = mapExperience(row);
+    const analytics = rows.get(experience.id);
+    const views = analytics?.views ?? 0;
+    const completions = analytics?.completions ?? 0;
+
+    return {
+      experience,
+      summary: {
+        experienceId: experience.id,
+        views,
+        uniqueVisitors: analytics?.unique_visitors ?? 0,
+        completions,
+        completionRate: getRate(completions, views),
+        averageCompletionTimeSeconds: Number(analytics?.average_completion_time_seconds ?? 0),
+        totalNoAttempts: analytics?.total_no_attempts ?? 0
+      }
+    };
+  });
+
+  const views = items.reduce((sum, item) => sum + item.summary.views, 0);
+  const uniqueVisitors = items.reduce((sum, item) => sum + item.summary.uniqueVisitors, 0);
+  const completions = items.reduce((sum, item) => sum + item.summary.completions, 0);
+
+  return {
+    totals: {
+      views,
+      uniqueVisitors,
+      completions,
+      completionRate: getRate(completions, views),
+      publishedExperiences: items.length
+    },
+    items
+  };
+}
+
 export async function getExperienceAnalytics(experienceId: string): Promise<ExperienceAnalytics> {
   const [experienceResult, analyticsResult, eventsResult] = await Promise.all([
     supabase.from("experiences").select("*").eq("id", experienceId).single(),
