@@ -3,6 +3,11 @@ import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const PRIMARY = "#FF3D81";
+const TEXT_MUTED = "#6B7280";
+const BORDER = "#F3F4F6";
+const FONT_MEDIUM = "Poppins_500Medium";
+
 type BottomNavKey = "home" | "library" | "analytics" | "profile";
 
 const NAV_ITEMS: Array<{
@@ -35,7 +40,7 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
               onPress={() => router.push(item.route as never)}
               style={styles.item}
             >
-              <Ionicons color={selected ? "#ec0e68" : "#475467"} name={selected ? item.activeIcon : item.icon} size={23} />
+              <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={24} />
               <Text style={[styles.label, selected ? styles.activeLabel : null]}>{item.label}</Text>
             </Pressable>
           );
@@ -54,7 +59,7 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
               onPress={() => router.push(item.route as never)}
               style={styles.item}
             >
-              <Ionicons color={selected ? "#ec0e68" : "#475467"} name={selected ? item.activeIcon : item.icon} size={23} />
+              <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={24} />
               <Text style={[styles.label, selected ? styles.activeLabel : null]}>{item.label}</Text>
             </Pressable>
           );
@@ -67,24 +72,28 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
 const styles = StyleSheet.create({
   shell: {
     backgroundColor: "transparent",
-    paddingHorizontal: 12,
-    paddingTop: 4
+    paddingHorizontal: 14,
+    paddingTop: 0
   },
   nav: {
-    minHeight: 60,
-    borderRadius: 22,
+    height: 82,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: "#eaecf0",
+    borderColor: BORDER,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 6,
-    shadowColor: "#101828",
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 }
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    shadowColor: "#111827",
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2
   },
   item: {
     flex: 1,
@@ -95,20 +104,21 @@ const styles = StyleSheet.create({
     paddingVertical: 6
   },
   createButton: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: "#ec0e68",
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: PRIMARY,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -25,
+    marginTop: -31,
     borderWidth: 5,
     borderColor: "#fff7fb",
-    shadowColor: "#ec0e68",
-    shadowOpacity: 0.28,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 }
+    shadowColor: PRIMARY,
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3
   },
-  label: { color: "#475467", fontSize: 9, fontWeight: "800", textAlign: "center" },
-  activeLabel: { color: "#ec0e68" }
+  label: { color: TEXT_MUTED, fontFamily: FONT_MEDIUM, fontSize: 11, lineHeight: 14, textAlign: "center" },
+  activeLabel: { color: PRIMARY }
 });

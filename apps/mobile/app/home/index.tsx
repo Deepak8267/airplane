@@ -2,12 +2,27 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import type { Experience, Template, TemplateCategory } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
 import { getMyExperiences } from "@/features/experiences/experience-service";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplates } from "@/features/templates/template-service";
+
+const COLORS = {
+  primary: "#FF3D81",
+  background: "#FFFFFF",
+  text: "#111827",
+  secondary: "#6B7280",
+  border: "#F3F4F6"
+};
+
+const FONT = {
+  regular: "Poppins_400Regular",
+  medium: "Poppins_500Medium",
+  semibold: "Poppins_600SemiBold",
+  bold: "Poppins_700Bold"
+};
 
 type HomeCategory = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -63,7 +78,7 @@ export default function HomeScreen() {
         <View style={styles.topBar}>
           <View style={styles.brandRow}>
             <View style={styles.logoMark}>
-              <Ionicons color="#ffffff" name="paper-plane" size={24} />
+              <Ionicons color="#ffffff" name="paper-plane" size={26} />
             </View>
             <View>
               <Text style={styles.logo}>AIRPLANE</Text>
@@ -73,12 +88,12 @@ export default function HomeScreen() {
           <View style={styles.topActions}>
             <Link href={"/subscription" as never} asChild>
               <Pressable style={styles.proPill}>
-                <Ionicons color="#f59e0b" name="diamond" size={17} />
+                <Ionicons color="#f59e0b" name="diamond" size={16} />
                 <Text style={styles.proText}>{usage?.plan === "pro" ? "Pro" : "Pro"}</Text>
               </Pressable>
             </Link>
             <Pressable accessibilityLabel="Notifications" style={styles.bellButton}>
-              <Ionicons color="#101828" name="notifications-outline" size={23} />
+              <Ionicons color={COLORS.text} name="notifications-outline" size={24} />
               <View style={styles.notificationDot} />
             </Pressable>
           </View>
@@ -86,17 +101,17 @@ export default function HomeScreen() {
 
         <View style={styles.searchRow}>
           <Pressable style={styles.searchBox} onPress={() => router.push("/templates" as never)}>
-            <Ionicons color="#98a2b3" name="search-outline" size={23} />
+            <Ionicons color="#9CA3AF" name="search-outline" size={20} />
             <TextInput
               editable={false}
               pointerEvents="none"
               placeholder="Search templates, occasions, experiences..."
-              placeholderTextColor="#98a2b3"
+              placeholderTextColor="#9CA3AF"
               style={styles.searchInput}
             />
           </Pressable>
           <Pressable accessibilityLabel="Discover templates" style={styles.sparkleButton} onPress={() => router.push("/templates" as never)}>
-            <Ionicons color="#ec0e68" name="sparkles-outline" size={25} />
+            <Ionicons color={COLORS.primary} name="sparkles-outline" size={24} />
           </Pressable>
         </View>
 
@@ -104,9 +119,11 @@ export default function HomeScreen() {
           {HOME_CATEGORIES.map((category) => (
             <Pressable key={category.label} style={styles.categoryTile} onPress={() => router.push("/templates" as never)}>
               <View style={[styles.categoryIcon, { backgroundColor: category.tone }]}>
-                <Ionicons color="#ec0e68" name={category.icon} size={27} />
+                <Ionicons color={COLORS.primary} name={category.icon} size={28} />
               </View>
-              <Text style={styles.categoryLabel}>{category.label}</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.categoryLabel}>
+                {category.label}
+              </Text>
             </Pressable>
           ))}
         </ScrollView>
@@ -120,7 +137,7 @@ export default function HomeScreen() {
               <Pressable style={styles.heroButton}>
                 <Text style={styles.heroButtonText}>Create Now</Text>
                 <View style={styles.heroArrow}>
-                  <Ionicons color="#ec0e68" name="arrow-forward" size={18} />
+                  <Ionicons color={COLORS.primary} name="arrow-forward" size={20} />
                 </View>
               </Pressable>
             </Link>
@@ -130,8 +147,8 @@ export default function HomeScreen() {
             <View style={styles.envelope}>
               <Text style={styles.envelopeText}>Will you{"\n"}marry me?</Text>
             </View>
-            <Ionicons color="#f43f7f" name="heart" size={34} style={styles.heroHeart} />
-            <Ionicons color="#fda4c7" name="heart" size={22} style={styles.heroSmallHeart} />
+            <Ionicons color="#f43f7f" name="heart" size={32} style={styles.heroHeart} />
+            <Ionicons color="#fda4c7" name="heart" size={21} style={styles.heroSmallHeart} />
             <Ionicons color="#ffffff" name="paper-plane" size={24} style={styles.heroPlane} />
           </View>
           <View style={styles.heroDots}>
@@ -170,7 +187,7 @@ export default function HomeScreen() {
             </View>
             <View style={styles.premiumCopy}>
               <Text style={styles.premiumTitle}>Unlock Premium Templates</Text>
-              <Text style={styles.premiumText}>Get access to premium templates, advanced features and more.</Text>
+              <Text style={styles.premiumText}>Get access to 100+ premium templates.</Text>
             </View>
             <View style={styles.upgradePill}>
               <Text style={styles.upgradeText}>Upgrade to Pro</Text>
@@ -196,13 +213,15 @@ function SectionHeader({ onSeeAll, title }: { onSeeAll: () => void; title: strin
 
 function RecentCard({ experience }: { experience: Experience }) {
   return (
-    <Pressable style={styles.recentCard} onPress={() => router.push("/experiences" as never)}>
-      <VisualPanel accent={experience.theme.accent} background={experience.theme.background} category="love" />
+    <Pressable style={styles.templateCard} onPress={() => router.push("/experiences" as never)}>
+      <CardImage accent={experience.theme.accent} background={experience.theme.background} category="love" uri={experience.coverPhotoUrl} />
       <View style={styles.templateInfo}>
-        <Text numberOfLines={1} style={styles.templateTitle}>{experience.title || "Untitled experience"}</Text>
+        <Text numberOfLines={1} style={styles.templateTitle}>
+          {experience.title || "Untitled experience"}
+        </Text>
         <Text style={styles.templateMeta}>{experience.isPublished ? "Published" : "Draft"} link</Text>
       </View>
-      <Ionicons color="#667085" name="ellipsis-vertical" size={18} style={styles.moreIcon} />
+      <Ionicons color={COLORS.secondary} name="ellipsis-vertical" size={18} style={styles.moreIcon} />
     </Pressable>
   );
 }
@@ -210,11 +229,13 @@ function RecentCard({ experience }: { experience: Experience }) {
 function TrendingCard({ rank, template }: { rank: number; template: Template }) {
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
-      <Pressable style={styles.trendingCard}>
-        <VisualPanel accent={template.defaultTheme.accent} background={template.defaultTheme.background} category={template.category} />
+      <Pressable style={styles.templateCard}>
+        <CardImage accent={template.defaultTheme.accent} background={template.defaultTheme.background} category={template.category} uri={template.thumbnailUrl} />
         <Text style={[styles.badge, rank < 2 ? styles.popularBadge : styles.newBadge]}>{rank < 2 ? "Popular" : "New"}</Text>
         <View style={styles.templateInfo}>
-          <Text numberOfLines={1} style={styles.templateTitle}>{template.name}</Text>
+          <Text numberOfLines={1} style={styles.templateTitle}>
+            {template.name}
+          </Text>
           <Text style={styles.templateMeta}>{getUsageLabel(rank)} uses</Text>
         </View>
       </Pressable>
@@ -222,11 +243,29 @@ function TrendingCard({ rank, template }: { rank: number; template: Template }) 
   );
 }
 
+function CardImage({
+  accent,
+  background,
+  category,
+  uri
+}: {
+  accent: string;
+  background: string;
+  category: TemplateCategory | "love";
+  uri: string | null;
+}) {
+  if (uri) {
+    return <Image resizeMode="cover" source={{ uri }} style={styles.cardImage} />;
+  }
+
+  return <VisualPanel accent={accent} background={background} category={category} />;
+}
+
 function VisualPanel({ accent, background, category }: { accent: string; background: string; category: TemplateCategory | "love" }) {
   return (
-    <View style={[styles.visualPanel, { backgroundColor: background }]}>
+    <View style={[styles.cardImage, styles.visualPanel, { backgroundColor: background }]}>
       <View style={[styles.visualCircle, { backgroundColor: accent }]} />
-      <Ionicons color={accent} name={getTemplateIcon(category)} size={38} />
+      <Ionicons color={accent} name={getTemplateIcon(category)} size={40} />
       <View style={[styles.visualLine, { backgroundColor: accent }]} />
     </View>
   );
@@ -235,7 +274,7 @@ function VisualPanel({ accent, background, category }: { accent: string; backgro
 function LoadingCard({ label }: { label: string }) {
   return (
     <View style={styles.loadingCard}>
-      <Ionicons color="#ec0e68" name="sparkles-outline" size={23} />
+      <Ionicons color={COLORS.primary} name="sparkles-outline" size={22} />
       <Text style={styles.loadingText}>{label}</Text>
     </View>
   );
@@ -265,68 +304,192 @@ function getTemplateIcon(category: TemplateCategory | "love"): keyof typeof Ioni
   return "heart";
 }
 
+const softShadow = {
+  shadowColor: COLORS.text,
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 2
+};
+
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#fbfbff" },
-  content: { gap: 11, padding: 16, paddingBottom: 102 },
-  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, paddingTop: 4 },
-  brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  logoMark: { width: 40, height: 40, borderRadius: 12, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", transform: [{ rotate: "-10deg" }] },
-  logo: { color: "#101828", fontSize: 20, lineHeight: 24, fontWeight: "900", letterSpacing: 0 },
-  tagline: { color: "#667085", fontSize: 11, fontWeight: "700" },
-  topActions: { flexDirection: "row", alignItems: "center", gap: 8 },
-  proPill: { minHeight: 32, borderRadius: 16, borderWidth: 1, borderColor: "#fce7f3", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 9 },
-  proText: { color: "#ec0e68", fontSize: 13, fontWeight: "900" },
-  bellButton: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
-  notificationDot: { position: "absolute", right: 8, top: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: "#ec0e68" },
-  searchRow: { flexDirection: "row", gap: 8 },
-  searchBox: { flex: 1, height: 48, borderRadius: 15, borderWidth: 1, borderColor: "#e7e8f2", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12 },
-  searchInput: { flex: 1, color: "#101828", fontSize: 13 },
-  sparkleButton: { width: 48, height: 48, borderRadius: 15, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
-  categoryRail: { gap: 10, paddingRight: 4 },
-  categoryTile: { width: 82, height: 88, borderRadius: 16, borderWidth: 1, borderColor: "#e7e8f2", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", gap: 6 },
-  categoryIcon: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
-  categoryLabel: { color: "#101828", fontSize: 12, fontWeight: "900" },
-  heroCard: { minHeight: 210, borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffe4ee", overflow: "hidden", padding: 15, flexDirection: "row" },
-  heroCopy: { flex: 1.1, gap: 6, justifyContent: "center", zIndex: 2 },
-  heroTitle: { color: "#101828", fontSize: 20, lineHeight: 25, fontWeight: "500" },
-  heroAccent: { color: "#d62666", fontSize: 22, lineHeight: 27, fontWeight: "900" },
-  heroBody: { color: "#667085", fontSize: 12, lineHeight: 19, maxWidth: 156 },
-  heroButton: { marginTop: 5, height: 40, alignSelf: "flex-start", borderRadius: 20, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", gap: 7, paddingLeft: 15, paddingRight: 6 },
-  heroButtonText: { color: "#ffffff", fontSize: 13, fontWeight: "900" },
-  heroArrow: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  screen: { flex: 1, backgroundColor: COLORS.background },
+  content: { gap: 24, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 112 },
+  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+  brandRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
+  logoMark: {
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "-10deg" }]
+  },
+  logo: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 32, lineHeight: 36, letterSpacing: 0 },
+  tagline: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 15, lineHeight: 20 },
+  topActions: { flexDirection: "row", alignItems: "center", gap: 10 },
+  proPill: {
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.background,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    ...softShadow
+  },
+  proText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 12 },
+  bellButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
+  notificationDot: { position: "absolute", right: 8, top: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
+  searchRow: { flexDirection: "row", gap: 12 },
+  searchBox: {
+    flex: 1,
+    height: 52,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.background,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 16,
+    ...softShadow
+  },
+  searchInput: { flex: 1, color: COLORS.text, fontFamily: FONT.regular, fontSize: 15, padding: 0 },
+  sparkleButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#FCE7F3",
+    backgroundColor: "#FFF1F7",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  categoryRail: { gap: 12, paddingRight: 4 },
+  categoryTile: {
+    width: 72,
+    height: 72,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    paddingHorizontal: 6,
+    ...softShadow
+  },
+  categoryIcon: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
+  categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 13, lineHeight: 16, textAlign: "center" },
+  heroCard: {
+    height: 190,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#FBCFE8",
+    backgroundColor: "#FFE5EF",
+    overflow: "hidden",
+    padding: 24,
+    flexDirection: "row"
+  },
+  heroCopy: { flex: 1.05, gap: 7, justifyContent: "center", zIndex: 2 },
+  heroTitle: { color: COLORS.text, fontFamily: FONT.regular, fontSize: 21, lineHeight: 27 },
+  heroAccent: { color: COLORS.primary, fontFamily: FONT.bold, fontSize: 24, lineHeight: 30 },
+  heroBody: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 14, lineHeight: 21, maxWidth: 190 },
+  heroButton: {
+    marginTop: 4,
+    height: 46,
+    alignSelf: "flex-start",
+    borderRadius: 14,
+    backgroundColor: COLORS.primary,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 12,
+    paddingLeft: 20,
+    paddingRight: 8
+  },
+  heroButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 15 },
+  heroArrow: { width: 30, height: 30, borderRadius: 15, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
   heroArt: { flex: 1, alignItems: "center", justifyContent: "center" },
-  envelopeBack: { position: "absolute", width: 104, height: 78, borderRadius: 19, backgroundColor: "#f78db3", transform: [{ rotate: "-18deg" }] },
-  envelope: { width: 104, height: 78, borderRadius: 14, backgroundColor: "#fff7fb", alignItems: "center", justifyContent: "center", transform: [{ rotate: "10deg" }], shadowColor: "#d62666", shadowOpacity: 0.16, shadowRadius: 10, shadowOffset: { width: 0, height: 6 } },
-  envelopeText: { color: "#9f1239", fontSize: 12, lineHeight: 17, fontWeight: "700", fontStyle: "italic", textAlign: "center" },
-  heroHeart: { position: "absolute", bottom: 48, left: 8 },
-  heroSmallHeart: { position: "absolute", top: 38, left: 4 },
-  heroPlane: { position: "absolute", top: 24, right: -2, transform: [{ rotate: "25deg" }] },
-  heroDots: { position: "absolute", bottom: 11, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 7 },
-  activeHeroDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#ec0e68" },
-  heroDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#cdd3df" },
-  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 4 },
-  sectionTitle: { color: "#101828", fontSize: 17, lineHeight: 22, fontWeight: "900" },
-  seeAll: { color: "#ec0e68", fontSize: 12, fontWeight: "900" },
+  envelopeBack: { position: "absolute", width: 110, height: 78, borderRadius: 19, backgroundColor: "#f78db3", transform: [{ rotate: "-18deg" }] },
+  envelope: {
+    width: 110,
+    height: 78,
+    borderRadius: 16,
+    backgroundColor: "#FFF7FB",
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "10deg" }],
+    shadowColor: COLORS.primary,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 }
+  },
+  envelopeText: { color: "#9f1239", fontFamily: FONT.semibold, fontSize: 13, lineHeight: 18, fontStyle: "italic", textAlign: "center" },
+  heroHeart: { position: "absolute", bottom: 28, left: 6 },
+  heroSmallHeart: { position: "absolute", top: 24, left: 5 },
+  heroPlane: { position: "absolute", top: 16, right: -2, transform: [{ rotate: "25deg" }] },
+  heroDots: { position: "absolute", bottom: 14, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 8 },
+  activeHeroDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
+  heroDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#D1D5DB" },
+  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -12 },
+  sectionTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 22, lineHeight: 28 },
+  seeAll: { color: COLORS.primary, fontFamily: FONT.medium, fontSize: 14 },
   cardRail: { gap: 12, paddingRight: 4 },
-  recentCard: { width: 152, minHeight: 156, borderRadius: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e7e8f2", overflow: "hidden" },
-  trendingCard: { width: 138, minHeight: 184, borderRadius: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#e7e8f2", overflow: "hidden" },
-  visualPanel: { height: 92, alignItems: "center", justifyContent: "center", overflow: "hidden" },
-  visualCircle: { position: "absolute", width: 76, height: 76, borderRadius: 38, opacity: 0.14 },
+  templateCard: {
+    width: 160,
+    height: 220,
+    borderRadius: 20,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    overflow: "hidden",
+    padding: 12,
+    ...softShadow
+  },
+  cardImage: { width: "100%", height: 120, borderRadius: 16 },
+  visualPanel: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  visualCircle: { position: "absolute", width: 86, height: 86, borderRadius: 43, opacity: 0.14 },
   visualLine: { position: "absolute", bottom: 0, left: 0, right: 0, height: 3, opacity: 0.7 },
-  templateInfo: { gap: 3, padding: 10, paddingRight: 26 },
-  templateTitle: { color: "#101828", fontSize: 12, fontWeight: "900" },
-  templateMeta: { color: "#667085", fontSize: 11, fontWeight: "700" },
-  moreIcon: { position: "absolute", right: 9, bottom: 20 },
-  badge: { position: "absolute", left: 10, top: 10, overflow: "hidden", borderRadius: 8, color: "#ffffff", paddingHorizontal: 7, paddingVertical: 4, fontSize: 10, fontWeight: "900" },
-  popularBadge: { backgroundColor: "#ec0e68" },
-  newBadge: { backgroundColor: "#16a34a" },
-  premiumBanner: { minHeight: 82, borderRadius: 18, backgroundColor: "#fff8e7", borderWidth: 1, borderColor: "#fff1c2", flexDirection: "row", alignItems: "center", gap: 10, padding: 12 },
-  crownBox: { width: 40, height: 40, borderRadius: 13, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  templateInfo: { gap: 4, paddingTop: 12, paddingRight: 18 },
+  templateTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 17, lineHeight: 22 },
+  templateMeta: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 13, lineHeight: 18 },
+  moreIcon: { position: "absolute", right: 12, bottom: 24 },
+  badge: {
+    position: "absolute",
+    left: 20,
+    top: 20,
+    overflow: "hidden",
+    borderRadius: 10,
+    color: "#ffffff",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    fontFamily: FONT.semibold,
+    fontSize: 12
+  },
+  popularBadge: { backgroundColor: COLORS.primary },
+  newBadge: { backgroundColor: "#22C55E" },
+  premiumBanner: {
+    height: 88,
+    borderRadius: 20,
+    backgroundColor: "#FFF8E7",
+    borderWidth: 1,
+    borderColor: "#FFF1C2",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 20
+  },
+  crownBox: { width: 42, height: 42, borderRadius: 14, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
   premiumCopy: { flex: 1, gap: 3 },
-  premiumTitle: { color: "#101828", fontSize: 13, fontWeight: "900" },
-  premiumText: { color: "#667085", fontSize: 11, lineHeight: 16 },
-  upgradePill: { minHeight: 34, borderRadius: 17, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
-  upgradeText: { color: "#ec0e68", fontSize: 12, fontWeight: "900" },
-  loadingCard: { minHeight: 78, borderRadius: 16, borderWidth: 1, borderColor: "#e7e8f2", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", gap: 8 },
-  loadingText: { color: "#667085", fontWeight: "800" }
+  premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 15, lineHeight: 20 },
+  premiumText: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 12, lineHeight: 17 },
+  upgradePill: { height: 42, borderRadius: 14, borderWidth: 1, borderColor: "#FBCFE8", backgroundColor: "#FFF1F7", alignItems: "center", justifyContent: "center", paddingHorizontal: 14 },
+  upgradeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 13 },
+  loadingCard: { minHeight: 92, borderRadius: 18, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", gap: 8 },
+  loadingText: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 13 }
 });
