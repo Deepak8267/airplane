@@ -39,6 +39,9 @@ export default function TemplatesScreen() {
         ListHeaderComponent={
           <View style={styles.headerStack}>
             <View style={styles.header}>
+              <View style={styles.headerIcon}>
+                <Ionicons color="#ec0e68" name="grid-outline" size={26} />
+              </View>
               <Text style={styles.eyebrow}>Templates</Text>
               <Text style={styles.title}>Pick the perfect starting point.</Text>
               <Text style={styles.subtitle}>Search love, birthday, friends, family, and fun templates.</Text>
@@ -102,11 +105,25 @@ function TemplateCard({ template }: { template: Template }) {
     <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
       <Pressable style={styles.card}>
         <View style={[styles.preview, { backgroundColor: template.defaultTheme.background }]}>
-          <Ionicons color={template.defaultTheme.accent} name={getTemplateIcon(template.category)} size={30} />
+          <View style={[styles.previewIcon, { backgroundColor: template.defaultTheme.muted }]}>
+            <Ionicons color={template.defaultTheme.accent} name={getTemplateIcon(template.category)} size={28} />
+          </View>
+          <Text style={[styles.previewText, { color: template.defaultTheme.foreground }]} numberOfLines={2}>{template.name}</Text>
           {template.isPremium ? <Text style={styles.premiumBadge}>Premium</Text> : null}
+        </View>
+        <View style={styles.metaRow}>
+          <Text style={styles.categoryLabel}>{template.category}</Text>
+          <View style={styles.swatches}>
+            <View style={[styles.swatch, { backgroundColor: template.defaultTheme.muted }]} />
+            <View style={[styles.swatch, { backgroundColor: template.defaultTheme.accent }]} />
+          </View>
         </View>
         <Text style={styles.cardTitle} numberOfLines={2}>{template.name}</Text>
         <Text style={styles.cardCopy} numberOfLines={2}>{template.description}</Text>
+        <View style={styles.footerRow}>
+          <Text style={styles.pageCount}>{template.defaultPages.length} pages</Text>
+          <Ionicons color="#98a2b3" name="chevron-forward" size={17} />
+        </View>
       </Pressable>
     </Link>
   );
@@ -137,6 +154,7 @@ const styles = StyleSheet.create({
   list: { gap: 12, padding: 20, paddingBottom: 40 },
   headerStack: { gap: 14 },
   header: { gap: 7, paddingTop: 8 },
+  headerIcon: { width: 56, height: 56, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", alignItems: "center", justifyContent: "center", marginBottom: 3 },
   eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
   title: { color: "#101828", fontSize: 32, lineHeight: 38, fontWeight: "900" },
   subtitle: { color: "#667085", fontSize: 15, lineHeight: 22 },
@@ -148,11 +166,19 @@ const styles = StyleSheet.create({
   chipText: { color: "#344054", fontSize: 13, fontWeight: "900", textTransform: "capitalize" },
   activeChipText: { color: "#ffffff" },
   gridRow: { gap: 12 },
-  card: { flex: 1, minHeight: 218, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 10, gap: 9 },
-  preview: { height: 118, borderRadius: 8, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  card: { flex: 1, minHeight: 268, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 10, gap: 9 },
+  preview: { height: 128, borderRadius: 8, alignItems: "center", justifyContent: "center", overflow: "hidden", gap: 8, padding: 10 },
+  previewIcon: { width: 52, height: 52, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  previewText: { fontSize: 16, lineHeight: 20, fontWeight: "900", textAlign: "center" },
   premiumBadge: { position: "absolute", right: 8, top: 8, overflow: "hidden", borderRadius: 8, backgroundColor: "#ec0e68", color: "#ffffff", paddingHorizontal: 7, paddingVertical: 4, fontSize: 10, fontWeight: "900" },
+  metaRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  categoryLabel: { color: "#ec0e68", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
+  swatches: { flexDirection: "row", gap: 5 },
+  swatch: { width: 16, height: 16, borderRadius: 8, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)" },
   cardTitle: { color: "#101828", fontSize: 15, lineHeight: 19, fontWeight: "900" },
   cardCopy: { color: "#667085", fontSize: 12, lineHeight: 17 },
+  footerRow: { marginTop: "auto", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  pageCount: { color: "#667085", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
   emptyCard: { gap: 8, alignItems: "center", borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 18 },
   emptyTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
   emptyCopy: { color: "#667085", textAlign: "center", lineHeight: 21 },
