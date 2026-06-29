@@ -2,8 +2,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Animated,
+  Easing,
+  FlatList,
+  Image,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { Experience, Template, TemplateCategory } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
@@ -32,6 +47,20 @@ type HomeCategory = {
   tone: string;
 };
 
+type HomeBanner = {
+  id: string;
+  title: string;
+  highlight: string;
+  subtitle: string;
+  button: string;
+  image: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  cardText: string;
+  accent: string;
+  orb: readonly [string, string];
+  gradient: readonly [string, string];
+};
+
 const HOME_CATEGORIES: HomeCategory[] = [
   { icon: "heart", label: "Love", tone: "#fff0f6" },
   { icon: "gift", label: "Birthday", tone: "#fff7ed" },
@@ -39,6 +68,74 @@ const HOME_CATEGORIES: HomeCategory[] = [
   { icon: "sparkles", label: "Anniversary", tone: "#fff1f7" },
   { icon: "musical-notes", label: "Celebration", tone: "#f0fdf4" },
   { icon: "ellipsis-horizontal", label: "More", tone: "#f8fafc" }
+];
+
+const HOME_BANNERS: HomeBanner[] = [
+  {
+    id: "banner1",
+    title: "Make every\nmoment",
+    highlight: "unforgettable",
+    subtitle: "Create beautiful interactive\nexperiences in minutes.",
+    button: "Create Now",
+    image: "banner1",
+    icon: "heart",
+    cardText: "Will you\nmarry me?",
+    accent: "#FF2D78",
+    orb: ["#FFD3E5", "#FF5C9A"],
+    gradient: ["#FFF7FA", "#FFE8F3"]
+  },
+  {
+    id: "banner2",
+    title: "Birthday\nSurprise",
+    highlight: "magic",
+    subtitle: "Create memorable birthday\nmoments in minutes.",
+    button: "Start Creating",
+    image: "banner2",
+    icon: "gift",
+    cardText: "Happy\nBirthday!",
+    accent: "#FF7A1A",
+    orb: ["#FFE2BC", "#FF8A3D"],
+    gradient: ["#FFF9F1", "#FFEAD8"]
+  },
+  {
+    id: "banner3",
+    title: "Wedding\nInvitation",
+    highlight: "premium",
+    subtitle: "Design elegant invitations\nand share instantly.",
+    button: "Explore",
+    image: "banner3",
+    icon: "diamond",
+    cardText: "You are\ninvited",
+    accent: "#8B5CF6",
+    orb: ["#E9D5FF", "#A78BFA"],
+    gradient: ["#FBF8FF", "#EEE6FF"]
+  },
+  {
+    id: "banner4",
+    title: "Anniversary\nWishes",
+    highlight: "memories",
+    subtitle: "Celebrate your special\nstory beautifully.",
+    button: "Get Started",
+    image: "banner4",
+    icon: "sparkles",
+    cardText: "Our\nStory",
+    accent: "#0EA5E9",
+    orb: ["#CFFAFE", "#38BDF8"],
+    gradient: ["#F5FCFF", "#DFF5FF"]
+  },
+  {
+    id: "banner5",
+    title: "Festival\nGreetings",
+    highlight: "instantly",
+    subtitle: "Share beautiful greeting\ncards with one link.",
+    button: "Create",
+    image: "banner5",
+    icon: "paper-plane",
+    cardText: "Best\nWishes",
+    accent: "#22C55E",
+    orb: ["#DCFCE7", "#4ADE80"],
+    gradient: ["#FAFFF8", "#E8FBEF"]
+  }
 ];
 
 export default function HomeScreen() {
@@ -61,7 +158,6 @@ export default function HomeScreen() {
   const refreshing = templatesQuery.isRefetching || experiencesQuery.isRefetching || planUsageQuery.isRefetching;
   const recentExperiences = experiences.slice(0, 6);
   const isNarrow = width < 430;
-  const heroDescription = isNarrow ? "Create beautiful interactive\nexperiences in minutes." : "Create beautiful,\ninteractive experiences\nin minutes.";
   const trendingTemplates = useMemo(() => {
     const sorted = [...templates].sort((left, right) => Number(right.isPremium) - Number(left.isPremium));
     return sorted.slice(0, 8);
@@ -137,42 +233,7 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        <LinearGradient colors={["#FFF7FA", "#FFE8F3"]} end={{ x: 1, y: 1 }} start={{ x: 0, y: 0 }} style={[styles.heroCard, isNarrow ? styles.heroCardNarrow : null]}>
-          <View style={[styles.heroGlow, styles.heroGlowLarge]} />
-          <View style={[styles.heroGlow, styles.heroGlowSmall]} />
-          <View style={styles.heroCopy}>
-            <Text style={[styles.heroTitle, isNarrow ? styles.heroTitleNarrow : null]}>Make every{"\n"}moment</Text>
-            <Text style={[styles.heroAccent, isNarrow ? styles.heroAccentNarrow : null]}>unforgettable</Text>
-            <Text style={[styles.heroBody, isNarrow ? styles.heroBodyNarrow : null]}>{heroDescription}</Text>
-            <Link href={"/templates" as never} asChild>
-              <Pressable style={[styles.heroButton, isNarrow ? styles.heroButtonNarrow : null]}>
-                <Text style={[styles.heroButtonText, isNarrow ? styles.heroButtonTextNarrow : null]}>Create Now</Text>
-                <View style={[styles.heroArrow, isNarrow ? styles.heroArrowNarrow : null]}>
-                  <Ionicons color={COLORS.primary} name="arrow-forward" size={16} />
-                </View>
-              </Pressable>
-            </Link>
-          </View>
-          <View style={[styles.heroArt, isNarrow ? styles.heroArtNarrow : null]}>
-            <LinearGradient colors={["#FFD3E5", "#FF5C9A"]} style={[styles.heroPinkOrb, isNarrow ? styles.heroPinkOrbNarrow : null]} />
-            <View style={[styles.glassAccent, styles.glassAccentTop]} />
-            <View style={[styles.glassAccent, styles.glassAccentBottom]} />
-            <View style={[styles.sparkleDot, styles.sparkleDotOne]} />
-            <View style={[styles.sparkleDot, styles.sparkleDotTwo]} />
-            <Ionicons color="#FF5C9A" name="sparkles" size={17} style={styles.heroSparkle} />
-            <View style={[styles.envelope, isNarrow ? styles.envelopeNarrow : null]}>
-              <Text style={[styles.envelopeText, isNarrow ? styles.envelopeTextNarrow : null]}>Will you{"\n"}marry me?</Text>
-            </View>
-            <Ionicons color="#FF2D78" name="heart" size={24} style={styles.heroHeart} />
-            <Ionicons color="#FDA4C7" name="heart" size={17} style={styles.heroSmallHeart} />
-            <Ionicons color="#FFFFFF" name="paper-plane" size={19} style={styles.heroPlane} />
-          </View>
-          <View style={[styles.heroDots, isNarrow ? styles.heroDotsNarrow : null]}>
-            <View style={styles.activeHeroDot} />
-            <View style={styles.heroDot} />
-            <View style={styles.heroDot} />
-          </View>
-        </LinearGradient>
+        <HeroCarousel isNarrow={isNarrow} screenWidth={width} />
 
         <SectionHeader title="Recently Used" onSeeAll={() => router.push("/experiences" as never)} />
         {experiencesQuery.isLoading ? (
@@ -224,6 +285,214 @@ function SectionHeader({ onSeeAll, title }: { onSeeAll: () => void; title: strin
         <Text style={styles.seeAll}>See All</Text>
       </Pressable>
     </View>
+  );
+}
+
+function HeroCarousel({ isNarrow, screenWidth }: { isNarrow: boolean; screenWidth: number }) {
+  const bannerWidth = screenWidth - (isNarrow ? 24 : 28);
+  const listRef = useRef<FlatList<HomeBanner>>(null);
+  const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loopIndexRef = useRef(1);
+  const userDraggingRef = useRef(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const indicatorProgress = useRef(new Animated.Value(0)).current;
+  const loopedBanners = useMemo<HomeBanner[]>(() => {
+    const first = HOME_BANNERS[0]!;
+    const last = HOME_BANNERS[HOME_BANNERS.length - 1]!;
+    return [last, ...HOME_BANNERS, first];
+  }, []);
+
+  const clearAutoTimer = useCallback(() => {
+    if (autoTimerRef.current) {
+      clearInterval(autoTimerRef.current);
+      autoTimerRef.current = null;
+    }
+  }, []);
+
+  const startAutoTimer = useCallback(() => {
+    clearAutoTimer();
+    autoTimerRef.current = setInterval(() => {
+      const nextIndex = loopIndexRef.current + 1;
+      loopIndexRef.current = nextIndex;
+      listRef.current?.scrollToIndex({ animated: true, index: nextIndex });
+    }, 4000);
+  }, [clearAutoTimer]);
+
+  const pauseAutoTimer = useCallback(() => {
+    clearAutoTimer();
+    if (resumeTimerRef.current) {
+      clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = null;
+    }
+  }, [clearAutoTimer]);
+
+  const resumeAutoTimerSoon = useCallback(() => {
+    if (resumeTimerRef.current) {
+      clearTimeout(resumeTimerRef.current);
+    }
+
+    resumeTimerRef.current = setTimeout(startAutoTimer, 3000);
+  }, [startAutoTimer]);
+
+  const normalizeIndex = useCallback((index: number) => {
+    if (index === 0) {
+      return HOME_BANNERS.length - 1;
+    }
+
+    if (index === HOME_BANNERS.length + 1) {
+      return 0;
+    }
+
+    return index - 1;
+  }, []);
+
+  const handleMomentumEnd = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const rawIndex = Math.round(event.nativeEvent.contentOffset.x / bannerWidth);
+      const nextActiveIndex = normalizeIndex(rawIndex);
+
+      setActiveIndex(nextActiveIndex);
+      loopIndexRef.current = rawIndex;
+
+      if (rawIndex === 0) {
+        requestAnimationFrame(() => {
+          loopIndexRef.current = HOME_BANNERS.length;
+          listRef.current?.scrollToIndex({ animated: false, index: HOME_BANNERS.length });
+        });
+      }
+
+      if (rawIndex === HOME_BANNERS.length + 1) {
+        requestAnimationFrame(() => {
+          loopIndexRef.current = 1;
+          listRef.current?.scrollToIndex({ animated: false, index: 1 });
+        });
+      }
+
+      if (userDraggingRef.current) {
+        userDraggingRef.current = false;
+        resumeAutoTimerSoon();
+      }
+    },
+    [bannerWidth, normalizeIndex, resumeAutoTimerSoon]
+  );
+
+  useEffect(() => {
+    startAutoTimer();
+
+    return () => {
+      clearAutoTimer();
+      if (resumeTimerRef.current) {
+        clearTimeout(resumeTimerRef.current);
+      }
+    };
+  }, [clearAutoTimer, startAutoTimer]);
+
+  useEffect(() => {
+    Animated.timing(indicatorProgress, {
+      toValue: activeIndex,
+      duration: 420,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: false
+    }).start();
+  }, [activeIndex, indicatorProgress]);
+
+  useEffect(() => {
+    const nextBanner = HOME_BANNERS[(activeIndex + 1) % HOME_BANNERS.length]!;
+
+    if (nextBanner.image.startsWith("http")) {
+      void Image.prefetch(nextBanner.image);
+    }
+  }, [activeIndex]);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToIndex({ animated: false, index: loopIndexRef.current });
+    });
+  }, [bannerWidth]);
+
+  return (
+    <View style={[styles.heroCarousel, isNarrow ? styles.heroCarouselNarrow : null, { width: bannerWidth }]}>
+      <FlatList
+        bounces={false}
+        data={loopedBanners}
+        decelerationRate="fast"
+        getItemLayout={(_, index) => ({ index, length: bannerWidth, offset: bannerWidth * index })}
+        horizontal
+        initialNumToRender={2}
+        initialScrollIndex={1}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        maxToRenderPerBatch={2}
+        onMomentumScrollEnd={handleMomentumEnd}
+        onScrollBeginDrag={() => {
+          userDraggingRef.current = true;
+          pauseAutoTimer();
+        }}
+        pagingEnabled
+        ref={listRef}
+        removeClippedSubviews
+        renderItem={({ item }) => <HeroSlide banner={item} isNarrow={isNarrow} width={bannerWidth} />}
+        scrollEventThrottle={16}
+        showsHorizontalScrollIndicator={false}
+        windowSize={3}
+      />
+      <View style={styles.heroIndicator}>
+        {HOME_BANNERS.map((banner, index) => {
+          const inputRange = HOME_BANNERS.map((_, dotIndex) => dotIndex);
+          const width = indicatorProgress.interpolate({
+            inputRange,
+            outputRange: HOME_BANNERS.map((_, dotIndex) => (dotIndex === index ? 22 : 8)),
+            extrapolate: "clamp"
+          });
+          const backgroundColor = indicatorProgress.interpolate({
+            inputRange,
+            outputRange: HOME_BANNERS.map((_, dotIndex) => (dotIndex === index ? "#FF2D78" : "#D8D8D8")),
+            extrapolate: "clamp"
+          });
+
+          return <Animated.View key={banner.id} style={[styles.heroIndicatorDot, { backgroundColor, width }]} />;
+        })}
+      </View>
+    </View>
+  );
+}
+
+function HeroSlide({ banner, isNarrow, width }: { banner: HomeBanner; isNarrow: boolean; width: number }) {
+  return (
+    <LinearGradient colors={banner.gradient} end={{ x: 1, y: 1 }} start={{ x: 0, y: 0 }} style={[styles.heroCard, isNarrow ? styles.heroCardNarrow : null, { width }]}>
+      <View style={[styles.heroGlow, styles.heroGlowLarge, { backgroundColor: banner.accent }]} />
+      <View style={[styles.heroGlow, styles.heroGlowSmall]} />
+      <View style={styles.heroCopy}>
+        <Text style={[styles.heroTitle, isNarrow ? styles.heroTitleNarrow : null]}>{banner.title}</Text>
+        <Text style={[styles.heroAccent, isNarrow ? styles.heroAccentNarrow : null, { color: banner.accent }]}>{banner.highlight}</Text>
+        <Text style={[styles.heroBody, isNarrow ? styles.heroBodyNarrow : null]}>{banner.subtitle}</Text>
+        <Link href={"/templates" as never} asChild>
+          <Pressable style={[styles.heroButton, isNarrow ? styles.heroButtonNarrow : null, { backgroundColor: banner.accent, shadowColor: banner.accent }]}>
+            <Text numberOfLines={1} style={[styles.heroButtonText, isNarrow ? styles.heroButtonTextNarrow : null]}>
+              {banner.button}
+            </Text>
+            <View style={[styles.heroArrow, isNarrow ? styles.heroArrowNarrow : null]}>
+              <Ionicons color={banner.accent} name="arrow-forward" size={16} />
+            </View>
+          </Pressable>
+        </Link>
+      </View>
+      <View style={[styles.heroArt, isNarrow ? styles.heroArtNarrow : null]}>
+        <LinearGradient colors={banner.orb} style={[styles.heroPinkOrb, isNarrow ? styles.heroPinkOrbNarrow : null]} />
+        <View style={[styles.glassAccent, styles.glassAccentTop]} />
+        <View style={[styles.glassAccent, styles.glassAccentBottom]} />
+        <View style={[styles.sparkleDot, styles.sparkleDotOne, { backgroundColor: banner.accent }]} />
+        <View style={[styles.sparkleDot, styles.sparkleDotTwo, { backgroundColor: banner.accent }]} />
+        <Ionicons color={banner.accent} name="sparkles" size={17} style={styles.heroSparkle} />
+        <View style={[styles.envelope, isNarrow ? styles.envelopeNarrow : null]}>
+          <Ionicons color={banner.accent} name={banner.icon} size={24} style={styles.heroCardIcon} />
+          <Text style={[styles.envelopeText, isNarrow ? styles.envelopeTextNarrow : null, { color: banner.accent }]}>{banner.cardText}</Text>
+        </View>
+        <Ionicons color={banner.accent} name="heart" size={24} style={styles.heroHeart} />
+        <Ionicons color="#FDA4C7" name="heart" size={17} style={styles.heroSmallHeart} />
+        <Ionicons color="#FFFFFF" name="paper-plane" size={19} style={styles.heroPlane} />
+      </View>
+    </LinearGradient>
   );
 }
 
@@ -407,6 +676,16 @@ const styles = StyleSheet.create({
   categoryTileNarrow: { width: 52, height: 54 },
   categoryIcon: { width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
   categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 9, lineHeight: 11, textAlign: "center" },
+  heroCarousel: {
+    height: 188,
+    borderRadius: 24,
+    shadowColor: "#FF2D78",
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4
+  },
+  heroCarouselNarrow: { height: 190 },
   heroCard: {
     height: 188,
     borderRadius: 24,
@@ -486,15 +765,14 @@ const styles = StyleSheet.create({
     elevation: 5
   },
   envelopeNarrow: { width: 120, height: 92, borderRadius: 20 },
+  heroCardIcon: { position: "absolute", top: 18, opacity: 0.28 },
   envelopeText: { color: "#8A123A", fontFamily: FONT.semibold, fontSize: 16, lineHeight: 23, fontStyle: "italic", textAlign: "center" },
   envelopeTextNarrow: { fontSize: 14, lineHeight: 20 },
   heroHeart: { position: "absolute", bottom: 23, left: 4 },
   heroSmallHeart: { position: "absolute", top: 30, right: 4 },
   heroPlane: { position: "absolute", top: 20, right: -4, transform: [{ rotate: "23deg" }] },
-  heroDots: { position: "absolute", bottom: 16, left: "50%", flexDirection: "row", justifyContent: "center", gap: 6, transform: [{ translateX: -15 }] },
-  heroDotsNarrow: { bottom: 14 },
-  activeHeroDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#FF2D78" },
-  heroDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#D9DDE4" },
+  heroIndicator: { position: "absolute", bottom: 16, left: 0, right: 0, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 6 },
+  heroIndicatorDot: { height: 8, borderRadius: 4 },
   sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -6 },
   sectionTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
   seeAll: { color: COLORS.primary, fontFamily: FONT.medium, fontSize: 11 },
