@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -59,7 +60,8 @@ export default function HomeScreen() {
   const usage = planUsageQuery.data;
   const refreshing = templatesQuery.isRefetching || experiencesQuery.isRefetching || planUsageQuery.isRefetching;
   const recentExperiences = experiences.slice(0, 6);
-  const isNarrow = width < 370;
+  const isNarrow = width < 430;
+  const heroDescription = isNarrow ? "Create beautiful interactive\nexperiences in minutes." : "Create beautiful,\ninteractive experiences\nin minutes.";
   const trendingTemplates = useMemo(() => {
     const sorted = [...templates].sort((left, right) => Number(right.isPremium) - Number(left.isPremium));
     return sorted.slice(0, 8);
@@ -135,35 +137,42 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        <View style={[styles.heroCard, isNarrow ? styles.heroCardNarrow : null]}>
+        <LinearGradient colors={["#FFF7FA", "#FFE8F3"]} end={{ x: 1, y: 1 }} start={{ x: 0, y: 0 }} style={[styles.heroCard, isNarrow ? styles.heroCardNarrow : null]}>
+          <View style={[styles.heroGlow, styles.heroGlowLarge]} />
+          <View style={[styles.heroGlow, styles.heroGlowSmall]} />
           <View style={styles.heroCopy}>
-            <Text style={styles.heroTitle}>Make every{"\n"}moment</Text>
-            <Text style={styles.heroAccent}>unforgettable</Text>
-            <Text style={styles.heroBody}>Create beautiful, interactive experiences in minutes.</Text>
+            <Text style={[styles.heroTitle, isNarrow ? styles.heroTitleNarrow : null]}>Make every{"\n"}moment</Text>
+            <Text style={[styles.heroAccent, isNarrow ? styles.heroAccentNarrow : null]}>unforgettable</Text>
+            <Text style={[styles.heroBody, isNarrow ? styles.heroBodyNarrow : null]}>{heroDescription}</Text>
             <Link href={"/templates" as never} asChild>
-              <Pressable style={styles.heroButton}>
-                <Text style={styles.heroButtonText}>Create Now</Text>
-                <View style={styles.heroArrow}>
+              <Pressable style={[styles.heroButton, isNarrow ? styles.heroButtonNarrow : null]}>
+                <Text style={[styles.heroButtonText, isNarrow ? styles.heroButtonTextNarrow : null]}>Create Now</Text>
+                <View style={[styles.heroArrow, isNarrow ? styles.heroArrowNarrow : null]}>
                   <Ionicons color={COLORS.primary} name="arrow-forward" size={16} />
                 </View>
               </Pressable>
             </Link>
           </View>
           <View style={[styles.heroArt, isNarrow ? styles.heroArtNarrow : null]}>
-            <View style={[styles.envelopeBack, isNarrow ? styles.envelopeBackNarrow : null]} />
+            <LinearGradient colors={["#FFD3E5", "#FF5C9A"]} style={[styles.heroPinkOrb, isNarrow ? styles.heroPinkOrbNarrow : null]} />
+            <View style={[styles.glassAccent, styles.glassAccentTop]} />
+            <View style={[styles.glassAccent, styles.glassAccentBottom]} />
+            <View style={[styles.sparkleDot, styles.sparkleDotOne]} />
+            <View style={[styles.sparkleDot, styles.sparkleDotTwo]} />
+            <Ionicons color="#FF5C9A" name="sparkles" size={17} style={styles.heroSparkle} />
             <View style={[styles.envelope, isNarrow ? styles.envelopeNarrow : null]}>
-              <Text style={styles.envelopeText}>Will you{"\n"}marry me?</Text>
+              <Text style={[styles.envelopeText, isNarrow ? styles.envelopeTextNarrow : null]}>Will you{"\n"}marry me?</Text>
             </View>
-            <Ionicons color="#f43f7f" name="heart" size={24} style={styles.heroHeart} />
-            <Ionicons color="#fda4c7" name="heart" size={16} style={styles.heroSmallHeart} />
-            <Ionicons color="#ffffff" name="paper-plane" size={18} style={styles.heroPlane} />
+            <Ionicons color="#FF2D78" name="heart" size={24} style={styles.heroHeart} />
+            <Ionicons color="#FDA4C7" name="heart" size={17} style={styles.heroSmallHeart} />
+            <Ionicons color="#FFFFFF" name="paper-plane" size={19} style={styles.heroPlane} />
           </View>
           <View style={[styles.heroDots, isNarrow ? styles.heroDotsNarrow : null]}>
             <View style={styles.activeHeroDot} />
             <View style={styles.heroDot} />
             <View style={styles.heroDot} />
           </View>
-        </View>
+        </LinearGradient>
 
         <SectionHeader title="Recently Used" onSeeAll={() => router.push("/experiences" as never)} />
         {experiencesQuery.isLoading ? (
@@ -399,63 +408,93 @@ const styles = StyleSheet.create({
   categoryIcon: { width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
   categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 9, lineHeight: 11, textAlign: "center" },
   heroCard: {
-    height: 176,
-    borderRadius: 18,
+    height: 188,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#FBCFE8",
-    backgroundColor: "#FFE5EF",
+    borderColor: "#FFE0EE",
     overflow: "hidden",
-    paddingHorizontal: 16,
-    paddingTop: 18,
-    paddingBottom: 18,
-    flexDirection: "row"
+    paddingLeft: 24,
+    paddingRight: 20,
+    paddingTop: 28,
+    paddingBottom: 20,
+    flexDirection: "row",
+    shadowColor: "#FF2D78",
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4
   },
-  heroCardNarrow: { height: 168, paddingHorizontal: 14, paddingTop: 16, paddingBottom: 18 },
-  heroCopy: { flex: 1.2, gap: 5, justifyContent: "center", paddingBottom: 8, zIndex: 2 },
-  heroTitle: { color: COLORS.text, fontFamily: FONT.regular, fontSize: 18, lineHeight: 25 },
-  heroAccent: { color: COLORS.primary, fontFamily: FONT.bold, fontSize: 20, lineHeight: 26 },
-  heroBody: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 11, lineHeight: 17, maxWidth: 150 },
+  heroCardNarrow: { height: 190, paddingLeft: 18, paddingRight: 16, paddingTop: 26, paddingBottom: 20 },
+  heroGlow: { position: "absolute", borderRadius: 999, opacity: 0.42 },
+  heroGlowLarge: { width: 154, height: 154, right: -38, top: -22, backgroundColor: "#FFD1E4" },
+  heroGlowSmall: { width: 92, height: 92, left: 84, bottom: -42, backgroundColor: "#FFFFFF" },
+  heroCopy: { flex: 0.55, justifyContent: "flex-start", zIndex: 2 },
+  heroTitle: { color: "#111111", fontFamily: FONT.bold, fontSize: 30, lineHeight: 34, letterSpacing: 0 },
+  heroTitleNarrow: { fontSize: 20, lineHeight: 23 },
+  heroAccent: { color: "#FF2D78", fontFamily: FONT.bold, fontSize: 34, lineHeight: 37, marginTop: 0 },
+  heroAccentNarrow: { fontSize: 24, lineHeight: 28 },
+  heroBody: { color: "#666666", fontFamily: FONT.regular, fontSize: 16, lineHeight: 24, marginTop: 8 },
+  heroBodyNarrow: { fontSize: 11, lineHeight: 16, marginTop: 6 },
   heroButton: {
-    marginTop: 3,
-    height: 36,
+    position: "absolute",
+    left: 0,
+    bottom: 0,
+    width: 170,
+    height: 52,
     alignSelf: "flex-start",
-    borderRadius: 11,
-    backgroundColor: COLORS.primary,
+    borderRadius: 26,
+    backgroundColor: "#FF2D78",
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingLeft: 13,
-    paddingRight: 5
+    justifyContent: "space-between",
+    paddingLeft: 22,
+    paddingRight: 8,
+    shadowColor: "#FF2D78",
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3
   },
-  heroButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 12, lineHeight: 16 },
-  heroArrow: { width: 22, height: 22, borderRadius: 11, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
-  heroArt: { flex: 0.92, alignItems: "center", justifyContent: "center", minWidth: 92 },
-  heroArtNarrow: { flex: 0.82, minWidth: 78 },
-  envelopeBack: { position: "absolute", width: 86, height: 62, borderRadius: 15, backgroundColor: "#f78db3", transform: [{ rotate: "-18deg" }] },
-  envelopeBackNarrow: { width: 76, height: 56 },
+  heroButtonNarrow: { width: 142, height: 44, borderRadius: 22, paddingLeft: 17 },
+  heroButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
+  heroButtonTextNarrow: { fontSize: 13, lineHeight: 17 },
+  heroArrow: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  heroArrowNarrow: { width: 32, height: 32, borderRadius: 16 },
+  heroArt: { flex: 0.45, alignItems: "center", justifyContent: "center", minWidth: 126, zIndex: 2 },
+  heroArtNarrow: { minWidth: 112 },
+  heroPinkOrb: { position: "absolute", width: 136, height: 136, borderRadius: 68, opacity: 0.92 },
+  heroPinkOrbNarrow: { width: 118, height: 118, borderRadius: 59 },
+  glassAccent: { position: "absolute", borderWidth: 1, borderColor: "rgba(255,255,255,0.72)", backgroundColor: "rgba(255,255,255,0.42)" },
+  glassAccentTop: { width: 34, height: 34, borderRadius: 17, top: 16, right: 4 },
+  glassAccentBottom: { width: 22, height: 22, borderRadius: 11, bottom: 28, left: -2 },
+  sparkleDot: { position: "absolute", width: 7, height: 7, borderRadius: 3.5, backgroundColor: "#FF8EBA" },
+  sparkleDotOne: { top: 32, left: 4 },
+  sparkleDotTwo: { right: 10, bottom: 40, opacity: 0.7 },
+  heroSparkle: { position: "absolute", top: 16, left: 8 },
   envelope: {
-    width: 86,
-    height: 62,
-    borderRadius: 12,
-    backgroundColor: "#FFF7FB",
+    width: 145,
+    height: 110,
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.96)",
     alignItems: "center",
     justifyContent: "center",
-    transform: [{ rotate: "10deg" }],
-    shadowColor: COLORS.primary,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 }
+    transform: [{ rotate: "-8deg" }],
+    shadowColor: "#9F1239",
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5
   },
-  envelopeNarrow: { width: 76, height: 56 },
-  envelopeText: { color: "#9f1239", fontFamily: FONT.semibold, fontSize: 9, lineHeight: 13, fontStyle: "italic", textAlign: "center" },
-  heroHeart: { position: "absolute", bottom: 17, left: 4 },
-  heroSmallHeart: { position: "absolute", top: 14, left: 4 },
-  heroPlane: { position: "absolute", top: 9, right: -2, transform: [{ rotate: "25deg" }] },
-  heroDots: { position: "absolute", bottom: 12, left: "50%", flexDirection: "row", justifyContent: "center", gap: 5, transform: [{ translateX: -12 }] },
-  heroDotsNarrow: { bottom: 10 },
-  activeHeroDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.primary },
-  heroDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#D1D5DB" },
+  envelopeNarrow: { width: 120, height: 92, borderRadius: 20 },
+  envelopeText: { color: "#8A123A", fontFamily: FONT.semibold, fontSize: 16, lineHeight: 23, fontStyle: "italic", textAlign: "center" },
+  envelopeTextNarrow: { fontSize: 14, lineHeight: 20 },
+  heroHeart: { position: "absolute", bottom: 23, left: 4 },
+  heroSmallHeart: { position: "absolute", top: 30, right: 4 },
+  heroPlane: { position: "absolute", top: 20, right: -4, transform: [{ rotate: "23deg" }] },
+  heroDots: { position: "absolute", bottom: 16, left: "50%", flexDirection: "row", justifyContent: "center", gap: 6, transform: [{ translateX: -15 }] },
+  heroDotsNarrow: { bottom: 14 },
+  activeHeroDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#FF2D78" },
+  heroDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#D9DDE4" },
   sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -6 },
   sectionTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
   seeAll: { color: COLORS.primary, fontFamily: FONT.medium, fontSize: 11 },
