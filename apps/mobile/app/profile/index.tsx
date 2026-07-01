@@ -157,7 +157,7 @@ const ProfileCard = memo(function ProfileCard({
             </LinearGradient>
           )}
           <View style={styles.cameraBadge}>
-            <Ionicons color="#FFFFFF" name="camera" size={16} />
+            <Ionicons color="#FFFFFF" name="camera" size={12} />
           </View>
         </View>
 
@@ -178,7 +178,7 @@ const ProfileCard = memo(function ProfileCard({
           <ContactLine icon="call-outline" text={phone} />
         </View>
 
-        <Ionicons color="#111827" name="chevron-forward" size={24} />
+        <Ionicons color="#111827" name="chevron-forward" size={18} />
       </View>
 
       <View style={styles.cardDivider} />
@@ -194,7 +194,7 @@ const StatsRow = memo(function StatsRow() {
         <View key={stat.label} style={styles.statColumn}>
           {index > 0 ? <View style={styles.statDivider} /> : null}
           <View style={[styles.statIcon, { backgroundColor: stat.tone }]}>
-            <Ionicons color={stat.iconColor} name={stat.icon} size={22} />
+            <Ionicons color={stat.iconColor} name={stat.icon} size={16} />
           </View>
           <Text style={styles.statValue}>{stat.value}</Text>
           <Text numberOfLines={1} style={styles.statLabel}>
@@ -210,7 +210,7 @@ const PremiumBanner = memo(function PremiumBanner() {
   return (
     <LinearGradient colors={["#FFF7FA", "#FFFFFF"]} end={{ x: 1, y: 0 }} start={{ x: 0, y: 0 }} style={styles.premiumBanner}>
       <View style={styles.premiumIcon}>
-        <Ionicons color={COLORS.warning} name="diamond" size={30} />
+        <Ionicons color={COLORS.warning} name="diamond" size={20} />
       </View>
       <View style={styles.premiumCopy}>
         <Text style={styles.premiumTitle}>You're on Pro Plan</Text>
@@ -264,7 +264,7 @@ function MenuItem({
   return (
     <Pressable style={({ pressed }) => [styles.menuItem, pressed ? styles.pressed : null]} onPress={onPress}>
       <View style={[styles.menuIcon, { backgroundColor: tone }]}>
-        <Ionicons color={iconColor} name={icon} size={24} />
+        <Ionicons color={iconColor} name={icon} size={18} />
       </View>
       <View style={[styles.menuCopy, isLast ? styles.menuCopyLast : null]}>
         <View style={styles.menuTextBlock}>
@@ -273,7 +273,7 @@ function MenuItem({
             {subtitle}
           </Text>
         </View>
-        <Ionicons color="#475467" name="chevron-forward" size={22} />
+        <Ionicons color="#475467" name="chevron-forward" size={18} />
       </View>
     </Pressable>
   );
@@ -282,7 +282,7 @@ function MenuItem({
 function ContactLine({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; text: string }) {
   return (
     <View style={styles.contactLine}>
-      <Ionicons color="#667085" name={icon} size={19} />
+      <Ionicons color="#667085" name={icon} size={14} />
       <Text numberOfLines={1} style={styles.contactText}>
         {text}
       </Text>
@@ -293,7 +293,7 @@ function ContactLine({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; tex
 function IconButton({ dot, icon, onPress }: { dot?: boolean; icon: keyof typeof Ionicons.glyphMap; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]} onPress={onPress}>
-      <Ionicons color="#111827" name={icon} size={28} />
+      <Ionicons color="#111827" name={icon} size={20} />
       {dot ? <View style={styles.notificationDot} /> : null}
     </Pressable>
   );
@@ -302,7 +302,7 @@ function IconButton({ dot, icon, onPress }: { dot?: boolean; icon: keyof typeof 
 function LogoutButton({ isPending, onPress }: { isPending: boolean; onPress: () => void }) {
   return (
     <Pressable disabled={isPending} style={({ pressed }) => [styles.logoutCard, pressed ? styles.pressed : null, isPending ? styles.disabled : null]} onPress={onPress}>
-      <Ionicons color={COLORS.danger} name="log-out-outline" size={24} />
+      <Ionicons color={COLORS.danger} name="log-out-outline" size={18} />
       <Text style={styles.logoutText}>{isPending ? "Logging out..." : "Log Out"}</Text>
     </Pressable>
   );
@@ -326,52 +326,52 @@ const softShadow = {
 const styles = StyleSheet.create({
   shell: { flex: 1, backgroundColor: COLORS.background },
   animatedContent: { flex: 1 },
-  screen: { gap: 20, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 112 },
-  header: { minHeight: 96, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  headerCopy: { flex: 1, gap: 6 },
-  pageTitle: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 32, lineHeight: 38 },
-  pageSubtitle: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 15, lineHeight: 22 },
-  headerActions: { flexDirection: "row", alignItems: "center", gap: 8, paddingTop: 14 },
-  iconButton: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
-  notificationDot: { position: "absolute", right: 8, top: 8, width: 11, height: 11, borderRadius: 6, backgroundColor: COLORS.primary },
-  profileCard: { borderRadius: 24, backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, padding: 16, ...softShadow },
-  profileTop: { minHeight: 142, flexDirection: "row", alignItems: "center", gap: 16 },
-  avatarWrap: { width: 112, height: 112 },
-  avatarImage: { width: 112, height: 112, borderRadius: 56, alignItems: "center", justifyContent: "center" },
-  avatarInitials: { color: "#FFFFFF", fontFamily: FONT.bold, fontSize: 34, lineHeight: 40 },
-  cameraBadge: { position: "absolute", right: -2, bottom: 4, width: 38, height: 38, borderRadius: 19, borderWidth: 4, borderColor: COLORS.background, backgroundColor: COLORS.primary, alignItems: "center", justifyContent: "center" },
-  profileInfo: { flex: 1, minWidth: 0, gap: 8 },
-  nameRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  userName: { flexShrink: 1, color: COLORS.text, fontFamily: FONT.bold, fontSize: 22, lineHeight: 28 },
-  proBadge: { height: 34, borderRadius: 14, backgroundColor: "#FFE8F2", flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10 },
-  proBadgeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 14 },
-  profileBio: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 14, lineHeight: 20 },
-  contactLine: { flexDirection: "row", alignItems: "center", gap: 12 },
-  contactText: { flex: 1, color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 14, lineHeight: 20 },
-  cardDivider: { height: 1, backgroundColor: COLORS.border, marginTop: 12, marginBottom: 14 },
-  statsRow: { height: 126, flexDirection: "row", alignItems: "stretch" },
-  statColumn: { flex: 1, alignItems: "center", justifyContent: "center", gap: 9 },
-  statDivider: { position: "absolute", left: 0, top: 12, bottom: 12, width: 1, backgroundColor: COLORS.border },
-  statIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  statValue: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 28, lineHeight: 33 },
-  statLabel: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 13, lineHeight: 17 },
-  premiumBanner: { minHeight: 96, borderRadius: 24, borderWidth: 1, borderColor: "#FFD4E5", flexDirection: "row", alignItems: "center", gap: 14, padding: 16, ...softShadow },
-  premiumIcon: { width: 58, height: 58, borderRadius: 29, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
-  premiumCopy: { flex: 1, minWidth: 0, gap: 4 },
-  premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 17, lineHeight: 22 },
-  premiumSubtitle: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 14, lineHeight: 20 },
-  manageButton: { height: 44, borderRadius: 16, backgroundColor: COLORS.primary, alignItems: "center", justifyContent: "center", paddingHorizontal: 18 },
-  manageButtonText: { color: "#FFFFFF", fontFamily: FONT.semibold, fontSize: 14 },
-  menuCard: { borderRadius: 24, backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, overflow: "hidden", ...softShadow },
-  menuItem: { height: 72, flexDirection: "row", alignItems: "center", gap: 16, paddingLeft: 20 },
-  menuIcon: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
-  menuCopy: { flex: 1, height: "100%", borderBottomWidth: 1, borderBottomColor: COLORS.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingRight: 20 },
+  screen: { gap: 12, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 88 },
+  header: { minHeight: 54, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 },
+  headerCopy: { flex: 1, gap: 2 },
+  pageTitle: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 22, lineHeight: 25 },
+  pageSubtitle: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 6, paddingTop: 0 },
+  iconButton: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
+  notificationDot: { position: "absolute", right: 4, top: 4, width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
+  profileCard: { borderRadius: 16, backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, padding: 12, ...softShadow },
+  profileTop: { minHeight: 92, flexDirection: "row", alignItems: "center", gap: 10 },
+  avatarWrap: { width: 68, height: 68 },
+  avatarImage: { width: 68, height: 68, borderRadius: 34, alignItems: "center", justifyContent: "center" },
+  avatarInitials: { color: "#FFFFFF", fontFamily: FONT.bold, fontSize: 22, lineHeight: 26 },
+  cameraBadge: { position: "absolute", right: -2, bottom: 1, width: 26, height: 26, borderRadius: 13, borderWidth: 3, borderColor: COLORS.background, backgroundColor: COLORS.primary, alignItems: "center", justifyContent: "center" },
+  profileInfo: { flex: 1, minWidth: 0, gap: 4 },
+  nameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  userName: { flexShrink: 1, color: COLORS.text, fontFamily: FONT.bold, fontSize: 16, lineHeight: 21 },
+  proBadge: { height: 24, borderRadius: 12, backgroundColor: "#FFE8F2", flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8 },
+  proBadgeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 11 },
+  profileBio: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 11, lineHeight: 15 },
+  contactLine: { flexDirection: "row", alignItems: "center", gap: 7 },
+  contactText: { flex: 1, color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 11, lineHeight: 15 },
+  cardDivider: { height: 1, backgroundColor: COLORS.border, marginTop: 10, marginBottom: 8 },
+  statsRow: { height: 78, flexDirection: "row", alignItems: "stretch" },
+  statColumn: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4 },
+  statDivider: { position: "absolute", left: 0, top: 8, bottom: 8, width: 1, backgroundColor: COLORS.border },
+  statIcon: { width: 30, height: 30, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  statValue: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
+  statLabel: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 9, lineHeight: 12 },
+  premiumBanner: { minHeight: 64, borderRadius: 14, borderWidth: 1, borderColor: "#FFD4E5", flexDirection: "row", alignItems: "center", gap: 8, padding: 12, ...softShadow },
+  premiumIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
+  premiumCopy: { flex: 1, minWidth: 0, gap: 2 },
+  premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 12, lineHeight: 16 },
+  premiumSubtitle: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
+  manageButton: { height: 32, borderRadius: 12, backgroundColor: COLORS.primary, alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
+  manageButtonText: { color: "#FFFFFF", fontFamily: FONT.semibold, fontSize: 10 },
+  menuCard: { borderRadius: 16, backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, overflow: "hidden", ...softShadow },
+  menuItem: { height: 58, flexDirection: "row", alignItems: "center", gap: 10, paddingLeft: 12 },
+  menuIcon: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  menuCopy: { flex: 1, height: "100%", borderBottomWidth: 1, borderBottomColor: COLORS.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, paddingRight: 12 },
   menuCopyLast: { borderBottomWidth: 0 },
-  menuTextBlock: { flex: 1, minWidth: 0, gap: 3 },
-  menuTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 17, lineHeight: 22 },
-  menuSubtitle: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 14, lineHeight: 19 },
-  logoutCard: { height: 72, borderRadius: 24, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.background, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, ...softShadow },
-  logoutText: { color: COLORS.danger, fontFamily: FONT.semibold, fontSize: 17, lineHeight: 22 },
+  menuTextBlock: { flex: 1, minWidth: 0, gap: 2 },
+  menuTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
+  menuSubtitle: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
+  logoutCard: { height: 52, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.background, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, ...softShadow },
+  logoutText: { color: COLORS.danger, fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
   pressed: { transform: [{ scale: 0.98 }], opacity: 0.92 },
   disabled: { opacity: 0.6 },
   errorText: { color: COLORS.danger, fontFamily: FONT.medium, fontSize: 12, lineHeight: 18, textAlign: "center" }

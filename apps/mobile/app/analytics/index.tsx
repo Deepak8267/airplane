@@ -5,6 +5,13 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "rea
 import { BottomNav } from "@/components/bottom-nav";
 import { getAnalyticsDashboard } from "@/features/analytics/analytics-service";
 
+const FONT = {
+  regular: "Poppins_400Regular",
+  medium: "Poppins_500Medium",
+  semibold: "Poppins_600SemiBold",
+  bold: "Poppins_700Bold"
+};
+
 export default function AnalyticsDashboardScreen() {
   const dashboardQuery = useQuery({
     queryKey: ["analytics-dashboard"],
@@ -23,7 +30,7 @@ export default function AnalyticsDashboardScreen() {
           <View style={styles.headerStack}>
             <View style={styles.header}>
               <View style={styles.headerIcon}>
-                <Ionicons color="#ec0e68" name="bar-chart-outline" size={24} />
+                <Ionicons color="#ec0e68" name="bar-chart-outline" size={18} />
               </View>
               <Text style={styles.eyebrow}>Analytics dashboard</Text>
               <Text style={styles.title}>Track reactions that matter.</Text>
@@ -62,12 +69,12 @@ export default function AnalyticsDashboardScreen() {
           !dashboardQuery.isLoading ? (
             <View style={styles.emptyCard}>
               <View style={styles.emptyIcon}>
-                <Ionicons color="#ec0e68" name="bar-chart-outline" size={28} />
+                <Ionicons color="#ec0e68" name="bar-chart-outline" size={22} />
               </View>
               <Text style={styles.emptyTitle}>No published analytics yet</Text>
               <Text style={styles.emptyCopy}>Publish an experience and open its link to start collecting analytics.</Text>
               <Pressable style={styles.primaryButton} onPress={() => router.push("/home" as never)}>
-                <Ionicons color="#ffffff" name="sparkles-outline" size={18} />
+                <Ionicons color="#ffffff" name="sparkles-outline" size={15} />
                 <Text style={styles.primaryButtonText}>Create experience</Text>
               </Pressable>
             </View>
@@ -80,13 +87,13 @@ export default function AnalyticsDashboardScreen() {
           >
             <View style={styles.cardHeader}>
               <View style={[styles.cardIcon, { backgroundColor: item.experience.theme.muted }]}>
-                <Ionicons color="#ec0e68" name="paper-plane-outline" size={21} />
+                <Ionicons color="#ec0e68" name="paper-plane-outline" size={17} />
               </View>
               <View style={styles.cardTitleBlock}>
                 <Text style={styles.cardTitle} numberOfLines={1}>{item.experience.title}</Text>
                 <Text style={styles.cardSubtitle} numberOfLines={1}>{item.experience.recipientName || "No recipient"}</Text>
               </View>
-              <Ionicons color="#98a2b3" name="chevron-forward" size={21} />
+              <Ionicons color="#98a2b3" name="chevron-forward" size={18} />
             </View>
             <View style={styles.cardStats}>
               <SmallStat label="Views" value={formatNumber(item.summary.views)} />
@@ -108,7 +115,7 @@ export default function AnalyticsDashboardScreen() {
 function Metric({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
   return (
     <View style={styles.metricCard}>
-      <Ionicons color="#ec0e68" name={icon} size={22} />
+      <Ionicons color="#ec0e68" name={icon} size={17} />
       <Text style={styles.metricValue}>{value}</Text>
       <Text style={styles.metricLabel}>{label}</Text>
     </View>
@@ -147,44 +154,44 @@ function formatDuration(seconds: number) {
 }
 
 const styles = StyleSheet.create({
-  shell: { flex: 1, backgroundColor: "#fff7fb" },
-  list: { gap: 12, padding: 20, paddingBottom: 110 },
-  headerStack: { gap: 16 },
-  header: { gap: 7, paddingTop: 8 },
-  headerIcon: { width: 54, height: 54, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", alignItems: "center", justifyContent: "center", marginBottom: 4 },
-  eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
-  title: { color: "#101828", fontSize: 32, lineHeight: 38, fontWeight: "900" },
-  subtitle: { color: "#667085", fontSize: 15, lineHeight: 22 },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  metricCard: { minWidth: 145, flexBasis: "47%", flexGrow: 1, minHeight: 122, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 14, justifyContent: "space-between" },
-  metricValue: { color: "#101828", fontSize: 25, fontWeight: "900" },
-  metricLabel: { color: "#667085", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  insightBand: { minHeight: 76, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", padding: 14 },
-  insightItem: { flex: 1, gap: 4 },
-  insightDivider: { width: 1, alignSelf: "stretch", backgroundColor: "#fce7f3", marginHorizontal: 12 },
-  insightLabel: { color: "#667085", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  insightValue: { color: "#101828", fontSize: 22, fontWeight: "900" },
+  shell: { flex: 1, backgroundColor: "#ffffff" },
+  list: { gap: 12, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 88 },
+  headerStack: { gap: 12 },
+  header: { gap: 3, paddingTop: 0 },
+  headerIcon: { width: 34, height: 34, borderRadius: 11, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", alignItems: "center", justifyContent: "center", marginBottom: 2 },
+  eyebrow: { color: "#ec0e68", fontFamily: FONT.semibold, fontSize: 10, lineHeight: 13, textTransform: "uppercase" },
+  title: { color: "#101828", fontFamily: FONT.bold, fontSize: 22, lineHeight: 25 },
+  subtitle: { color: "#667085", fontFamily: FONT.regular, fontSize: 10, lineHeight: 14 },
+  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  metricCard: { minWidth: 130, flexBasis: "47%", flexGrow: 1, minHeight: 76, borderRadius: 14, borderWidth: 1, borderColor: "#f3f4f6", backgroundColor: "#ffffff", padding: 10, justifyContent: "space-between" },
+  metricValue: { color: "#101828", fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
+  metricLabel: { color: "#667085", fontFamily: FONT.medium, fontSize: 9, lineHeight: 12, textTransform: "uppercase" },
+  insightBand: { minHeight: 56, borderRadius: 14, borderWidth: 1, borderColor: "#f3f4f6", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", padding: 10 },
+  insightItem: { flex: 1, gap: 2 },
+  insightDivider: { width: 1, alignSelf: "stretch", backgroundColor: "#f3f4f6", marginHorizontal: 8 },
+  insightLabel: { color: "#667085", fontFamily: FONT.medium, fontSize: 9, lineHeight: 12, textTransform: "uppercase" },
+  insightValue: { color: "#101828", fontFamily: FONT.bold, fontSize: 16, lineHeight: 20 },
   sectionHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  sectionTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
-  sectionCount: { overflow: "hidden", borderRadius: 8, backgroundColor: "#fff1f7", color: "#ec0e68", paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900" },
-  experienceCard: { gap: 12, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 14 },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
-  cardIcon: { width: 40, height: 40, borderRadius: 8, backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
+  sectionTitle: { color: "#101828", fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
+  sectionCount: { overflow: "hidden", borderRadius: 10, backgroundColor: "#fff1f7", color: "#ec0e68", paddingHorizontal: 8, paddingVertical: 4, fontFamily: FONT.semibold, fontSize: 10 },
+  experienceCard: { gap: 8, borderRadius: 14, borderWidth: 1, borderColor: "#f3f4f6", backgroundColor: "#ffffff", padding: 10 },
+  cardHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
+  cardIcon: { width: 34, height: 34, borderRadius: 11, backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
   cardTitleBlock: { flex: 1, gap: 2 },
-  cardTitle: { color: "#101828", fontSize: 16, fontWeight: "900" },
-  cardSubtitle: { color: "#667085", fontSize: 13, fontWeight: "700" },
-  cardStats: { flexDirection: "row", gap: 8 },
-  smallStat: { flex: 1, minHeight: 62, borderRadius: 8, backgroundColor: "#f9fafb", borderWidth: 1, borderColor: "#eaecf0", padding: 9, justifyContent: "space-between" },
-  smallStatValue: { color: "#101828", fontSize: 18, fontWeight: "900" },
-  smallStatLabel: { color: "#667085", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
-  cardFooter: { flexDirection: "row", gap: 8 },
-  cardFooterText: { flex: 1, overflow: "hidden", borderRadius: 8, backgroundColor: "#fff7fb", color: "#667085", paddingHorizontal: 10, paddingVertical: 8, fontSize: 12, fontWeight: "900" },
-  emptyCard: { gap: 10, alignItems: "center", borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 18 },
-  emptyIcon: { width: 58, height: 58, borderRadius: 8, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
-  emptyTitle: { color: "#101828", fontSize: 18, fontWeight: "900", textAlign: "center" },
-  emptyCopy: { color: "#667085", textAlign: "center", lineHeight: 21 },
-  primaryButton: { alignSelf: "stretch", height: 48, borderRadius: 8, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
-  primaryButtonText: { color: "#ffffff", fontWeight: "900" },
-  stateText: { color: "#667085", textAlign: "center" },
-  error: { color: "#b42318", lineHeight: 20 }
+  cardTitle: { color: "#101828", fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
+  cardSubtitle: { color: "#667085", fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
+  cardStats: { flexDirection: "row", gap: 6 },
+  smallStat: { flex: 1, minHeight: 46, borderRadius: 10, backgroundColor: "#f9fafb", borderWidth: 1, borderColor: "#eaecf0", padding: 7, justifyContent: "space-between" },
+  smallStatValue: { color: "#101828", fontFamily: FONT.bold, fontSize: 13, lineHeight: 16 },
+  smallStatLabel: { color: "#667085", fontFamily: FONT.medium, fontSize: 8, lineHeight: 10, textTransform: "uppercase" },
+  cardFooter: { flexDirection: "row", gap: 6 },
+  cardFooterText: { flex: 1, overflow: "hidden", borderRadius: 10, backgroundColor: "#fff7fb", color: "#667085", paddingHorizontal: 8, paddingVertical: 6, fontFamily: FONT.medium, fontSize: 9 },
+  emptyCard: { gap: 8, alignItems: "center", borderRadius: 14, borderWidth: 1, borderColor: "#f3f4f6", backgroundColor: "#ffffff", padding: 14 },
+  emptyIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
+  emptyTitle: { color: "#101828", fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18, textAlign: "center" },
+  emptyCopy: { color: "#667085", fontFamily: FONT.regular, fontSize: 11, lineHeight: 16, textAlign: "center" },
+  primaryButton: { alignSelf: "stretch", height: 38, borderRadius: 13, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 7 },
+  primaryButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 12 },
+  stateText: { color: "#667085", fontFamily: FONT.regular, textAlign: "center" },
+  error: { color: "#b42318", fontFamily: FONT.regular, lineHeight: 18 }
 });

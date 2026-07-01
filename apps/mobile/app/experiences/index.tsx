@@ -9,6 +9,13 @@ import { BottomNav } from "@/components/bottom-nav";
 import { duplicateExperience, getExperienceForEditing, getMyExperiences, setExperienceArchived } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
 
+const FONT = {
+  regular: "Poppins_400Regular",
+  medium: "Poppins_500Medium",
+  semibold: "Poppins_600SemiBold",
+  bold: "Poppins_700Bold"
+};
+
 export default function ExperiencesScreen() {
   const [menuExperience, setMenuExperience] = useState<Experience | null>(null);
   const [copiedExperienceId, setCopiedExperienceId] = useState<string | null>(null);
@@ -141,7 +148,7 @@ export default function ExperiencesScreen() {
         </View>
         <Link href="/home" asChild>
           <Pressable style={styles.createButton}>
-            <Ionicons color="#ffffff" name="add" size={22} />
+            <Ionicons color="#ffffff" name="add" size={18} />
           </Pressable>
         </Link>
       </View>
@@ -169,7 +176,7 @@ export default function ExperiencesScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <View style={styles.emptyIcon}>
-              <Ionicons color="#ec0e68" name={experiencesQuery.isLoading ? "hourglass-outline" : "albums-outline"} size={26} />
+              <Ionicons color="#ec0e68" name={experiencesQuery.isLoading ? "hourglass-outline" : "albums-outline"} size={21} />
             </View>
             <Text style={styles.emptyTitle}>{experiencesQuery.isLoading ? "Loading experiences..." : filter === "all" ? "No experiences yet" : `No ${filter} experiences`}</Text>
             <Text style={styles.emptyCopy}>
@@ -177,7 +184,7 @@ export default function ExperiencesScreen() {
             </Text>
             <Link href="/home" asChild>
               <Pressable style={styles.primaryButton}>
-                <Ionicons color="#ffffff" name="sparkles-outline" size={19} />
+                <Ionicons color="#ffffff" name="sparkles-outline" size={15} />
                 <Text style={styles.primaryButtonText}>Choose template</Text>
               </Pressable>
             </Link>
@@ -193,7 +200,7 @@ export default function ExperiencesScreen() {
                   {item.coverPhotoUrl ? (
                     <Image source={{ uri: item.coverPhotoUrl }} style={styles.thumbnailImage} />
                   ) : (
-                    <Ionicons color={item.theme.accent} name={item.isPublished ? "paper-plane-outline" : "image-outline"} size={26} />
+                    <Ionicons color={item.theme.accent} name={item.isPublished ? "paper-plane-outline" : "image-outline"} size={21} />
                   )}
                 </View>
                 <View style={styles.cardMain}>
@@ -215,7 +222,7 @@ export default function ExperiencesScreen() {
                   style={[styles.secondaryButton, editMutation.isPending && editMutation.variables === item.id ? styles.pendingButton : null]}
                   onPress={() => editMutation.mutate(item.id)}
                 >
-                  <Ionicons color="#101828" name="create-outline" size={19} />
+                  <Ionicons color="#101828" name="create-outline" size={15} />
                   <Text style={styles.secondaryButtonText}>
                     {editMutation.isPending && editMutation.variables === item.id ? "Opening..." : "Edit"}
                   </Text>
@@ -225,12 +232,12 @@ export default function ExperiencesScreen() {
                     style={styles.secondaryButton}
                     onPress={() => openExperienceLink(item)}
                   >
-                    <Ionicons color="#101828" name="open-outline" size={19} />
+                    <Ionicons color="#101828" name="open-outline" size={15} />
                     <Text style={styles.secondaryButtonText}>Open</Text>
                   </Pressable>
                 ) : null}
                 <Pressable style={styles.iconButton} accessibilityLabel="More experience actions" onPress={() => openActionMenu(item)}>
-                  <Ionicons color="#101828" name="ellipsis-horizontal" size={21} />
+                  <Ionicons color="#101828" name="ellipsis-horizontal" size={17} />
                 </Pressable>
               </View>
               {editMutation.variables === item.id && editMutation.error instanceof Error ? (
@@ -250,7 +257,7 @@ export default function ExperiencesScreen() {
                 <Text style={styles.actionSheetSubtitle}>{menuExperience?.status}</Text>
               </View>
               <Pressable style={styles.closeButton} accessibilityLabel="Close actions" onPress={() => setMenuExperience(null)}>
-                <Ionicons color="#101828" name="close" size={22} />
+                <Ionicons color="#101828" name="close" size={18} />
               </Pressable>
             </View>
 
@@ -294,7 +301,7 @@ export default function ExperiencesScreen() {
       </Modal>
       {copiedExperienceId ? (
         <View style={styles.toast}>
-          <Ionicons color="#ffffff" name="checkmark-circle-outline" size={18} />
+          <Ionicons color="#ffffff" name="checkmark-circle-outline" size={15} />
           <Text style={styles.toastText}>Link copied</Text>
         </View>
       ) : null}
@@ -341,67 +348,67 @@ function MenuAction({
 
   return (
     <Pressable disabled={disabled} style={[styles.menuAction, disabled && styles.pendingButton]} onPress={onPress}>
-      <Ionicons color={color} name={icon} size={21} />
+      <Ionicons color={color} name={icon} size={17} />
       <Text style={[styles.menuActionText, { color }]}>{label}</Text>
-      <Ionicons color="#98a2b3" name="chevron-forward" size={20} />
+      <Ionicons color="#98a2b3" name="chevron-forward" size={17} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, paddingHorizontal: 20, paddingTop: 20, backgroundColor: "#fff7fb" },
-  header: { paddingTop: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 14 },
-  eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "800", textTransform: "uppercase" },
-  title: { color: "#101828", fontSize: 30, lineHeight: 36, fontWeight: "900" },
-  createButton: { width: 48, height: 48, borderRadius: 24, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", shadowColor: "#ec0e68", shadowOpacity: 0.2, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
-  list: { gap: 12, paddingTop: 18, paddingBottom: 110 },
-  listHeader: { gap: 14 },
-  statsGrid: { flexDirection: "row", gap: 10 },
-  metric: { flex: 1, minHeight: 74, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fce7f3", padding: 12, justifyContent: "center" },
-  metricValue: { color: "#101828", fontSize: 24, fontWeight: "900" },
-  metricLabel: { color: "#667085", marginTop: 2, fontSize: 12, fontWeight: "800", textTransform: "uppercase" },
-  filters: { flexDirection: "row", gap: 8 },
-  filterPill: { minHeight: 36, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 13, alignItems: "center", justifyContent: "center" },
+  screen: { flex: 1, paddingHorizontal: 14, paddingTop: 4, backgroundColor: "#ffffff" },
+  header: { minHeight: 54, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 },
+  eyebrow: { color: "#ec0e68", fontFamily: FONT.semibold, fontSize: 10, lineHeight: 13, textTransform: "uppercase" },
+  title: { color: "#101828", fontFamily: FONT.bold, fontSize: 22, lineHeight: 25 },
+  createButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", shadowColor: "#ec0e68", shadowOpacity: 0.14, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
+  list: { gap: 12, paddingTop: 0, paddingBottom: 88 },
+  listHeader: { gap: 10 },
+  statsGrid: { flexDirection: "row", gap: 8 },
+  metric: { flex: 1, minHeight: 54, borderRadius: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#f3f4f6", padding: 9, justifyContent: "center" },
+  metricValue: { color: "#101828", fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
+  metricLabel: { color: "#667085", marginTop: 1, fontFamily: FONT.medium, fontSize: 9, lineHeight: 12, textTransform: "uppercase" },
+  filters: { flexDirection: "row", gap: 6 },
+  filterPill: { minHeight: 30, borderRadius: 15, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 10, alignItems: "center", justifyContent: "center" },
   filterPillActive: { borderColor: "#ec0e68", backgroundColor: "#ec0e68" },
-  filterPillText: { color: "#667085", fontWeight: "900", fontSize: 12 },
+  filterPillText: { color: "#667085", fontFamily: FONT.semibold, fontSize: 10 },
   filterPillTextActive: { color: "#ffffff" },
-  card: { gap: 12, padding: 14, backgroundColor: "#ffffff", borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", shadowColor: "#ec0e68", shadowOpacity: 0.05, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } },
-  visualRow: { flexDirection: "row", gap: 12 },
-  thumbnail: { width: 74, height: 88, borderRadius: 8, overflow: "hidden", alignItems: "center", justifyContent: "center" },
+  card: { gap: 8, padding: 10, backgroundColor: "#ffffff", borderRadius: 14, borderWidth: 1, borderColor: "#f3f4f6", shadowColor: "#111827", shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
+  visualRow: { flexDirection: "row", gap: 8 },
+  thumbnail: { width: 58, height: 70, borderRadius: 11, overflow: "hidden", alignItems: "center", justifyContent: "center" },
   thumbnailImage: { width: "100%", height: "100%" },
-  cardMain: { flex: 1, minWidth: 0, gap: 8 },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
-  cardTitle: { flex: 1, color: "#101828", fontSize: 18, fontWeight: "900" },
-  status: { overflow: "hidden", borderRadius: 8, paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
+  cardMain: { flex: 1, minWidth: 0, gap: 4 },
+  cardHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
+  cardTitle: { flex: 1, color: "#101828", fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
+  status: { overflow: "hidden", borderRadius: 10, paddingHorizontal: 7, paddingVertical: 3, fontFamily: FONT.semibold, fontSize: 8, textTransform: "uppercase" },
   published: { color: "#067647", backgroundColor: "#dcfae6" },
   draft: { color: "#b54708", backgroundColor: "#fef0c7" },
   archived: { color: "#475467", backgroundColor: "#eaecf0" },
-  recipient: { color: "#344054", fontWeight: "800" },
-  message: { color: "#667085", lineHeight: 20 },
-  cardActions: { flexDirection: "row", gap: 8 },
-  secondaryButton: { flex: 1, height: 44, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
+  recipient: { color: "#344054", fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
+  message: { color: "#667085", fontFamily: FONT.regular, fontSize: 10, lineHeight: 14 },
+  cardActions: { flexDirection: "row", gap: 6 },
+  secondaryButton: { flex: 1, height: 34, borderRadius: 11, borderWidth: 1, borderColor: "#d0d5dd", flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" },
   pendingButton: { opacity: 0.65 },
-  secondaryButtonText: { color: "#101828", fontWeight: "900" },
-  iconButton: { width: 44, height: 44, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", alignItems: "center", justifyContent: "center" },
+  secondaryButtonText: { color: "#101828", fontFamily: FONT.semibold, fontSize: 11 },
+  iconButton: { width: 34, height: 34, borderRadius: 11, borderWidth: 1, borderColor: "#d0d5dd", alignItems: "center", justifyContent: "center" },
   modalOverlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(16, 24, 40, 0.45)" },
-  actionSheet: { backgroundColor: "#ffffff", padding: 20, paddingBottom: 32, gap: 4, borderTopLeftRadius: 18, borderTopRightRadius: 18 },
-  actionSheetHeader: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8 },
+  actionSheet: { backgroundColor: "#ffffff", padding: 14, paddingBottom: 24, gap: 3, borderTopLeftRadius: 18, borderTopRightRadius: 18 },
+  actionSheetHeader: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 6 },
   actionSheetHeading: { flex: 1, gap: 2 },
-  actionSheetTitle: { color: "#101828", fontSize: 20, fontWeight: "900" },
-  actionSheetSubtitle: { color: "#667085", fontSize: 12, fontWeight: "800", textTransform: "uppercase" },
-  closeButton: { width: 40, height: 40, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", alignItems: "center", justifyContent: "center" },
-  linkPreview: { gap: 6, borderRadius: 8, backgroundColor: "#fff7fb", borderWidth: 1, borderColor: "#fbcfe8", padding: 12, marginBottom: 6 },
-  linkPreviewLabel: { color: "#ec0e68", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
-  linkPreviewText: { color: "#101828", fontWeight: "800" },
-  menuAction: { minHeight: 56, flexDirection: "row", alignItems: "center", gap: 12, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
-  menuActionText: { flex: 1, fontSize: 16, fontWeight: "900" },
-  emptyState: { padding: 18, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", gap: 12, alignItems: "flex-start" },
-  emptyIcon: { width: 54, height: 54, borderRadius: 8, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
-  emptyTitle: { color: "#101828", fontSize: 19, fontWeight: "900" },
-  emptyCopy: { color: "#667085", lineHeight: 21 },
-  primaryButton: { height: 48, borderRadius: 8, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", alignSelf: "stretch", flexDirection: "row", gap: 8 },
-  primaryButtonText: { color: "#ffffff", fontWeight: "900" },
-  toast: { position: "absolute", left: 20, right: 20, bottom: 96, minHeight: 48, borderRadius: 8, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
-  toastText: { color: "#ffffff", fontWeight: "900" },
-  error: { color: "#b42318", lineHeight: 20 }
+  actionSheetTitle: { color: "#101828", fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
+  actionSheetSubtitle: { color: "#667085", fontFamily: FONT.medium, fontSize: 10, lineHeight: 13, textTransform: "uppercase" },
+  closeButton: { width: 34, height: 34, borderRadius: 11, borderWidth: 1, borderColor: "#d0d5dd", alignItems: "center", justifyContent: "center" },
+  linkPreview: { gap: 4, borderRadius: 12, backgroundColor: "#fff7fb", borderWidth: 1, borderColor: "#fbcfe8", padding: 10, marginBottom: 4 },
+  linkPreviewLabel: { color: "#ec0e68", fontFamily: FONT.semibold, fontSize: 9, lineHeight: 12, textTransform: "uppercase" },
+  linkPreviewText: { color: "#101828", fontFamily: FONT.medium, fontSize: 11 },
+  menuAction: { minHeight: 46, flexDirection: "row", alignItems: "center", gap: 10, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
+  menuActionText: { flex: 1, fontFamily: FONT.semibold, fontSize: 13 },
+  emptyState: { padding: 14, borderRadius: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#f3f4f6", gap: 9, alignItems: "flex-start" },
+  emptyIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
+  emptyTitle: { color: "#101828", fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
+  emptyCopy: { color: "#667085", fontFamily: FONT.regular, fontSize: 11, lineHeight: 16 },
+  primaryButton: { height: 38, borderRadius: 13, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", alignSelf: "stretch", flexDirection: "row", gap: 7 },
+  primaryButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 12 },
+  toast: { position: "absolute", left: 14, right: 14, bottom: 84, minHeight: 42, borderRadius: 14, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
+  toastText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 12 },
+  error: { color: "#b42318", fontFamily: FONT.regular, lineHeight: 18 }
 });
