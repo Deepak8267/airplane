@@ -258,16 +258,22 @@ export default function HomeScreen() {
         )}
 
         <Link href={"/subscription" as never} asChild>
-          <Pressable style={styles.premiumBanner}>
+          <Pressable style={[styles.premiumBanner, isNarrow ? styles.premiumBannerNarrow : null]}>
             <View style={styles.crownBox}>
               <Ionicons color="#f59e0b" name="diamond" size={22} />
             </View>
             <View style={styles.premiumCopy}>
-              <Text style={styles.premiumTitle}>Unlock Premium Templates</Text>
-              <Text style={styles.premiumText}>Get access to 100+ premium templates.</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.85} numberOfLines={1} style={styles.premiumTitle}>
+                Unlock Premium Templates
+              </Text>
+              <Text numberOfLines={2} style={styles.premiumText}>
+                Get access to 100+ premium templates.
+              </Text>
             </View>
             <View style={styles.upgradePill}>
-              <Text style={styles.upgradeText}>Upgrade to Pro</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.upgradeText}>
+                Upgrade to Pro
+              </Text>
             </View>
           </Pressable>
         </Link>
@@ -813,22 +819,35 @@ const styles = StyleSheet.create({
   popularBadge: { backgroundColor: COLORS.primary },
   newBadge: { backgroundColor: "#22C55E" },
   premiumBanner: {
-    height: 64,
+    minHeight: 76,
     borderRadius: 20,
     backgroundColor: "#FFF8E7",
     borderWidth: 1,
     borderColor: "#FFF1C2",
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    padding: 12
+    gap: 10,
+    padding: 14,
+    overflow: "hidden"
   },
-  crownBox: { width: 30, height: 30, borderRadius: 10, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
-  premiumCopy: { flex: 1, gap: 3 },
+  premiumBannerNarrow: { minHeight: 82, gap: 8, paddingHorizontal: 12 },
+  crownBox: { width: 34, height: 34, borderRadius: 12, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  premiumCopy: { flex: 1, minWidth: 0, gap: 3 },
   premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
   premiumText: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 12, lineHeight: 15 },
-  upgradePill: { height: 34, borderRadius: 14, borderWidth: 1, borderColor: "#FBCFE8", backgroundColor: "#FFF1F7", alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
-  upgradeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 12 },
+  upgradePill: {
+    width: 112,
+    height: 36,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#FBCFE8",
+    backgroundColor: "#FFF1F7",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 8,
+    flexShrink: 0
+  },
+  upgradeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 11 },
   loadingCard: { minHeight: 66, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", gap: 6 },
   loadingText: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 11 }
 });
