@@ -23,12 +23,13 @@ const NAV_ITEMS: Array<{
   { key: "profile", label: "Profile", icon: "person-outline", activeIcon: "person", route: "/profile" }
 ];
 
-export function BottomNav({ active }: { active: BottomNavKey }) {
+export function BottomNav({ active, variant = "compact" }: { active: BottomNavKey; variant?: "compact" | "main" }) {
   const insets = useSafeAreaInsets();
+  const isMain = variant === "main";
 
   return (
     <View style={[styles.shell, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-      <View style={styles.nav}>
+      <View style={[styles.nav, isMain ? styles.navMain : null]}>
         {NAV_ITEMS.slice(0, 2).map((item) => {
           const selected = item.key === active;
 
@@ -45,8 +46,8 @@ export function BottomNav({ active }: { active: BottomNavKey }) {
             </Pressable>
           );
         })}
-        <Pressable accessibilityLabel="Create experience" style={styles.createButton} onPress={() => router.push("/templates" as never)}>
-          <Ionicons color="#ffffff" name="add" size={32} />
+        <Pressable accessibilityLabel="Create experience" style={[styles.createButton, isMain ? styles.createButtonMain : null]} onPress={() => router.push("/templates" as never)}>
+          <Ionicons color="#ffffff" name="add" size={isMain ? 36 : 32} />
         </Pressable>
         {NAV_ITEMS.slice(2).map((item) => {
           const selected = item.key === active;
@@ -95,6 +96,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 2
   },
+  navMain: {
+    height: 66,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22
+  },
   item: {
     flex: 1,
     alignItems: "center",
@@ -118,6 +126,12 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3
+  },
+  createButtonMain: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginTop: -28
   },
   label: { color: TEXT_MUTED, fontFamily: FONT_MEDIUM, fontSize: 9, lineHeight: 12, textAlign: "center" },
   activeLabel: { color: PRIMARY }

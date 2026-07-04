@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link, Redirect } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useSessionStore } from "@/stores/session-store";
 
 const ONBOARDING_SLIDES: Array<{
@@ -48,7 +49,7 @@ export default function IndexScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView edges={["top"]} style={styles.root}>
       <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
         <View style={styles.brandRow}>
           <View style={styles.logoMark}>
@@ -121,7 +122,7 @@ export default function IndexScreen() {
           <Feature icon="sparkles-outline" title="Interactive" copy="Pages, quizzes, and surprises." />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -137,36 +138,36 @@ function Feature({ copy, icon, title }: { copy: string; icon: keyof typeof Ionic
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#fff7fb" },
-  screen: { flexGrow: 1, justifyContent: "center", padding: 24, gap: 16 },
+  screen: { flexGrow: 1, justifyContent: "center", padding: 16, gap: 20 },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 11 },
-  logoMark: { width: 42, height: 42, borderRadius: 8, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center" },
+  logoMark: { width: 42, height: 42, borderRadius: 18, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center" },
   brandCopy: { flex: 1 },
   logo: { fontSize: 19, fontWeight: "900", letterSpacing: 0, color: "#101828" },
   tagline: { color: "#667085", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
-  stepBadge: { overflow: "hidden", borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", color: "#ec0e68", paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900" },
+  stepBadge: { overflow: "hidden", borderRadius: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", color: "#ec0e68", paddingHorizontal: 9, paddingVertical: 5, fontSize: 12, fontWeight: "900" },
   progressTrack: { height: 8, borderRadius: 4, overflow: "hidden", backgroundColor: "#fbcfe8" },
   progressValue: { height: "100%", borderRadius: 4, backgroundColor: "#ec0e68" },
-  heroArt: { height: 230, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  heroArt: { height: 230, borderRadius: 22, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", alignItems: "center", justifyContent: "center", overflow: "hidden" },
   flightPath: { position: "absolute", width: 180, height: 180, borderRadius: 90, borderWidth: 2, borderStyle: "dashed", borderColor: "#f9a8d4", transform: [{ rotate: "-28deg" }] },
-  paperPlaneLarge: { width: 108, height: 108, borderRadius: 8, backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
-  floatingHeart: { position: "absolute", right: 34, top: 38, minWidth: 48, height: 34, borderRadius: 8, backgroundColor: "#ffe4ef", alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
+  paperPlaneLarge: { width: 108, height: 108, borderRadius: 22, backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
+  floatingHeart: { position: "absolute", right: 34, top: 38, minWidth: 48, height: 34, borderRadius: 16, backgroundColor: "#ffe4ef", alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   heartText: { color: "#ec0e68", fontSize: 12, fontWeight: "900" },
-  floatingSpark: { position: "absolute", left: 36, bottom: 38, width: 36, height: 36, borderRadius: 8, backgroundColor: "#fff7ed", alignItems: "center", justifyContent: "center" },
-  floatingCard: { position: "absolute", left: 24, top: 34, minHeight: 34, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 8 },
+  floatingSpark: { position: "absolute", left: 36, bottom: 38, width: 36, height: 36, borderRadius: 18, backgroundColor: "#fff7ed", alignItems: "center", justifyContent: "center" },
+  floatingCard: { position: "absolute", left: 24, top: 34, minHeight: 34, borderRadius: 16, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 8 },
   floatingCardText: { color: "#101828", fontSize: 11, fontWeight: "900" },
   copyBlock: { gap: 8 },
   title: { fontSize: 34, lineHeight: 40, fontWeight: "900", color: "#101828" },
-  copy: { fontSize: 16, lineHeight: 24, color: "#475467" },
+  copy: { fontSize: 13, lineHeight: 20, color: "#475467" },
   dots: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7 },
   dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#f9a8d4" },
   activeDot: { width: 24, backgroundColor: "#ec0e68" },
   actions: { gap: 10 },
   featureGrid: { flexDirection: "row", gap: 10 },
-  featureCard: { flex: 1, minHeight: 118, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 12, justifyContent: "space-between" },
+  featureCard: { flex: 1, minHeight: 118, borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 12, justifyContent: "space-between" },
   featureTitle: { color: "#101828", fontWeight: "900" },
   featureCopy: { color: "#667085", fontSize: 12, lineHeight: 17 },
-  primaryButton: { height: 54, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#ec0e68", flexDirection: "row", gap: 8 },
+  primaryButton: { height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "#ec0e68", flexDirection: "row", gap: 8 },
   primaryButtonText: { color: "#ffffff", fontSize: 16, fontWeight: "900" },
-  secondaryButton: { height: 50, borderRadius: 8, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff" },
+  secondaryButton: { height: 50, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff" },
   secondaryButtonText: { color: "#ec0e68", fontSize: 15, fontWeight: "900" }
 });

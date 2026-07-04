@@ -272,7 +272,7 @@ export default function HomeScreen() {
           </Pressable>
         </Link>
       </ScrollView>
-      <BottomNav active="home" />
+      <BottomNav active="home" variant="main" />
     </SafeAreaView>
   );
 }
@@ -601,8 +601,8 @@ const softShadow = {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COLORS.background },
-  content: { gap: 12, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 88 },
-  contentNarrow: { paddingHorizontal: 12 },
+  content: { gap: 20, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 96 },
+  contentNarrow: { paddingHorizontal: 16 },
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   brandRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
   brandCopy: { flex: 1, minWidth: 0 },
@@ -634,36 +634,36 @@ const styles = StyleSheet.create({
   proText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 10 },
   bellButton: { width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
   notificationDot: { position: "absolute", right: 8, top: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
-  searchRow: { flexDirection: "row", gap: 8 },
+  searchRow: { flexDirection: "row", gap: 10 },
   searchBox: {
     flex: 1,
-    height: 40,
-    borderRadius: 14,
+    height: 48,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.background,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     ...softShadow
   },
-  searchInput: { flex: 1, color: COLORS.text, fontFamily: FONT.regular, fontSize: 12, padding: 0 },
+  searchInput: { flex: 1, color: COLORS.text, fontFamily: FONT.regular, fontSize: 13, padding: 0 },
   sparkleButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
+    width: 48,
+    height: 48,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: "#FCE7F3",
     backgroundColor: "#FFF1F7",
     alignItems: "center",
     justifyContent: "center"
   },
-  categoryRail: { gap: 8, paddingRight: 4 },
+  categoryRail: { gap: 10, paddingRight: 4 },
   categoryTile: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
+    width: 64,
+    height: 64,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: COLORS.border,
     backgroundColor: COLORS.background,
@@ -673,9 +673,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     ...softShadow
   },
-  categoryTileNarrow: { width: 52, height: 54 },
-  categoryIcon: { width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
-  categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 9, lineHeight: 11, textAlign: "center" },
+  categoryTileNarrow: { width: 60, height: 62 },
+  categoryIcon: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+  categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 11, lineHeight: 13, textAlign: "center" },
   heroCarousel: {
     height: 188,
     borderRadius: 24,
@@ -773,14 +773,14 @@ const styles = StyleSheet.create({
   heroPlane: { position: "absolute", top: 20, right: -4, transform: [{ rotate: "23deg" }] },
   heroIndicator: { position: "absolute", bottom: 16, left: 0, right: 0, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 6 },
   heroIndicatorDot: { height: 8, borderRadius: 4 },
-  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -6 },
+  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -10 },
   sectionTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
   seeAll: { color: COLORS.primary, fontFamily: FONT.medium, fontSize: 11 },
-  cardRail: { gap: 8, paddingRight: 4 },
+  cardRail: { gap: 12, paddingRight: 4 },
   templateCard: {
     width: 122,
     height: 162,
-    borderRadius: 14,
+    borderRadius: 20,
     backgroundColor: COLORS.background,
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -789,14 +789,14 @@ const styles = StyleSheet.create({
     ...softShadow
   },
   templateCardNarrow: { width: 112, height: 154 },
-  cardImage: { width: "100%", height: 82, borderRadius: 11 },
+  cardImage: { width: "100%", height: 82, borderRadius: 18 },
   cardImageNarrow: { height: 76 },
   visualPanel: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
   visualCircle: { position: "absolute", width: 86, height: 86, borderRadius: 43, opacity: 0.14 },
   visualLine: { position: "absolute", bottom: 0, left: 0, right: 0, height: 3, opacity: 0.7 },
   templateInfo: { gap: 2, paddingTop: 7, paddingRight: 14 },
-  templateTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 12, lineHeight: 16 },
-  templateMeta: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
+  templateTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
+  templateMeta: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 12, lineHeight: 15 },
   moreIcon: { position: "absolute", right: 8, bottom: 17 },
   badge: {
     position: "absolute",
@@ -814,7 +814,7 @@ const styles = StyleSheet.create({
   newBadge: { backgroundColor: "#22C55E" },
   premiumBanner: {
     height: 64,
-    borderRadius: 14,
+    borderRadius: 20,
     backgroundColor: "#FFF8E7",
     borderWidth: 1,
     borderColor: "#FFF1C2",
@@ -825,10 +825,10 @@ const styles = StyleSheet.create({
   },
   crownBox: { width: 30, height: 30, borderRadius: 10, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
   premiumCopy: { flex: 1, gap: 3 },
-  premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 11, lineHeight: 15 },
-  premiumText: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 9, lineHeight: 12 },
-  upgradePill: { height: 28, borderRadius: 10, borderWidth: 1, borderColor: "#FBCFE8", backgroundColor: "#FFF1F7", alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
-  upgradeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 10 },
+  premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
+  premiumText: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 12, lineHeight: 15 },
+  upgradePill: { height: 34, borderRadius: 14, borderWidth: 1, borderColor: "#FBCFE8", backgroundColor: "#FFF1F7", alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
+  upgradeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 12 },
   loadingCard: { minHeight: 66, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", gap: 6 },
   loadingText: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 11 }
 });
