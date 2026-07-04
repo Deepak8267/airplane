@@ -34,7 +34,7 @@ export default function AnalyticsDashboardScreen() {
                 <Ionicons color="#ec0e68" name="bar-chart-outline" size={18} />
               </View>
               <Text style={styles.eyebrow}>Analytics dashboard</Text>
-              <Text style={styles.title}>Track reactions that matter.</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={2} style={styles.title}>Track reactions that matter.</Text>
               <Text style={styles.subtitle}>Views, completions, and proposal interactions across all published experiences.</Text>
             </View>
 
@@ -61,7 +61,7 @@ export default function AnalyticsDashboardScreen() {
             {dashboardQuery.error instanceof Error ? <Text style={styles.error}>{dashboardQuery.error.message}</Text> : null}
 
             <View style={styles.sectionHeading}>
-              <Text style={styles.sectionTitle}>Published experiences</Text>
+              <Text numberOfLines={1} style={styles.sectionTitle}>Published experiences</Text>
               <Text style={styles.sectionCount}>{dashboard?.totals.publishedExperiences ?? 0}</Text>
             </View>
           </View>
@@ -102,8 +102,8 @@ export default function AnalyticsDashboardScreen() {
               <SmallStat label="Complete" value={formatPercent(item.summary.completionRate)} />
             </View>
             <View style={styles.cardFooter}>
-              <Text style={styles.cardFooterText}>Avg time {formatDuration(item.summary.averageCompletionTimeSeconds)}</Text>
-              <Text style={styles.cardFooterText}>NO attempts {formatNumber(item.summary.totalNoAttempts)}</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.cardFooterText}>Avg time {formatDuration(item.summary.averageCompletionTimeSeconds)}</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.cardFooterText}>NO attempts {formatNumber(item.summary.totalNoAttempts)}</Text>
             </View>
           </Pressable>
         )}
@@ -117,8 +117,8 @@ function Metric({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; 
   return (
     <View style={styles.metricCard}>
       <Ionicons color="#ec0e68" name={icon} size={17} />
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
+      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.metricValue}>{value}</Text>
+      <Text numberOfLines={1} style={styles.metricLabel}>{label}</Text>
     </View>
   );
 }
@@ -126,8 +126,8 @@ function Metric({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; 
 function SmallStat({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.smallStat}>
-      <Text style={styles.smallStatValue}>{value}</Text>
-      <Text style={styles.smallStatLabel}>{label}</Text>
+      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.smallStatValue}>{value}</Text>
+      <Text numberOfLines={1} style={styles.smallStatLabel}>{label}</Text>
     </View>
   );
 }
@@ -173,12 +173,12 @@ const styles = StyleSheet.create({
   insightLabel: { color: "#667085", fontFamily: FONT.medium, fontSize: 9, lineHeight: 12, textTransform: "uppercase" },
   insightValue: { color: "#101828", fontFamily: FONT.bold, fontSize: 16, lineHeight: 20 },
   sectionHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  sectionTitle: { color: "#101828", fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
+  sectionTitle: { flex: 1, minWidth: 0, color: "#101828", fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
   sectionCount: { overflow: "hidden", borderRadius: 10, backgroundColor: "#fff1f7", color: "#ec0e68", paddingHorizontal: 8, paddingVertical: 4, fontFamily: FONT.semibold, fontSize: 10 },
   experienceCard: { gap: 8, borderRadius: 14, borderWidth: 1, borderColor: "#f3f4f6", backgroundColor: "#ffffff", padding: 10 },
   cardHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
   cardIcon: { width: 34, height: 34, borderRadius: 11, backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
-  cardTitleBlock: { flex: 1, gap: 2 },
+  cardTitleBlock: { flex: 1, minWidth: 0, gap: 2 },
   cardTitle: { color: "#101828", fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
   cardSubtitle: { color: "#667085", fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
   cardStats: { flexDirection: "row", gap: 6 },
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   smallStatValue: { color: "#101828", fontFamily: FONT.bold, fontSize: 13, lineHeight: 16 },
   smallStatLabel: { color: "#667085", fontFamily: FONT.medium, fontSize: 8, lineHeight: 10, textTransform: "uppercase" },
   cardFooter: { flexDirection: "row", gap: 6 },
-  cardFooterText: { flex: 1, overflow: "hidden", borderRadius: 10, backgroundColor: "#fff7fb", color: "#667085", paddingHorizontal: 8, paddingVertical: 6, fontFamily: FONT.medium, fontSize: 9 },
+  cardFooterText: { flex: 1, minWidth: 0, overflow: "hidden", borderRadius: 10, backgroundColor: "#fff7fb", color: "#667085", paddingHorizontal: 8, paddingVertical: 6, fontFamily: FONT.medium, fontSize: 9 },
   emptyCard: { gap: 8, alignItems: "center", borderRadius: 14, borderWidth: 1, borderColor: "#f3f4f6", backgroundColor: "#ffffff", padding: 14 },
   emptyIcon: { width: 42, height: 42, borderRadius: 14, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
   emptyTitle: { color: "#101828", fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18, textAlign: "center" },

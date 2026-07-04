@@ -45,7 +45,7 @@ export default function AnalyticsScreen() {
                 </View>
               </View>
               <Text style={styles.eyebrow}>Performance</Text>
-              <Text style={styles.title}>{data.experience.title}</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={2} style={styles.title}>{data.experience.title}</Text>
               <Text style={styles.recipient}>{data.experience.recipientName || "No recipient"}</Text>
             </View>
 
@@ -58,8 +58,8 @@ export default function AnalyticsScreen() {
 
             <View style={styles.section}>
               <View style={styles.sectionHeading}>
-                <Text style={styles.sectionTitle}>Completion rate</Text>
-                <Text style={styles.rate}>{formatPercent(data.insights.completionRate)}</Text>
+                <Text numberOfLines={1} style={styles.sectionTitle}>Completion rate</Text>
+                <Text numberOfLines={1} style={styles.rate}>{formatPercent(data.insights.completionRate)}</Text>
               </View>
               <View style={styles.progressTrack}>
                 <View style={[styles.progressValue, { width: `${data.insights.completionRate}%` }]} />
@@ -82,18 +82,18 @@ export default function AnalyticsScreen() {
                   <Ionicons color="#b54708" name="move-outline" size={22} />
                 </View>
                 <View style={styles.noAttemptsCopy}>
-                  <Text style={styles.noAttemptsLabel}>Proposal NO attempts</Text>
-                  <Text style={styles.noAttemptsValue}>{formatNumber(data.summary.totalNoAttempts)}</Text>
+                  <Text numberOfLines={1} style={styles.noAttemptsLabel}>Proposal NO attempts</Text>
+                  <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.noAttemptsValue}>{formatNumber(data.summary.totalNoAttempts)}</Text>
                 </View>
               </View>
               <View style={styles.noAttemptsStats}>
                 <View style={styles.noAttemptsStat}>
-                  <Text style={styles.noAttemptsStatLabel}>Per view</Text>
-                  <Text style={styles.noAttemptsStatValue}>{formatDecimal(data.insights.averageNoAttemptsPerView)}</Text>
+                  <Text numberOfLines={1} style={styles.noAttemptsStatLabel}>Per view</Text>
+                  <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.noAttemptsStatValue}>{formatDecimal(data.insights.averageNoAttemptsPerView)}</Text>
                 </View>
                 <View style={styles.noAttemptsStat}>
-                  <Text style={styles.noAttemptsStatLabel}>Per answer</Text>
-                  <Text style={styles.noAttemptsStatValue}>{formatDecimal(data.insights.averageNoAttemptsPerProposalAnswer)}</Text>
+                  <Text numberOfLines={1} style={styles.noAttemptsStatLabel}>Per answer</Text>
+                  <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.noAttemptsStatValue}>{formatDecimal(data.insights.averageNoAttemptsPerProposalAnswer)}</Text>
                 </View>
               </View>
             </View>
@@ -110,9 +110,9 @@ export default function AnalyticsScreen() {
                   <View key={activity.id} style={styles.activityRow}>
                     <View style={styles.activityDot} />
                     <View style={styles.activityCopy}>
-                      <Text style={styles.activityTitle}>{formatEvent(activity.eventType)}</Text>
+                      <Text numberOfLines={1} style={styles.activityTitle}>{formatEvent(activity.eventType)}</Text>
                       {formatEventDetail(activity.eventType, activity.metadata) ? (
-                        <Text style={styles.activityDetail}>{formatEventDetail(activity.eventType, activity.metadata)}</Text>
+                        <Text numberOfLines={2} style={styles.activityDetail}>{formatEventDetail(activity.eventType, activity.metadata)}</Text>
                       ) : null}
                       <Text style={styles.activityTime}>{formatDate(activity.createdAt)}</Text>
                     </View>
@@ -132,8 +132,8 @@ function Metric({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; 
   return (
     <View style={styles.metric}>
       <Ionicons color="#ec0e68" name={icon} size={22} />
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
+      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.metricValue}>{value}</Text>
+      <Text numberOfLines={1} style={styles.metricLabel}>{label}</Text>
     </View>
   );
 }
@@ -142,8 +142,8 @@ function Insight({ icon, label, tone, value }: { icon: keyof typeof Ionicons.gly
   return (
     <View style={[styles.insight, styles[`${tone}Insight`]]}>
       <Ionicons color={INSIGHT_COLORS[tone]} name={icon} size={20} />
-      <Text style={[styles.insightValue, styles[`${tone}InsightText`]]}>{value}</Text>
-      <Text style={[styles.insightLabel, styles[`${tone}InsightText`]]}>{label}</Text>
+      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.insightValue, styles[`${tone}InsightText`]]}>{value}</Text>
+      <Text numberOfLines={1} style={[styles.insightLabel, styles[`${tone}InsightText`]]}>{label}</Text>
     </View>
   );
 }
@@ -254,8 +254,8 @@ const styles = StyleSheet.create({
   metricLabel: { color: "#667085", fontSize: 13, fontWeight: "800" },
   section: { gap: 12, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 15 },
   sectionHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  sectionTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
-  rate: { color: "#067647", fontSize: 20, fontWeight: "900" },
+  sectionTitle: { flex: 1, minWidth: 0, color: "#101828", fontSize: 18, fontWeight: "900" },
+  rate: { flexShrink: 0, color: "#067647", fontSize: 20, fontWeight: "900" },
   progressTrack: { height: 12, borderRadius: 6, overflow: "hidden", backgroundColor: "#fbcfe8" },
   progressValue: { height: "100%", borderRadius: 5, backgroundColor: "#ec0e68" },
   sectionHint: { color: "#667085", fontSize: 13, lineHeight: 18 },
@@ -274,9 +274,9 @@ const styles = StyleSheet.create({
   noAttemptsCard: { gap: 14, borderRadius: 8, backgroundColor: "#fffaeb", borderWidth: 1, borderColor: "#fedf89", padding: 15 },
   noAttemptsHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
   noAttemptsIcon: { width: 42, height: 42, borderRadius: 8, alignItems: "center", justifyContent: "center", backgroundColor: "#fef0c7" },
-  noAttemptsCopy: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  noAttemptsLabel: { color: "#7a2e0e", fontWeight: "800" },
-  noAttemptsValue: { color: "#7a2e0e", fontSize: 24, fontWeight: "900" },
+  noAttemptsCopy: { flex: 1, minWidth: 0, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+  noAttemptsLabel: { flex: 1, minWidth: 0, color: "#7a2e0e", fontWeight: "800" },
+  noAttemptsValue: { flexShrink: 0, color: "#7a2e0e", fontSize: 24, fontWeight: "900" },
   noAttemptsStats: { flexDirection: "row", gap: 10 },
   noAttemptsStat: { flex: 1, minHeight: 64, borderRadius: 8, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fedf89", padding: 10, justifyContent: "space-between" },
   noAttemptsStatLabel: { color: "#7a2e0e", fontSize: 12, fontWeight: "800", textTransform: "uppercase" },
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   emptyActivity: { color: "#667085", fontWeight: "800" },
   activityRow: { minHeight: 68, flexDirection: "row", alignItems: "center", gap: 12, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
   activityDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#ec0e68" },
-  activityCopy: { flex: 1, gap: 2 },
+  activityCopy: { flex: 1, minWidth: 0, gap: 2 },
   activityTitle: { color: "#101828", fontWeight: "800" },
   activityDetail: { color: "#344054", fontSize: 13, fontWeight: "700" },
   activityTime: { color: "#667085", fontSize: 12 }

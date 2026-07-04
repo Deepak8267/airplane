@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Experience } from "@airplane/shared";
-import { Alert, FlatList, Image, Linking, Modal, Pressable, RefreshControl, Share, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Image, Linking, Modal, Pressable, RefreshControl, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomNav } from "@/components/bottom-nav";
 import { duplicateExperience, getExperienceForEditing, getMyExperiences, setExperienceArchived } from "@/features/experiences/experience-service";
@@ -166,12 +166,12 @@ export default function ExperiencesScreen() {
               <Metric label="Live" value={stats.published} />
               <Metric label="Drafts" value={stats.drafts} />
             </View>
-            <View style={styles.filters}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
               <FilterPill active={filter === "all"} label="All" onPress={() => setFilter("all")} />
               <FilterPill active={filter === "published"} label="Live" onPress={() => setFilter("published")} />
               <FilterPill active={filter === "draft"} label="Drafts" onPress={() => setFilter("draft")} />
               <FilterPill active={filter === "archived"} label="Archived" onPress={() => setFilter("archived")} />
-            </View>
+            </ScrollView>
           </View>
         }
         ListEmptyComponent={
@@ -206,7 +206,7 @@ export default function ExperiencesScreen() {
                 </View>
                 <View style={styles.cardMain}>
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text numberOfLines={1} style={styles.cardTitle}>{item.title}</Text>
                 <Text style={[styles.status, item.isPublished ? styles.published : isArchived ? styles.archived : styles.draft]}>
                   {item.isPublished ? "published" : isArchived ? "archived" : "draft"}
                 </Text>
@@ -224,7 +224,7 @@ export default function ExperiencesScreen() {
                   onPress={() => editMutation.mutate(item.id)}
                 >
                   <Ionicons color="#101828" name="create-outline" size={15} />
-                  <Text style={styles.secondaryButtonText}>
+                  <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.secondaryButtonText}>
                     {editMutation.isPending && editMutation.variables === item.id ? "Opening..." : "Edit"}
                   </Text>
                 </Pressable>
@@ -234,7 +234,7 @@ export default function ExperiencesScreen() {
                     onPress={() => openExperienceLink(item)}
                   >
                     <Ionicons color="#101828" name="open-outline" size={15} />
-                    <Text style={styles.secondaryButtonText}>Open</Text>
+                    <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.secondaryButtonText}>Open</Text>
                   </Pressable>
                 ) : null}
                 <Pressable style={styles.iconButton} accessibilityLabel="More experience actions" onPress={() => openActionMenu(item)}>
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   metric: { flex: 1, minHeight: 54, borderRadius: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#f3f4f6", padding: 9, justifyContent: "center" },
   metricValue: { color: "#101828", fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
   metricLabel: { color: "#667085", marginTop: 1, fontFamily: FONT.medium, fontSize: 9, lineHeight: 12, textTransform: "uppercase" },
-  filters: { flexDirection: "row", gap: 6 },
+  filters: { gap: 6, paddingRight: 2 },
   filterPill: { minHeight: 30, borderRadius: 15, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 10, alignItems: "center", justifyContent: "center" },
   filterPillActive: { borderColor: "#ec0e68", backgroundColor: "#ec0e68" },
   filterPillText: { color: "#667085", fontFamily: FONT.semibold, fontSize: 10 },
@@ -378,9 +378,9 @@ const styles = StyleSheet.create({
   thumbnail: { width: 58, height: 70, borderRadius: 11, overflow: "hidden", alignItems: "center", justifyContent: "center" },
   thumbnailImage: { width: "100%", height: "100%" },
   cardMain: { flex: 1, minWidth: 0, gap: 4 },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
+  cardHeader: { flexDirection: "row", alignItems: "center", gap: 6, minWidth: 0 },
   cardTitle: { flex: 1, color: "#101828", fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
-  status: { overflow: "hidden", borderRadius: 10, paddingHorizontal: 7, paddingVertical: 3, fontFamily: FONT.semibold, fontSize: 8, textTransform: "uppercase" },
+  status: { overflow: "hidden", borderRadius: 10, paddingHorizontal: 7, paddingVertical: 3, fontFamily: FONT.semibold, fontSize: 8, textTransform: "uppercase", flexShrink: 0 },
   published: { color: "#067647", backgroundColor: "#dcfae6" },
   draft: { color: "#b54708", backgroundColor: "#fef0c7" },
   archived: { color: "#475467", backgroundColor: "#eaecf0" },
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   cardActions: { flexDirection: "row", gap: 6 },
   secondaryButton: { flex: 1, height: 34, borderRadius: 11, borderWidth: 1, borderColor: "#d0d5dd", flexDirection: "row", gap: 6, alignItems: "center", justifyContent: "center" },
   pendingButton: { opacity: 0.65 },
-  secondaryButtonText: { color: "#101828", fontFamily: FONT.semibold, fontSize: 11 },
+  secondaryButtonText: { color: "#101828", fontFamily: FONT.semibold, fontSize: 11, minWidth: 0 },
   iconButton: { width: 34, height: 34, borderRadius: 11, borderWidth: 1, borderColor: "#d0d5dd", alignItems: "center", justifyContent: "center" },
   modalOverlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(16, 24, 40, 0.45)" },
   actionSheet: { backgroundColor: "#ffffff", padding: 14, paddingBottom: 24, gap: 3, borderTopLeftRadius: 18, borderTopRightRadius: 18 },

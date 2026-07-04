@@ -40,7 +40,7 @@ export default function SettingsScreen() {
           <View style={styles.heroIcon}>
             <Ionicons color="#ec0e68" name="options-outline" size={30} />
           </View>
-          <Text style={styles.title}>Creator preferences</Text>
+          <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={styles.title}>Creator preferences</Text>
           <Text style={styles.subtitle}>Control notifications, branding defaults, and account-level options for AIRPLANE.</Text>
         </View>
 
@@ -106,8 +106,8 @@ function Section({ children, subtitle, title }: { children: React.ReactNode; sub
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        <Text style={styles.sectionSubtitle}>{subtitle}</Text>
+        <Text numberOfLines={1} style={styles.sectionTitle}>{title}</Text>
+        <Text numberOfLines={2} style={styles.sectionSubtitle}>{subtitle}</Text>
       </View>
       <View style={styles.card}>{children}</View>
     </View>
@@ -135,8 +135,8 @@ function Setting({
         <Ionicons color={disabled ? "#98a2b3" : "#ec0e68"} name={icon} size={20} />
       </View>
       <View style={styles.rowCopy}>
-        <Text style={styles.rowLabel}>{label}</Text>
-        <Text style={styles.rowDescription}>{description}</Text>
+        <Text numberOfLines={1} style={styles.rowLabel}>{label}</Text>
+        <Text numberOfLines={2} style={styles.rowDescription}>{description}</Text>
       </View>
       <Switch
         disabled={disabled}
@@ -157,7 +157,7 @@ function Action({ danger = false, icon, label, onPress }: { danger?: boolean; ic
       <View style={[styles.rowIcon, danger ? styles.dangerIcon : null]}>
         <Ionicons color={danger ? "#b42318" : "#ec0e68"} name={icon} size={20} />
       </View>
-      <Text style={[styles.actionLabel, { color }]}>{label}</Text>
+      <Text numberOfLines={1} style={[styles.actionLabel, { color }]}>{label}</Text>
       <Ionicons color={danger ? "#b42318" : "#98a2b3"} name="chevron-forward" size={19} />
     </Pressable>
   );
@@ -165,29 +165,29 @@ function Action({ danger = false, icon, label, onPress }: { danger?: boolean; ic
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#fff7fb" },
-  screen: { flexGrow: 1, gap: 16, padding: 20, paddingBottom: 34 },
+  screen: { flexGrow: 1, gap: 16, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 34 },
   topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  iconButton: { width: 42, height: 42, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
+  iconButton: { width: 42, height: 42, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   badge: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
   badgeText: { color: "#ec0e68", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  hero: { gap: 10, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 18 },
-  heroIcon: { width: 62, height: 62, borderRadius: 8, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
-  title: { color: "#101828", fontSize: 32, lineHeight: 38, fontWeight: "900" },
-  subtitle: { color: "#667085", fontSize: 15, lineHeight: 22 },
+  hero: { gap: 10, borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 16 },
+  heroIcon: { width: 54, height: 54, borderRadius: 18, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
+  title: { color: "#101828", fontSize: 26, lineHeight: 32, fontWeight: "900" },
+  subtitle: { color: "#667085", fontSize: 13, lineHeight: 20 },
   section: { gap: 10 },
   sectionHeader: { gap: 3 },
   sectionTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
   sectionSubtitle: { color: "#667085", fontSize: 13, lineHeight: 18 },
-  card: { borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", overflow: "hidden" },
+  card: { borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", overflow: "hidden" },
   row: { minHeight: 74, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
   disabledRow: { opacity: 0.58 },
-  rowIcon: { width: 38, height: 38, borderRadius: 8, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
+  rowIcon: { width: 38, height: 38, borderRadius: 14, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   rowCopy: { flex: 1, minWidth: 0, gap: 3 },
   rowLabel: { color: "#101828", fontWeight: "900" },
   rowDescription: { color: "#667085", fontSize: 12, lineHeight: 17 },
   actionRow: { minHeight: 62, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
   actionLabel: { flex: 1, fontWeight: "900" },
   dangerIcon: { backgroundColor: "#fef3f2" },
-  secondaryButton: { height: 52, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
+  secondaryButton: { height: 52, borderRadius: 16, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   secondaryButtonText: { color: "#101828", fontWeight: "900" }
 });

@@ -42,7 +42,9 @@ export function BottomNav({ active, variant = "compact" }: { active: BottomNavKe
               style={styles.item}
             >
               <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={21} />
-              <Text style={[styles.label, selected ? styles.activeLabel : null]}>{item.label}</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.label, selected ? styles.activeLabel : null]}>
+                {item.label}
+              </Text>
             </Pressable>
           );
         })}
@@ -61,7 +63,9 @@ export function BottomNav({ active, variant = "compact" }: { active: BottomNavKe
               style={styles.item}
             >
               <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={21} />
-              <Text style={[styles.label, selected ? styles.activeLabel : null]}>{item.label}</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.label, selected ? styles.activeLabel : null]}>
+                {item.label}
+              </Text>
             </Pressable>
           );
         })}
@@ -105,6 +109,7 @@ const styles = StyleSheet.create({
   },
   item: {
     flex: 1,
+    minWidth: 0,
     alignItems: "center",
     justifyContent: "center",
     gap: 3,
@@ -119,6 +124,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: -24,
+    flexShrink: 0,
     borderWidth: 5,
     borderColor: "#fff7fb",
     shadowColor: PRIMARY,

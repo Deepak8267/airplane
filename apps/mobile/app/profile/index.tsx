@@ -121,8 +121,8 @@ const ProfileHeader = memo(function ProfileHeader() {
   return (
     <View style={styles.header}>
       <View style={styles.headerCopy}>
-        <Text style={styles.pageTitle}>Profile</Text>
-        <Text style={styles.pageSubtitle}>Manage your account and preferences</Text>
+        <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.pageTitle}>Profile</Text>
+        <Text numberOfLines={2} style={styles.pageSubtitle}>Manage your account and preferences</Text>
       </View>
       <View style={styles.headerActions}>
         <IconButton dot icon="notifications-outline" onPress={() => undefined} />
@@ -213,13 +213,13 @@ const PremiumBanner = memo(function PremiumBanner() {
         <Ionicons color={COLORS.warning} name="diamond" size={20} />
       </View>
       <View style={styles.premiumCopy}>
-        <Text style={styles.premiumTitle}>You're on Pro Plan</Text>
-        <Text numberOfLines={1} style={styles.premiumSubtitle}>
+          <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.premiumTitle}>You're on Pro Plan</Text>
+        <Text numberOfLines={2} style={styles.premiumSubtitle}>
           Enjoy unlimited creativity and premium features.
         </Text>
       </View>
       <Pressable style={({ pressed }) => [styles.manageButton, pressed ? styles.pressed : null]} onPress={() => router.push("/subscription" as never)}>
-        <Text style={styles.manageButtonText}>Manage Plan</Text>
+        <Text adjustsFontSizeToFit minimumFontScale={0.8} numberOfLines={1} style={styles.manageButtonText}>Manage Plan</Text>
       </Pressable>
     </LinearGradient>
   );
@@ -268,7 +268,7 @@ function MenuItem({
       </View>
       <View style={[styles.menuCopy, isLast ? styles.menuCopyLast : null]}>
         <View style={styles.menuTextBlock}>
-          <Text style={styles.menuTitle}>{title}</Text>
+          <Text numberOfLines={1} style={styles.menuTitle}>{title}</Text>
           <Text numberOfLines={1} style={styles.menuSubtitle}>
             {subtitle}
           </Text>
@@ -328,10 +328,10 @@ const styles = StyleSheet.create({
   animatedContent: { flex: 1 },
   screen: { gap: 12, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 88 },
   header: { minHeight: 54, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 },
-  headerCopy: { flex: 1, gap: 2 },
+  headerCopy: { flex: 1, minWidth: 0, gap: 2 },
   pageTitle: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 22, lineHeight: 25 },
   pageSubtitle: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
-  headerActions: { flexDirection: "row", alignItems: "center", gap: 6, paddingTop: 0 },
+  headerActions: { flexShrink: 0, flexDirection: "row", alignItems: "center", gap: 6, paddingTop: 0 },
   iconButton: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
   notificationDot: { position: "absolute", right: 4, top: 4, width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
   profileCard: { borderRadius: 16, backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, padding: 12, ...softShadow },
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   profileInfo: { flex: 1, minWidth: 0, gap: 4 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   userName: { flexShrink: 1, color: COLORS.text, fontFamily: FONT.bold, fontSize: 16, lineHeight: 21 },
-  proBadge: { height: 24, borderRadius: 12, backgroundColor: "#FFE8F2", flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8 },
+  proBadge: { height: 24, borderRadius: 12, backgroundColor: "#FFE8F2", flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, flexShrink: 0 },
   proBadgeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 11 },
   profileBio: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 11, lineHeight: 15 },
   contactLine: { flexDirection: "row", alignItems: "center", gap: 7 },
@@ -356,11 +356,11 @@ const styles = StyleSheet.create({
   statValue: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
   statLabel: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 9, lineHeight: 12 },
   premiumBanner: { minHeight: 64, borderRadius: 14, borderWidth: 1, borderColor: "#FFD4E5", flexDirection: "row", alignItems: "center", gap: 8, padding: 12, ...softShadow },
-  premiumIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
+  premiumIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   premiumCopy: { flex: 1, minWidth: 0, gap: 2 },
   premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 12, lineHeight: 16 },
   premiumSubtitle: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
-  manageButton: { height: 32, borderRadius: 12, backgroundColor: COLORS.primary, alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
+  manageButton: { width: 92, height: 32, borderRadius: 12, backgroundColor: COLORS.primary, alignItems: "center", justifyContent: "center", paddingHorizontal: 8, flexShrink: 0 },
   manageButtonText: { color: "#FFFFFF", fontFamily: FONT.semibold, fontSize: 10 },
   menuCard: { borderRadius: 16, backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, overflow: "hidden", ...softShadow },
   menuItem: { height: 58, flexDirection: "row", alignItems: "center", gap: 10, paddingLeft: 12 },
