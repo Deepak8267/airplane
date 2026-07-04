@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { getExperienceAnalytics } from "@/features/analytics/analytics-service";
 
 export default function AnalyticsScreen() {
@@ -23,6 +24,7 @@ export default function AnalyticsScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Analytics" }} />
+      <SafeAreaView edges={["top"]} style={styles.safeArea}>
       <ScrollView
         contentContainerStyle={styles.screen}
         refreshControl={<RefreshControl refreshing={analyticsQuery.isRefetching} onRefresh={() => analyticsQuery.refetch()} />}
@@ -121,6 +123,7 @@ export default function AnalyticsScreen() {
           </>
         ) : null}
       </ScrollView>
+      </SafeAreaView>
     </>
   );
 }
@@ -233,6 +236,7 @@ function formatEventDetail(eventType: string, metadata: Record<string, unknown>)
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: "#fff7fb" },
   screen: { flexGrow: 1, padding: 20, gap: 20, backgroundColor: "#fff7fb" },
   stateText: { color: "#667085", textAlign: "center", paddingTop: 40 },
   error: { color: "#b42318", lineHeight: 20, paddingTop: 20 },

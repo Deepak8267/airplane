@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
 import type { Template, TemplateCategory } from "@airplane/shared";
 import { getTemplates } from "@/features/templates/template-service";
@@ -28,7 +29,7 @@ export default function TemplatesScreen() {
   }, [category, query, templates]);
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView edges={["top"]} style={styles.screen}>
       <FlatList
         data={filteredTemplates}
         keyExtractor={(item) => item.id}
@@ -96,7 +97,7 @@ export default function TemplatesScreen() {
         }
         renderItem={({ item }) => <TemplateCard template={item} />}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

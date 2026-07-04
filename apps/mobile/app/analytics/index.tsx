@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomNav } from "@/components/bottom-nav";
 import { getAnalyticsDashboard } from "@/features/analytics/analytics-service";
 
@@ -20,7 +21,7 @@ export default function AnalyticsDashboardScreen() {
   const dashboard = dashboardQuery.data;
 
   return (
-    <View style={styles.shell}>
+    <SafeAreaView edges={["top"]} style={styles.shell}>
       <FlatList
         data={dashboard?.items ?? []}
         keyExtractor={(item) => item.experience.id}
@@ -108,7 +109,7 @@ export default function AnalyticsDashboardScreen() {
         )}
       />
       <BottomNav active="analytics" />
-    </View>
+    </SafeAreaView>
   );
 }
 

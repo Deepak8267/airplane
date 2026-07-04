@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ARTICLES = [
   { title: "How to create an experience", category: "Builder", icon: "create-outline" },
@@ -32,7 +33,7 @@ export default function HelpScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView edges={["top"]} style={styles.root}>
       <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
@@ -104,7 +105,7 @@ export default function HelpScreen() {
           </Pressable>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

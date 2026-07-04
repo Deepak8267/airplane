@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExperiencePageType, Template, TemplateCategory } from "@airplane/shared";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { createDraftExperience } from "@/features/experiences/experience-service";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplateById } from "@/features/templates/template-service";
@@ -41,24 +42,24 @@ export default function TemplateDetailScreen() {
 
   if (templateQuery.isLoading) {
     return (
-      <View style={styles.centerScreen}>
+      <SafeAreaView edges={["top"]} style={styles.centerScreen}>
         <View style={styles.loadingIcon}>
           <Ionicons color="#ec0e68" name="hourglass-outline" size={28} />
         </View>
         <Text style={styles.loadingTitle}>Loading template...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (!templateQuery.data) {
     return (
-      <View style={styles.centerScreen}>
+      <SafeAreaView edges={["top"]} style={styles.centerScreen}>
         <View style={styles.loadingIcon}>
           <Ionicons color="#ec0e68" name="alert-circle-outline" size={28} />
         </View>
         <Text style={styles.loadingTitle}>Template unavailable</Text>
         <Text style={styles.emptyCopy}>{templateQuery.error instanceof Error ? templateQuery.error.message : "Try another template."}</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -69,7 +70,7 @@ export default function TemplateDetailScreen() {
   const disabled = createDraftMutation.isPending || planUsageQuery.isLoading || limitReached || premiumLocked;
 
   return (
-    <View style={[styles.screen, { backgroundColor: template.defaultTheme.background }]}>
+    <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: template.defaultTheme.background }]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
@@ -164,7 +165,7 @@ export default function TemplateDetailScreen() {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

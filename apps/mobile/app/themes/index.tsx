@@ -3,10 +3,11 @@ import { EXPERIENCE_THEMES } from "@airplane/shared";
 import type { Theme } from "@airplane/shared";
 import { router } from "expo-router";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ThemesScreen() {
   return (
-    <View style={styles.screen}>
+    <SafeAreaView edges={["top"]} style={styles.screen}>
       <View style={styles.topBar}>
         <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
           <Ionicons color="#101828" name="chevron-back" size={22} />
@@ -30,7 +31,7 @@ export default function ThemesScreen() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => <ThemeCard theme={item} />}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

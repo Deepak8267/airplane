@@ -5,6 +5,7 @@ import { Link, router } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Experience } from "@airplane/shared";
 import { Alert, FlatList, Image, Linking, Modal, Pressable, RefreshControl, Share, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomNav } from "@/components/bottom-nav";
 import { duplicateExperience, getExperienceForEditing, getMyExperiences, setExperienceArchived } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
@@ -140,7 +141,7 @@ export default function ExperiencesScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView edges={["top"]} style={styles.screen}>
       <View style={styles.header}>
         <View>
           <Text style={styles.eyebrow}>Library</Text>
@@ -306,7 +307,7 @@ export default function ExperiencesScreen() {
         </View>
       ) : null}
       <BottomNav active="library" />
-    </View>
+    </SafeAreaView>
   );
 }
 

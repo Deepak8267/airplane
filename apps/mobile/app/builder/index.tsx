@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { EXPERIENCE_THEMES } from "@airplane/shared";
 import type { ExperiencePageDraft, ExperiencePageType, PageContent, Theme } from "@airplane/shared";
 import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { validateBuilderDraft } from "@/features/experiences/builder-validation";
 import { updateDraftExperience, uploadCoverPhoto, uploadPagePhoto } from "@/features/experiences/experience-service";
 import type { ExperienceDraftInput } from "@/features/experiences/experience-service";
@@ -163,16 +164,17 @@ export default function BuilderScreen() {
 
   if (!draft) {
     return (
-      <View style={styles.empty}>
+      <SafeAreaView edges={["top"]} style={styles.empty}>
         <Text style={styles.title}>Pick a template first.</Text>
         <Pressable style={styles.button} onPress={() => router.replace("/home")}>
           <Text style={styles.buttonText}>Go to templates</Text>
         </Pressable>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
+    <SafeAreaView edges={["top"]} style={styles.builderRoot}>
     <ScrollView contentContainerStyle={styles.screen}>
       <View style={styles.builderMeta}>
         <Text style={styles.eyebrow}>Builder</Text>
@@ -309,6 +311,7 @@ export default function BuilderScreen() {
         </View>
       </Modal>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -772,6 +775,7 @@ const PAGE_TYPES: Array<{ type: ExperiencePageType; label: string; description: 
 ];
 
 const styles = StyleSheet.create({
+  builderRoot: { flex: 1, backgroundColor: "#f6f7fb" },
   screen: { padding: 20, gap: 16, backgroundColor: "#f6f7fb" },
   empty: { flex: 1, padding: 20, justifyContent: "center", gap: 16 },
   builderMeta: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 
 const FREE_FEATURES = ["3 active experiences", "AIRPLANE watermark", "Basic templates", "Basic sharing"];
@@ -13,7 +14,7 @@ export default function SubscriptionScreen() {
   const isPro = usage?.plan === "pro";
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView edges={["top"]} style={styles.root}>
       <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
@@ -64,7 +65,7 @@ export default function SubscriptionScreen() {
           <Text style={styles.disabledButtonText}>Razorpay coming soon</Text>
         </Pressable>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

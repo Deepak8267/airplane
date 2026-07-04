@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Alert, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { publishExperience, updateDraftExperience } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
@@ -76,7 +77,7 @@ export default function PublishScreen() {
   }
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView edges={["top"]} style={styles.root}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <Pressable accessibilityLabel="Back to preview" style={styles.iconButton} onPress={() => router.back()}>
@@ -174,7 +175,7 @@ export default function PublishScreen() {
           <Text style={styles.textButtonText}>Back to my experiences</Text>
         </Pressable>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

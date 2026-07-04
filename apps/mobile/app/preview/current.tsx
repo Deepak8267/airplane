@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getCountdownParts } from "@airplane/shared";
 import type { ExperiencePageDraft, Theme } from "@airplane/shared";
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useBuilderStore } from "@/stores/builder-store";
 
@@ -25,7 +26,7 @@ export default function CurrentPreviewScreen() {
 
   if (!draft || !activePage) {
     return (
-      <View style={styles.emptyScreen}>
+      <SafeAreaView edges={["top"]} style={styles.emptyScreen}>
         <View style={styles.emptyIcon}>
           <Ionicons color="#ec0e68" name="eye-outline" size={30} />
         </View>
@@ -35,7 +36,7 @@ export default function CurrentPreviewScreen() {
           <Ionicons color="#ffffff" name="sparkles-outline" size={19} />
           <Text style={styles.emptyButtonText}>Go to templates</Text>
         </Pressable>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -46,7 +47,7 @@ export default function CurrentPreviewScreen() {
   const themedFont = { fontFamily: getMobileFontFamily(draft.theme.fontFamily) };
 
   return (
-    <View style={[styles.root, { backgroundColor: draft.theme.background }]}>
+    <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: draft.theme.background }]}>
       <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <Pressable accessibilityLabel="Back to editor" style={styles.topIconButton} onPress={() => router.back()}>
@@ -98,7 +99,7 @@ export default function CurrentPreviewScreen() {
           </Pressable>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
