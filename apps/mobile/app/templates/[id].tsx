@@ -8,10 +8,12 @@ import { createDraftExperience } from "@/features/experiences/experience-service
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplateById } from "@/features/templates/template-service";
 import { useBuilderStore } from "@/stores/builder-store";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 const FEATURE_COPY = ["Web link included", "Editable pages", "Analytics ready"];
 
 export default function TemplateDetailScreen() {
+  const appTheme = useAppTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
   const templateQuery = useQuery({
@@ -42,23 +44,23 @@ export default function TemplateDetailScreen() {
 
   if (templateQuery.isLoading) {
     return (
-      <SafeAreaView edges={["top"]} style={styles.centerScreen}>
-        <View style={styles.loadingIcon}>
-          <Ionicons color="#ec0e68" name="hourglass-outline" size={28} />
+      <SafeAreaView edges={["top"]} style={[styles.centerScreen, { backgroundColor: appTheme.background }]}>
+        <View style={[styles.loadingIcon, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <Ionicons color={appTheme.primary} name="hourglass-outline" size={28} />
         </View>
-        <Text style={styles.loadingTitle}>Loading template...</Text>
+        <Text style={[styles.loadingTitle, { color: appTheme.text }]}>Loading template...</Text>
       </SafeAreaView>
     );
   }
 
   if (!templateQuery.data) {
     return (
-      <SafeAreaView edges={["top"]} style={styles.centerScreen}>
-        <View style={styles.loadingIcon}>
-          <Ionicons color="#ec0e68" name="alert-circle-outline" size={28} />
+      <SafeAreaView edges={["top"]} style={[styles.centerScreen, { backgroundColor: appTheme.background }]}>
+        <View style={[styles.loadingIcon, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <Ionicons color={appTheme.primary} name="alert-circle-outline" size={28} />
         </View>
-        <Text style={styles.loadingTitle}>Template unavailable</Text>
-        <Text style={styles.emptyCopy}>{templateQuery.error instanceof Error ? templateQuery.error.message : "Try another template."}</Text>
+        <Text style={[styles.loadingTitle, { color: appTheme.text }]}>Template unavailable</Text>
+        <Text style={[styles.emptyCopy, { color: appTheme.secondaryText }]}>{templateQuery.error instanceof Error ? templateQuery.error.message : "Try another template."}</Text>
       </SafeAreaView>
     );
   }
@@ -73,10 +75,10 @@ export default function TemplateDetailScreen() {
     <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: template.defaultTheme.background }]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
-            <Ionicons color="#101828" name="chevron-back" size={22} />
+          <Pressable accessibilityLabel="Go back" style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
+            <Ionicons color={appTheme.text} name="chevron-back" size={22} />
           </Pressable>
-          {template.isPremium ? <Text style={styles.premiumBadge}>Premium</Text> : null}
+          {template.isPremium ? <Text style={[styles.premiumBadge, { backgroundColor: appTheme.primary }]}>Premium</Text> : null}
         </View>
 
         <View style={styles.hero}>
@@ -85,32 +87,32 @@ export default function TemplateDetailScreen() {
           </View>
           <Text style={[styles.category, { color: template.defaultTheme.accent }]}>{template.category}</Text>
           <Text style={[styles.title, { color: template.defaultTheme.foreground }]}>{template.name}</Text>
-          <Text style={styles.copy}>{template.description}</Text>
+          <Text style={[styles.copy, { color: template.defaultTheme.foreground }]}>{template.description}</Text>
         </View>
 
         <View style={styles.featureGrid}>
           {FEATURE_COPY.map((feature) => (
-            <View key={feature} style={styles.featureCard}>
+            <View key={feature} style={[styles.featureCard, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
               <Ionicons color={template.defaultTheme.accent} name="checkmark-circle-outline" size={20} />
-              <Text style={styles.featureText}>{feature}</Text>
+              <Text style={[styles.featureText, { color: appTheme.text }]}>{feature}</Text>
             </View>
           ))}
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Included flow</Text>
-            <Text style={styles.sectionMeta}>{template.defaultPages.length} pages</Text>
+            <Text style={[styles.sectionTitle, { color: appTheme.text }]}>Included flow</Text>
+            <Text style={[styles.sectionMeta, { color: appTheme.secondaryText }]}>{template.defaultPages.length} pages</Text>
           </View>
           <View style={styles.timeline}>
             {template.defaultPages.map((page, index) => (
-              <View key={`${page.pageType}-${index}`} style={styles.pageRow}>
+              <View key={`${page.pageType}-${index}`} style={[styles.pageRow, { backgroundColor: appTheme.surfaceAlt }]}>
                 <View style={[styles.pageIcon, { backgroundColor: template.defaultTheme.muted }]}>
                   <Ionicons color={template.defaultTheme.accent} name={getPageIcon(page.pageType)} size={19} />
                 </View>
                 <View style={styles.pageCopy}>
-                  <Text style={styles.pageType}>{page.pageType}</Text>
-                  <Text style={styles.pageTitle}>{page.title}</Text>
+                  <Text style={[styles.pageType, { color: appTheme.secondaryText }]}>{page.pageType}</Text>
+                  <Text style={[styles.pageTitle, { color: appTheme.text }]}>{page.title}</Text>
                 </View>
                 <Text style={styles.pageIndex}>{index + 1}</Text>
               </View>
@@ -118,24 +120,24 @@ export default function TemplateDetailScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Theme</Text>
+        <View style={[styles.section, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <Text style={[styles.sectionTitle, { color: appTheme.text }]}>Theme</Text>
           <View style={styles.themeRow}>
             <View style={[styles.themeSwatch, { backgroundColor: template.defaultTheme.background }]} />
             <View style={[styles.themeSwatch, { backgroundColor: template.defaultTheme.muted }]} />
             <View style={[styles.themeSwatch, { backgroundColor: template.defaultTheme.accent }]} />
-            <Text style={styles.themeName}>{template.defaultTheme.name}</Text>
+            <Text style={[styles.themeName, { color: appTheme.text }]}>{template.defaultTheme.name}</Text>
           </View>
         </View>
 
         {usage ? (
-          <View style={styles.planNotice}>
-            <View style={styles.planIcon}>
-              <Ionicons color="#ec0e68" name={usage.plan === "pro" ? "diamond-outline" : "card-outline"} size={20} />
+          <View style={[styles.planNotice, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+            <View style={[styles.planIcon, { backgroundColor: appTheme.muted }]}>
+              <Ionicons color={appTheme.primary} name={usage.plan === "pro" ? "diamond-outline" : "card-outline"} size={20} />
             </View>
             <View style={styles.planCopy}>
-              <Text style={styles.planNoticeTitle}>{usage.plan === "pro" ? "Pro plan" : "Free plan"}</Text>
-              <Text style={styles.planNoticeCopy}>
+              <Text style={[styles.planNoticeTitle, { color: appTheme.text }]}>{usage.plan === "pro" ? "Pro plan" : "Free plan"}</Text>
+              <Text style={[styles.planNoticeCopy, { color: appTheme.secondaryText }]}>
                 {premiumLocked
                   ? "This premium template will unlock when Pro payments are enabled."
                   : usage.plan === "pro"
@@ -151,8 +153,8 @@ export default function TemplateDetailScreen() {
         {createDraftMutation.error instanceof Error ? <Text style={styles.error}>{createDraftMutation.error.message}</Text> : null}
       </ScrollView>
 
-      <View style={styles.footer}>
-        <Pressable style={[styles.button, { opacity: disabled ? 0.7 : 1 }]} onPress={start} disabled={disabled}>
+      <View style={[styles.footer, { backgroundColor: appTheme.background, borderTopColor: appTheme.border }]}>
+        <Pressable style={[styles.button, { backgroundColor: appTheme.primary, opacity: disabled ? 0.7 : 1 }]} onPress={start} disabled={disabled}>
           <Ionicons color="#ffffff" name={createDraftMutation.isPending ? "hourglass-outline" : "rocket-outline"} size={20} />
           <Text style={styles.buttonText}>
             {createDraftMutation.isPending

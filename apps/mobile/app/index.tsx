@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSessionStore } from "@/stores/session-store";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 const ONBOARDING_SLIDES: Array<{
   copy: string;
@@ -28,6 +29,7 @@ const ONBOARDING_SLIDES: Array<{
 ];
 
 export default function IndexScreen() {
+  const appTheme = useAppTheme();
   const hydrated = useSessionStore((state) => state.hydrated);
   const session = useSessionStore((state) => state.session);
   const [index, setIndex] = useState(0);
@@ -37,9 +39,9 @@ export default function IndexScreen() {
 
   if (!hydrated) {
     return (
-      <View style={styles.screen}>
-        <Text style={styles.logo}>AIRPLANE</Text>
-        <Text style={styles.copy}>Loading your session...</Text>
+      <View style={[styles.screen, { backgroundColor: appTheme.background }]}>
+        <Text style={[styles.logo, { color: appTheme.text }]}>AIRPLANE</Text>
+        <Text style={[styles.copy, { color: appTheme.secondaryText }]}>Loading your session...</Text>
       </View>
     );
   }
@@ -49,49 +51,49 @@ export default function IndexScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.root}>
+    <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: appTheme.background }]}>
       <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
         <View style={styles.brandRow}>
-          <View style={styles.logoMark}>
+          <View style={[styles.logoMark, { backgroundColor: appTheme.primary }]}>
             <Ionicons color="#ffffff" name="paper-plane" size={21} />
           </View>
           <View style={styles.brandCopy}>
-            <Text style={styles.logo}>AIRPLANE</Text>
-            <Text style={styles.tagline}>Create moments that fly</Text>
+            <Text style={[styles.logo, { color: appTheme.text }]}>AIRPLANE</Text>
+            <Text style={[styles.tagline, { color: appTheme.secondaryText }]}>Create moments that fly</Text>
           </View>
-          <Text style={styles.stepBadge}>{index + 1}/{ONBOARDING_SLIDES.length}</Text>
+          <Text style={[styles.stepBadge, { backgroundColor: appTheme.surface, borderColor: appTheme.border, color: appTheme.primary }]}>{index + 1}/{ONBOARDING_SLIDES.length}</Text>
         </View>
 
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressValue, { width: `${progress}%` }]} />
+        <View style={[styles.progressTrack, { backgroundColor: appTheme.border }]}>
+          <View style={[styles.progressValue, { backgroundColor: appTheme.primary, width: `${progress}%` }]} />
         </View>
 
-        <View style={styles.heroArt}>
+        <View style={[styles.heroArt, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
           <View style={styles.flightPath} />
-          <View style={styles.paperPlaneLarge}>
-            <Ionicons color="#ec0e68" name={slide.icon} size={52} />
+          <View style={[styles.paperPlaneLarge, { backgroundColor: appTheme.surfaceAlt }]}>
+            <Ionicons color={appTheme.primary} name={slide.icon} size={52} />
           </View>
           <View style={styles.floatingHeart}>
-            <Text style={styles.heartText}>{index === 1 ? "LINK" : index === 2 ? "DATA" : "LOVE"}</Text>
+            <Text style={[styles.heartText, { color: appTheme.primary }]}>{index === 1 ? "LINK" : index === 2 ? "DATA" : "LOVE"}</Text>
           </View>
           <View style={styles.floatingSpark}>
             <Ionicons color="#f97316" name="sparkles" size={20} />
           </View>
-          <View style={styles.floatingCard}>
-            <Ionicons color="#ec0e68" name="heart-circle-outline" size={18} />
-            <Text style={styles.floatingCardText}>Personal</Text>
+          <View style={[styles.floatingCard, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+            <Ionicons color={appTheme.primary} name="heart-circle-outline" size={18} />
+            <Text style={[styles.floatingCardText, { color: appTheme.text }]}>Personal</Text>
           </View>
         </View>
 
         <View style={styles.copyBlock}>
-          <Text style={styles.title}>{slide.title}</Text>
-          <Text style={styles.copy}>{slide.copy}</Text>
+          <Text style={[styles.title, { color: appTheme.text }]}>{slide.title}</Text>
+          <Text style={[styles.copy, { color: appTheme.secondaryText }]}>{slide.copy}</Text>
         </View>
 
         <View style={styles.dots}>
           {ONBOARDING_SLIDES.map((item, dotIndex) => (
             <Pressable key={item.title} accessibilityLabel={`Go to onboarding slide ${dotIndex + 1}`} onPress={() => setIndex(dotIndex)}>
-              <View style={[styles.dot, dotIndex === index ? styles.activeDot : null]} />
+              <View style={[styles.dot, { backgroundColor: appTheme.border }, dotIndex === index ? { backgroundColor: appTheme.primary } : null]} />
             </Pressable>
           ))}
         </View>
@@ -99,20 +101,20 @@ export default function IndexScreen() {
         <View style={styles.actions}>
           {isLast ? (
             <Link href="/auth/sign-in" asChild>
-              <Pressable style={styles.primaryButton}>
+              <Pressable style={[styles.primaryButton, { backgroundColor: appTheme.primary }]}>
                 <Text style={styles.primaryButtonText}>Let's go</Text>
                 <Ionicons color="#ffffff" name="arrow-forward" size={20} />
               </Pressable>
             </Link>
           ) : (
-            <Pressable style={styles.primaryButton} onPress={() => setIndex((value) => Math.min(value + 1, ONBOARDING_SLIDES.length - 1))}>
+            <Pressable style={[styles.primaryButton, { backgroundColor: appTheme.primary }]} onPress={() => setIndex((value) => Math.min(value + 1, ONBOARDING_SLIDES.length - 1))}>
               <Text style={styles.primaryButtonText}>Next</Text>
               <Ionicons color="#ffffff" name="chevron-forward" size={20} />
             </Pressable>
           )}
           <Link href="/auth/sign-in" asChild>
-            <Pressable style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Skip onboarding</Text>
+            <Pressable style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+              <Text style={[styles.secondaryButtonText, { color: appTheme.primary }]}>Skip onboarding</Text>
             </Pressable>
           </Link>
         </View>
@@ -127,11 +129,13 @@ export default function IndexScreen() {
 }
 
 function Feature({ copy, icon, title }: { copy: string; icon: keyof typeof Ionicons.glyphMap; title: string }) {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.featureCard}>
-      <Ionicons color="#ec0e68" name={icon} size={22} />
-      <Text style={styles.featureTitle}>{title}</Text>
-      <Text style={styles.featureCopy}>{copy}</Text>
+    <View style={[styles.featureCard, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+      <Ionicons color={appTheme.primary} name={icon} size={22} />
+      <Text style={[styles.featureTitle, { color: appTheme.text }]}>{title}</Text>
+      <Text style={[styles.featureCopy, { color: appTheme.secondaryText }]}>{copy}</Text>
     </View>
   );
 }

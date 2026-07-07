@@ -4,45 +4,47 @@ import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 const FREE_FEATURES = ["3 active experiences", "AIRPLANE watermark", "Basic templates", "Basic sharing"];
 const PRO_FEATURES = ["Unlimited experiences", "Premium templates", "Remove watermark", "Advanced analytics", "Priority support"];
 
 export default function SubscriptionScreen() {
+  const appTheme = useAppTheme();
   const planQuery = useQuery({ queryKey: ["plan-usage"], queryFn: getPlanUsage });
   const usage = planQuery.data;
   const isPro = usage?.plan === "pro";
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.root}>
+    <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: appTheme.background }]}>
       <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
-            <Ionicons color="#101828" name="chevron-back" size={22} />
+          <Pressable accessibilityLabel="Go back" style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
+            <Ionicons color={appTheme.text} name="chevron-back" size={22} />
           </Pressable>
-          <View style={styles.badge}>
-            <Ionicons color="#ec0e68" name="diamond-outline" size={17} />
-            <Text style={styles.badgeText}>Plan</Text>
+          <View style={[styles.badge, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+            <Ionicons color={appTheme.primary} name="diamond-outline" size={17} />
+            <Text style={[styles.badgeText, { color: appTheme.primary }]}>Plan</Text>
           </View>
         </View>
 
-        <View style={styles.heroCard}>
-          <View style={styles.crown}>
-            <Ionicons color="#ec0e68" name="diamond-outline" size={32} />
+        <View style={[styles.heroCard, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <View style={[styles.crown, { backgroundColor: appTheme.muted }]}>
+            <Ionicons color={appTheme.primary} name="diamond-outline" size={32} />
           </View>
-          <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={styles.heroTitle}>{isPro ? "You are on Pro." : "Unlock Pro"}</Text>
-          <Text style={styles.heroCopy}>Create unlimited personalized experiences, remove AIRPLANE branding, and unlock deeper analytics.</Text>
-          <View style={styles.usageCard}>
-            <Text style={styles.usageLabel}>Free usage</Text>
-            <Text style={styles.usageValue}>
+          <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={[styles.heroTitle, { color: appTheme.text }]}>{isPro ? "You are on Pro." : "Unlock Pro"}</Text>
+          <Text style={[styles.heroCopy, { color: appTheme.secondaryText }]}>Create unlimited personalized experiences, remove AIRPLANE branding, and unlock deeper analytics.</Text>
+          <View style={[styles.usageCard, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }]}>
+            <Text style={[styles.usageLabel, { color: appTheme.secondaryText }]}>Free usage</Text>
+            <Text style={[styles.usageValue, { color: appTheme.text }]}>
               {usage ? `${usage.activeExperienceCount}/${usage.freeExperienceLimit} active experiences` : "Loading usage..."}
             </Text>
           </View>
         </View>
 
-        <View style={styles.billingTabs}>
-          <Text style={styles.billingActive}>Monthly</Text>
-          <Text style={styles.billingInactive}>Yearly later</Text>
+        <View style={[styles.billingTabs, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <Text style={[styles.billingActive, { backgroundColor: appTheme.primary }]}>Monthly</Text>
+          <Text style={[styles.billingInactive, { color: appTheme.secondaryText }]}>Yearly later</Text>
         </View>
 
         {planQuery.error instanceof Error ? <Text style={styles.error}>{planQuery.error.message}</Text> : null}
@@ -60,7 +62,7 @@ export default function SubscriptionScreen() {
           </View>
         </View>
 
-        <Pressable disabled style={styles.disabledButton}>
+        <Pressable disabled style={[styles.disabledButton, { backgroundColor: appTheme.primary }]}>
           <Ionicons color="#ffffff" name="card-outline" size={20} />
           <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.disabledButtonText}>Razorpay coming soon</Text>
         </Pressable>
@@ -70,12 +72,14 @@ export default function SubscriptionScreen() {
 }
 
 function PlanCard({ active, features, highlighted = false, name, price }: { active?: boolean; features: string[]; highlighted?: boolean; name: string; price: string }) {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={[styles.planCard, highlighted ? styles.proCard : null]}>
+    <View style={[styles.planCard, { backgroundColor: highlighted ? appTheme.surfaceAlt : appTheme.surface, borderColor: highlighted ? appTheme.border : appTheme.navBorder }]}>
       <View style={styles.planHeader}>
         <View>
-          <Text numberOfLines={1} style={styles.planName}>{name}</Text>
-          <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.price}>{price}</Text>
+          <Text numberOfLines={1} style={[styles.planName, { color: appTheme.text }]}>{name}</Text>
+          <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.price, { color: appTheme.text }]}>{price}</Text>
         </View>
         {active ? <Text style={styles.activeBadge}>Current</Text> : null}
       </View>
@@ -83,7 +87,7 @@ function PlanCard({ active, features, highlighted = false, name, price }: { acti
         {features.map((feature) => (
           <View key={feature} style={styles.featureRow}>
             <Ionicons color="#067647" name="checkmark-circle" size={18} />
-            <Text numberOfLines={2} style={styles.featureText}>{feature}</Text>
+            <Text numberOfLines={2} style={[styles.featureText, { color: appTheme.secondaryText }]}>{feature}</Text>
           </View>
         ))}
       </View>

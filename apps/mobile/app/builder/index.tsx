@@ -12,6 +12,7 @@ import { updateDraftExperience, uploadCoverPhoto, uploadPagePhoto } from "@/feat
 import type { ExperienceDraftInput } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
 import type { BuilderDraft } from "@/stores/builder-store";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 type AutosaveState = { status: "saved" | "pending" | "saving" | "error"; error?: string };
 type PickedImage = { contentType?: string | undefined; uri: string };
@@ -25,6 +26,7 @@ const BUILDER_STEPS = [
 ];
 
 export default function BuilderScreen() {
+  const appTheme = useAppTheme();
   const [pagePickerVisible, setPagePickerVisible] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [autosaveState, setAutosaveState] = useState<AutosaveState>({ status: "saved" });
@@ -164,9 +166,9 @@ export default function BuilderScreen() {
 
   if (!draft) {
     return (
-      <SafeAreaView edges={["top"]} style={styles.empty}>
-        <Text style={styles.title}>Pick a template first.</Text>
-        <Pressable style={styles.button} onPress={() => router.replace("/home")}>
+      <SafeAreaView edges={["top"]} style={[styles.empty, { backgroundColor: appTheme.background }]}>
+        <Text style={[styles.title, { color: appTheme.text }]}>Pick a template first.</Text>
+        <Pressable style={[styles.button, { backgroundColor: appTheme.primary }]} onPress={() => router.replace("/home")}>
           <Text style={styles.buttonText}>Go to templates</Text>
         </Pressable>
       </SafeAreaView>
@@ -174,13 +176,13 @@ export default function BuilderScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.builderRoot}>
-    <ScrollView contentContainerStyle={styles.screen}>
+    <SafeAreaView edges={["top"]} style={[styles.builderRoot, { backgroundColor: appTheme.background }]}>
+    <ScrollView contentContainerStyle={[styles.screen, { backgroundColor: appTheme.background }]}>
       <View style={styles.builderMeta}>
-        <Text style={styles.eyebrow}>Builder</Text>
+        <Text style={[styles.eyebrow, { color: appTheme.primary }]}>Builder</Text>
         <AutosaveStatus state={autosaveState} />
       </View>
-      <Text style={styles.title}>Personalize the experience.</Text>
+      <Text style={[styles.title, { color: appTheme.text }]}>Personalize the experience.</Text>
       <BuilderStepper />
       {visibleValidation && !visibleValidation.isValid ? (
         <View style={styles.validationSummary}>
@@ -189,19 +191,19 @@ export default function BuilderScreen() {
         </View>
       ) : null}
 
-      <View style={styles.sectionCard}>
+      <View style={[styles.sectionCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
         <SectionHeading icon="create-outline" title="01 Basic info" subtitle="Name the experience and write the opening message." />
         <Field error={visibleValidation?.title} label="Title" value={draft.title} onChangeText={(title) => updateDraft({ title })} />
         <Field error={visibleValidation?.recipientName} label="Recipient name" value={draft.recipientName} onChangeText={(recipientName) => updateDraft({ recipientName })} />
         <Field error={visibleValidation?.message} label="Message" value={draft.message} onChangeText={(message) => updateDraft({ message })} multiline />
       </View>
 
-      <View style={styles.sectionCard}>
+      <View style={[styles.sectionCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
         <SectionHeading icon="color-palette-outline" title="02 Choose theme" subtitle="Pick the visual mood for the recipient flow." />
       <ThemePicker selectedTheme={draft.theme} onSelect={(theme) => updateDraft({ theme })} />
       </View>
 
-      <View style={[styles.coverPanel, styles.sectionCard]}>
+      <View style={[styles.coverPanel, styles.sectionCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
         <SectionHeading icon="image-outline" title="03 Add cover" subtitle="Upload the main photo for the experience." />
         <View style={styles.coverPreview}>
           {draft.coverPhotoUrl ? (
@@ -216,7 +218,7 @@ export default function BuilderScreen() {
         <View style={styles.photoActionRow}>
           <Pressable
             disabled={uploadMutation.isPending}
-            style={[styles.secondaryButton, { opacity: uploadMutation.isPending ? 0.7 : 1 }]}
+            style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder, opacity: uploadMutation.isPending ? 0.7 : 1 }]}
             onPress={() => uploadMutation.mutate()}
           >
             <Ionicons color="#101828" name="image-outline" size={19} />
@@ -254,17 +256,17 @@ export default function BuilderScreen() {
           />
         ))}
         <Pressable style={styles.addPageButton} onPress={() => setPagePickerVisible(true)}>
-          <Ionicons color="#ec0e68" name="add-circle-outline" size={22} />
-          <Text style={styles.addPageText}>Add page</Text>
+          <Ionicons color={appTheme.primary} name="add-circle-outline" size={22} />
+          <Text style={[styles.addPageText, { color: appTheme.primary }]}>Add page</Text>
         </Pressable>
       </View>
 
       <View style={styles.actions}>
-        <Pressable style={styles.secondaryButton} onPress={openPreview}>
+            <Pressable style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={openPreview}>
           <Text style={styles.secondaryButtonText}>Preview</Text>
         </Pressable>
-        <Pressable
-          style={[styles.button, { opacity: saveMutation.isPending ? 0.7 : 1 }]}
+            <Pressable
+              style={[styles.button, { backgroundColor: appTheme.primary, opacity: saveMutation.isPending ? 0.7 : 1 }]}
           onPress={saveAndContinue}
           disabled={saveMutation.isPending || autosaveState.status === "saving"}
         >
@@ -316,14 +318,16 @@ export default function BuilderScreen() {
 }
 
 function BuilderStepper() {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.stepper}>
+    <View style={[styles.stepper, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
       {BUILDER_STEPS.map((step, index) => (
         <View key={step.label} style={styles.stepItem}>
-          <View style={[styles.stepIcon, index === 0 ? styles.activeStepIcon : null]}>
-            <Ionicons color={index === 0 ? "#ffffff" : "#ec0e68"} name={step.icon} size={17} />
+          <View style={[styles.stepIcon, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }, index === 0 ? { backgroundColor: appTheme.primary, borderColor: appTheme.primary } : null]}>
+            <Ionicons color={index === 0 ? "#ffffff" : appTheme.primary} name={step.icon} size={17} />
           </View>
-          <Text style={styles.stepLabel}>{step.label}</Text>
+          <Text style={[styles.stepLabel, { color: appTheme.secondaryText }]}>{step.label}</Text>
         </View>
       ))}
     </View>
@@ -331,20 +335,23 @@ function BuilderStepper() {
 }
 
 function SectionHeading({ icon, subtitle, title }: { icon: keyof typeof Ionicons.glyphMap; subtitle: string; title: string }) {
+  const appTheme = useAppTheme();
+
   return (
     <View style={styles.sectionHeadingBlock}>
-      <View style={styles.sectionIcon}>
-        <Ionicons color="#ec0e68" name={icon} size={19} />
+      <View style={[styles.sectionIcon, { backgroundColor: appTheme.muted }]}>
+        <Ionicons color={appTheme.primary} name={icon} size={19} />
       </View>
       <View style={styles.sectionHeadingCopy}>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        <Text style={styles.sectionSubtitle}>{subtitle}</Text>
+        <Text style={[styles.sectionTitle, { color: appTheme.text }]}>{title}</Text>
+        <Text style={[styles.sectionSubtitle, { color: appTheme.secondaryText }]}>{subtitle}</Text>
       </View>
     </View>
   );
 }
 
 function ThemePicker({ onSelect, selectedTheme }: { onSelect: (theme: Theme) => void; selectedTheme: Theme }) {
+  const appTheme = useAppTheme();
   const themes = EXPERIENCE_THEMES.some((theme) => theme.id === selectedTheme.id)
     ? EXPERIENCE_THEMES
     : [selectedTheme, ...EXPERIENCE_THEMES];
@@ -352,10 +359,10 @@ function ThemePicker({ onSelect, selectedTheme }: { onSelect: (theme: Theme) => 
   return (
     <View style={styles.themeSection}>
       <View style={styles.themeSectionHeader}>
-        <Text style={styles.sectionTitle}>Theme</Text>
-        <Pressable style={styles.viewThemesButton} onPress={() => router.push("/themes" as never)}>
-          <Text style={styles.viewThemesText}>View all</Text>
-          <Ionicons color="#ec0e68" name="chevron-forward" size={15} />
+        <Text style={[styles.sectionTitle, { color: appTheme.text }]}>Theme</Text>
+        <Pressable style={[styles.viewThemesButton, { backgroundColor: appTheme.surfaceAlt }]} onPress={() => router.push("/themes" as never)}>
+          <Text style={[styles.viewThemesText, { color: appTheme.primary }]}>View all</Text>
+          <Ionicons color={appTheme.primary} name="chevron-forward" size={15} />
         </Pressable>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.themeList}>

@@ -6,8 +6,10 @@ import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBuilderStore } from "@/stores/builder-store";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 export default function ThemesScreen() {
+  const appTheme = useAppTheme();
   const draft = useBuilderStore((state) => state.draft);
   const updateDraft = useBuilderStore((state) => state.updateDraft);
   const initialThemeId = draft?.theme.id ?? EXPERIENCE_THEMES[0]?.id ?? "rose";
@@ -29,21 +31,21 @@ export default function ThemesScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: appTheme.background }]}>
       <View style={styles.topBar}>
-        <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
-          <Ionicons color="#101828" name="chevron-back" size={22} />
+        <Pressable accessibilityLabel="Go back" style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
+          <Ionicons color={appTheme.text} name="chevron-back" size={22} />
         </Pressable>
-        <View style={styles.badge}>
-          <Ionicons color="#ec0e68" name="color-palette-outline" size={17} />
-          <Text style={styles.badgeText}>Themes</Text>
+        <View style={[styles.badge, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <Ionicons color={appTheme.primary} name="color-palette-outline" size={17} />
+          <Text style={[styles.badgeText, { color: appTheme.primary }]}>Themes</Text>
         </View>
       </View>
 
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Theme previews</Text>
-        <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={styles.title}>Choose a mood</Text>
-        <Text numberOfLines={2} style={styles.subtitle}>
+        <Text style={[styles.eyebrow, { color: appTheme.primary }]}>Theme previews</Text>
+        <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={[styles.title, { color: appTheme.text }]}>Choose a mood</Text>
+        <Text numberOfLines={2} style={[styles.subtitle, { color: appTheme.secondaryText }]}>
           {canApply ? "Select a theme and apply it to your current experience." : "Pick a template first, then apply a theme inside the builder."}
         </Text>
       </View>
@@ -55,14 +57,14 @@ export default function ThemesScreen() {
         showsVerticalScrollIndicator={false}
         ListFooterComponent={
           <View style={styles.footer}>
-            <View style={styles.selectedPanel}>
+            <View style={[styles.selectedPanel, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
               <View style={[styles.selectedSwatch, { backgroundColor: selectedTheme.accent }]} />
               <View style={styles.selectedCopy}>
-                <Text numberOfLines={1} style={styles.selectedTitle}>{selectedTheme.name}</Text>
-                <Text numberOfLines={1} style={styles.selectedSubtitle}>{canApply ? "Ready to apply to builder" : "Create a draft to use this theme"}</Text>
+                <Text numberOfLines={1} style={[styles.selectedTitle, { color: appTheme.text }]}>{selectedTheme.name}</Text>
+                <Text numberOfLines={1} style={[styles.selectedSubtitle, { color: appTheme.secondaryText }]}>{canApply ? "Ready to apply to builder" : "Create a draft to use this theme"}</Text>
               </View>
             </View>
-            <Pressable style={[styles.applyButton, !canApply ? styles.applyButtonMuted : null]} onPress={applyTheme}>
+            <Pressable style={[styles.applyButton, { backgroundColor: appTheme.primary }, !canApply ? styles.applyButtonMuted : null]} onPress={applyTheme}>
               <Ionicons color="#ffffff" name={canApply ? "checkmark-circle-outline" : "albums-outline"} size={20} />
               <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.applyButtonText}>
                 {canApply ? "Apply Theme" : "Choose Template"}

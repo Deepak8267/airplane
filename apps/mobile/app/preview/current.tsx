@@ -6,8 +6,10 @@ import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useBuilderStore } from "@/stores/builder-store";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 export default function CurrentPreviewScreen() {
+  const appTheme = useAppTheme();
   const draft = useBuilderStore((state) => state.draft);
   const [index, setIndex] = useState(0);
   const [now, setNow] = useState(() => Date.now());
@@ -26,13 +28,13 @@ export default function CurrentPreviewScreen() {
 
   if (!draft || !activePage) {
     return (
-      <SafeAreaView edges={["top"]} style={styles.emptyScreen}>
-        <View style={styles.emptyIcon}>
-          <Ionicons color="#ec0e68" name="eye-outline" size={30} />
+      <SafeAreaView edges={["top"]} style={[styles.emptyScreen, { backgroundColor: appTheme.background }]}>
+        <View style={[styles.emptyIcon, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <Ionicons color={appTheme.primary} name="eye-outline" size={30} />
         </View>
-        <Text style={styles.emptyTitle}>Nothing to preview yet.</Text>
-        <Text style={styles.emptyCopy}>Choose a template or open an existing draft first.</Text>
-        <Pressable style={styles.emptyButton} onPress={() => router.replace("/home")}>
+        <Text style={[styles.emptyTitle, { color: appTheme.text }]}>Nothing to preview yet.</Text>
+        <Text style={[styles.emptyCopy, { color: appTheme.secondaryText }]}>Choose a template or open an existing draft first.</Text>
+        <Pressable style={[styles.emptyButton, { backgroundColor: appTheme.primary }]} onPress={() => router.replace("/home")}>
           <Ionicons color="#ffffff" name="sparkles-outline" size={19} />
           <Text style={styles.emptyButtonText}>Go to templates</Text>
         </Pressable>
@@ -50,16 +52,16 @@ export default function CurrentPreviewScreen() {
     <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: draft.theme.background }]}>
       <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Back to editor" style={styles.topIconButton} onPress={() => router.back()}>
-            <Ionicons color="#101828" name="create-outline" size={21} />
+          <Pressable accessibilityLabel="Back to editor" style={[styles.topIconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
+            <Ionicons color={appTheme.text} name="create-outline" size={21} />
           </Pressable>
-          <View style={styles.previewBadge}>
+          <View style={[styles.previewBadge, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
             <Ionicons color={draft.theme.accent} name="eye-outline" size={17} />
             <Text style={[styles.previewBadgeText, { color: draft.theme.accent }]}>Preview</Text>
           </View>
         </View>
 
-        <View style={styles.progressShell}>
+        <View style={[styles.progressShell, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: draft.theme.accent }]} />
           </View>

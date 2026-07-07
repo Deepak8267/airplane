@@ -7,8 +7,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { publishExperience, updateDraftExperience } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 export default function PublishScreen() {
+  const appTheme = useAppTheme();
   const draft = useBuilderStore((state) => state.draft);
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -77,32 +79,32 @@ export default function PublishScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.root}>
+    <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: appTheme.background }]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Back to preview" style={styles.iconButton} onPress={() => router.back()}>
-            <Ionicons color="#101828" name="chevron-back" size={22} />
+          <Pressable accessibilityLabel="Back to preview" style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
+            <Ionicons color={appTheme.text} name="chevron-back" size={22} />
           </Pressable>
-          <View style={[styles.statusBadge, link ? styles.liveBadge : null]}>
-            <Ionicons color={link ? "#067647" : "#ec0e68"} name={link ? "checkmark-circle" : "rocket-outline"} size={18} />
-            <Text style={[styles.eyebrow, { color: link ? "#067647" : "#ec0e68" }]}>{link ? "Published" : "Ready"}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: appTheme.surface, borderColor: appTheme.border }, link ? styles.liveBadge : null]}>
+            <Ionicons color={link ? appTheme.success : appTheme.primary} name={link ? "checkmark-circle" : "rocket-outline"} size={18} />
+            <Text style={[styles.eyebrow, { color: link ? appTheme.success : appTheme.primary }]}>{link ? "Published" : "Ready"}</Text>
           </View>
         </View>
 
-        <View style={styles.hero}>
-          <View style={styles.heroIcon}>
-            <Ionicons color="#ec0e68" name={link ? "paper-plane" : "rocket-outline"} size={34} />
+        <View style={[styles.hero, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <View style={[styles.heroIcon, { backgroundColor: appTheme.muted }]}>
+            <Ionicons color={appTheme.primary} name={link ? "paper-plane" : "rocket-outline"} size={34} />
           </View>
-          <Text style={styles.title}>{link ? "Your link is live." : `${draft?.title ?? "Your experience"} is ready to fly.`}</Text>
-          <Text style={styles.copy}>
+          <Text style={[styles.title, { color: appTheme.text }]}>{link ? "Your link is live." : `${draft?.title ?? "Your experience"} is ready to fly.`}</Text>
+          <Text style={[styles.copy, { color: appTheme.secondaryText }]}>
             {link
               ? "Share this link anywhere. Recipients open the full web experience without installing the app."
               : "Publishing saves your latest edits, creates a unique slug, and turns on tracking for the web experience."}
           </Text>
         </View>
 
-        <View style={styles.summaryCard}>
-          <Text style={styles.sectionTitle}>Launch summary</Text>
+        <View style={[styles.summaryCard, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <Text style={[styles.sectionTitle, { color: appTheme.text }]}>Launch summary</Text>
           <View style={styles.summaryGrid}>
             <SummaryItem icon="person-outline" label="Recipient" value={draft?.recipientName || "Not set"} />
             <SummaryItem icon="documents-outline" label="Pages" value={`${pageCount}`} />
@@ -111,21 +113,21 @@ export default function PublishScreen() {
         </View>
 
         {!link ? (
-          <View style={styles.checklist}>
+          <View style={[styles.checklist, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
             <ChecklistItem complete={Boolean(draft?.title)} label="Title is saved" />
             <ChecklistItem complete={Boolean(draft?.recipientName)} label="Recipient name is added" />
             <ChecklistItem complete={pageCount > 0} label="Experience pages are ready" />
             <ChecklistItem complete={publishReady} label="Draft exists in Supabase" />
           </View>
         ) : (
-          <View style={styles.linkPanel}>
+          <View style={[styles.linkPanel, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
             <View style={styles.linkHeader}>
               <View>
-                <Text style={styles.linkLabel}>Live link</Text>
-                <Text selectable numberOfLines={2} style={styles.link}>{link}</Text>
+                <Text style={[styles.linkLabel, { color: appTheme.primary }]}>Live link</Text>
+                <Text selectable numberOfLines={2} style={[styles.link, { color: appTheme.text }]}>{link}</Text>
               </View>
-              <Pressable accessibilityLabel="Copy link" style={styles.copyIconButton} onPress={copyLink}>
-                <Ionicons color="#ec0e68" name={copied ? "checkmark-circle" : "copy-outline"} size={22} />
+              <Pressable accessibilityLabel="Copy link" style={[styles.copyIconButton, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }]} onPress={copyLink}>
+                <Ionicons color={appTheme.primary} name={copied ? "checkmark-circle" : "copy-outline"} size={22} />
               </Pressable>
             </View>
             <Text style={styles.linkHint}>Views, completions, quiz answers, and proposal attempts will appear in Analytics.</Text>
@@ -136,7 +138,7 @@ export default function PublishScreen() {
 
         {!link ? (
           <Pressable
-            style={[styles.button, { opacity: publishMutation.isPending || !publishReady ? 0.7 : 1 }]}
+            style={[styles.button, { backgroundColor: appTheme.primary, opacity: publishMutation.isPending || !publishReady ? 0.7 : 1 }]}
             onPress={() => publishMutation.mutate()}
             disabled={publishMutation.isPending || !publishReady}
           >
@@ -145,27 +147,27 @@ export default function PublishScreen() {
           </Pressable>
         ) : (
           <View style={styles.publishedActions}>
-            <Pressable style={styles.button} onPress={share}>
+            <Pressable style={[styles.button, { backgroundColor: appTheme.primary }]} onPress={share}>
               <Ionicons color="#ffffff" name="share-social-outline" size={20} />
               <Text style={styles.buttonText}>Share link</Text>
             </Pressable>
             <View style={styles.actionGrid}>
-              <Pressable style={styles.secondaryButton} onPress={copyLink}>
-                <Ionicons color="#101828" name={copied ? "checkmark-circle-outline" : "copy-outline"} size={20} />
-                <Text style={styles.secondaryButtonText}>{copied ? "Copied" : "Copy"}</Text>
+              <Pressable style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={copyLink}>
+                <Ionicons color={appTheme.text} name={copied ? "checkmark-circle-outline" : "copy-outline"} size={20} />
+                <Text style={[styles.secondaryButtonText, { color: appTheme.text }]}>{copied ? "Copied" : "Copy"}</Text>
               </Pressable>
-              <Pressable style={styles.secondaryButton} onPress={openLink}>
-                <Ionicons color="#101828" name="open-outline" size={20} />
-                <Text style={styles.secondaryButtonText}>Open</Text>
+              <Pressable style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={openLink}>
+                <Ionicons color={appTheme.text} name="open-outline" size={20} />
+                <Text style={[styles.secondaryButtonText, { color: appTheme.text }]}>Open</Text>
               </Pressable>
             </View>
             {draft?.experienceId ? (
               <Pressable
-                style={styles.secondaryButtonFull}
+                style={[styles.secondaryButtonFull, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}
                 onPress={() => router.push({ pathname: "/analytics/[id]", params: { id: draft.experienceId } } as never)}
               >
-                <Ionicons color="#101828" name="bar-chart-outline" size={20} />
-                <Text style={styles.secondaryButtonText}>View analytics</Text>
+                <Ionicons color={appTheme.text} name="bar-chart-outline" size={20} />
+                <Text style={[styles.secondaryButtonText, { color: appTheme.text }]}>View analytics</Text>
               </Pressable>
             ) : null}
           </View>
@@ -180,20 +182,24 @@ export default function PublishScreen() {
 }
 
 function SummaryItem({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.summaryItem}>
-      <Ionicons color="#ec0e68" name={icon} size={20} />
-      <Text style={styles.summaryLabel}>{label}</Text>
-      <Text numberOfLines={1} style={styles.summaryValue}>{value}</Text>
+    <View style={[styles.summaryItem, { backgroundColor: appTheme.surfaceAlt }]}>
+      <Ionicons color={appTheme.primary} name={icon} size={20} />
+      <Text style={[styles.summaryLabel, { color: appTheme.secondaryText }]}>{label}</Text>
+      <Text numberOfLines={1} style={[styles.summaryValue, { color: appTheme.text }]}>{value}</Text>
     </View>
   );
 }
 
 function ChecklistItem({ complete, label }: { complete: boolean; label: string }) {
+  const appTheme = useAppTheme();
+
   return (
     <View style={styles.checkItem}>
-      <Ionicons color={complete ? "#067647" : "#98a2b3"} name={complete ? "checkmark-circle" : "ellipse-outline"} size={21} />
-      <Text style={styles.checkLabel}>{label}</Text>
+      <Ionicons color={complete ? appTheme.success : appTheme.secondaryText} name={complete ? "checkmark-circle" : "ellipse-outline"} size={21} />
+      <Text style={[styles.checkLabel, { color: appTheme.text }]}>{label}</Text>
     </View>
   );
 }

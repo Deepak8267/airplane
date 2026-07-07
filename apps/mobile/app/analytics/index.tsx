@@ -5,6 +5,7 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "rea
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomNav } from "@/components/bottom-nav";
 import { getAnalyticsDashboard } from "@/features/analytics/analytics-service";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 const FONT = {
   regular: "Poppins_400Regular",
@@ -14,6 +15,7 @@ const FONT = {
 };
 
 export default function AnalyticsDashboardScreen() {
+  const appTheme = useAppTheme();
   const dashboardQuery = useQuery({
     queryKey: ["analytics-dashboard"],
     queryFn: getAnalyticsDashboard
@@ -21,7 +23,7 @@ export default function AnalyticsDashboardScreen() {
   const dashboard = dashboardQuery.data;
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.shell}>
+    <SafeAreaView edges={["top"]} style={[styles.shell, { backgroundColor: appTheme.background }]}>
       <FlatList
         data={dashboard?.items ?? []}
         keyExtractor={(item) => item.experience.id}
@@ -30,12 +32,12 @@ export default function AnalyticsDashboardScreen() {
         ListHeaderComponent={
           <View style={styles.headerStack}>
             <View style={styles.header}>
-              <View style={styles.headerIcon}>
-                <Ionicons color="#ec0e68" name="bar-chart-outline" size={18} />
+              <View style={[styles.headerIcon, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+                <Ionicons color={appTheme.primary} name="bar-chart-outline" size={18} />
               </View>
-              <Text style={styles.eyebrow}>Analytics dashboard</Text>
-              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={2} style={styles.title}>Track reactions that matter.</Text>
-              <Text style={styles.subtitle}>Views, completions, and proposal interactions across all published experiences.</Text>
+              <Text style={[styles.eyebrow, { color: appTheme.primary }]}>Analytics dashboard</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={2} style={[styles.title, { color: appTheme.text }]}>Track reactions that matter.</Text>
+              <Text style={[styles.subtitle, { color: appTheme.secondaryText }]}>Views, completions, and proposal interactions across all published experiences.</Text>
             </View>
 
             <View style={styles.metricGrid}>
@@ -45,15 +47,15 @@ export default function AnalyticsDashboardScreen() {
               <Metric icon="trending-up-outline" label="Complete rate" value={formatPercent(dashboard?.totals.completionRate ?? 0)} />
             </View>
 
-            <View style={styles.insightBand}>
+            <View style={[styles.insightBand, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
               <View style={styles.insightItem}>
-                <Text style={styles.insightLabel}>Avg time</Text>
-                <Text style={styles.insightValue}>{formatDuration(dashboard?.totals.averageCompletionTimeSeconds ?? 0)}</Text>
+                <Text style={[styles.insightLabel, { color: appTheme.secondaryText }]}>Avg time</Text>
+                <Text style={[styles.insightValue, { color: appTheme.text }]}>{formatDuration(dashboard?.totals.averageCompletionTimeSeconds ?? 0)}</Text>
               </View>
               <View style={styles.insightDivider} />
               <View style={styles.insightItem}>
-                <Text style={styles.insightLabel}>NO attempts</Text>
-                <Text style={styles.insightValue}>{formatNumber(dashboard?.totals.totalNoAttempts ?? 0)}</Text>
+                <Text style={[styles.insightLabel, { color: appTheme.secondaryText }]}>NO attempts</Text>
+                <Text style={[styles.insightValue, { color: appTheme.text }]}>{formatNumber(dashboard?.totals.totalNoAttempts ?? 0)}</Text>
               </View>
             </View>
 
@@ -61,20 +63,20 @@ export default function AnalyticsDashboardScreen() {
             {dashboardQuery.error instanceof Error ? <Text style={styles.error}>{dashboardQuery.error.message}</Text> : null}
 
             <View style={styles.sectionHeading}>
-              <Text numberOfLines={1} style={styles.sectionTitle}>Published experiences</Text>
-              <Text style={styles.sectionCount}>{dashboard?.totals.publishedExperiences ?? 0}</Text>
+              <Text numberOfLines={1} style={[styles.sectionTitle, { color: appTheme.text }]}>Published experiences</Text>
+              <Text style={[styles.sectionCount, { backgroundColor: appTheme.muted, color: appTheme.primary }]}>{dashboard?.totals.publishedExperiences ?? 0}</Text>
             </View>
           </View>
         }
         ListEmptyComponent={
           !dashboardQuery.isLoading ? (
-            <View style={styles.emptyCard}>
-              <View style={styles.emptyIcon}>
-                <Ionicons color="#ec0e68" name="bar-chart-outline" size={22} />
+            <View style={[styles.emptyCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
+              <View style={[styles.emptyIcon, { backgroundColor: appTheme.muted }]}>
+                <Ionicons color={appTheme.primary} name="bar-chart-outline" size={22} />
               </View>
-              <Text style={styles.emptyTitle}>No published analytics yet</Text>
-              <Text style={styles.emptyCopy}>Publish an experience and open its link to start collecting analytics.</Text>
-              <Pressable style={styles.primaryButton} onPress={() => router.push("/home" as never)}>
+              <Text style={[styles.emptyTitle, { color: appTheme.text }]}>No published analytics yet</Text>
+              <Text style={[styles.emptyCopy, { color: appTheme.secondaryText }]}>Publish an experience and open its link to start collecting analytics.</Text>
+              <Pressable style={[styles.primaryButton, { backgroundColor: appTheme.primary }]} onPress={() => router.push("/home" as never)}>
                 <Ionicons color="#ffffff" name="sparkles-outline" size={15} />
                 <Text style={styles.primaryButtonText}>Create experience</Text>
               </Pressable>
@@ -83,16 +85,16 @@ export default function AnalyticsDashboardScreen() {
         }
         renderItem={({ item }) => (
           <Pressable
-            style={styles.experienceCard}
+            style={[styles.experienceCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}
             onPress={() => router.push({ pathname: "/analytics/[id]", params: { id: item.experience.id } } as never)}
           >
             <View style={styles.cardHeader}>
               <View style={[styles.cardIcon, { backgroundColor: item.experience.theme.muted }]}>
-                <Ionicons color="#ec0e68" name="paper-plane-outline" size={17} />
+                <Ionicons color={appTheme.primary} name="paper-plane-outline" size={17} />
               </View>
               <View style={styles.cardTitleBlock}>
-                <Text style={styles.cardTitle} numberOfLines={1}>{item.experience.title}</Text>
-                <Text style={styles.cardSubtitle} numberOfLines={1}>{item.experience.recipientName || "No recipient"}</Text>
+                <Text style={[styles.cardTitle, { color: appTheme.text }]} numberOfLines={1}>{item.experience.title}</Text>
+                <Text style={[styles.cardSubtitle, { color: appTheme.secondaryText }]} numberOfLines={1}>{item.experience.recipientName || "No recipient"}</Text>
               </View>
               <Ionicons color="#98a2b3" name="chevron-forward" size={18} />
             </View>
@@ -102,8 +104,8 @@ export default function AnalyticsDashboardScreen() {
               <SmallStat label="Complete" value={formatPercent(item.summary.completionRate)} />
             </View>
             <View style={styles.cardFooter}>
-              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.cardFooterText}>Avg time {formatDuration(item.summary.averageCompletionTimeSeconds)}</Text>
-              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.cardFooterText}>NO attempts {formatNumber(item.summary.totalNoAttempts)}</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.cardFooterText, { backgroundColor: appTheme.surfaceAlt, color: appTheme.secondaryText }]}>Avg time {formatDuration(item.summary.averageCompletionTimeSeconds)}</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.cardFooterText, { backgroundColor: appTheme.surfaceAlt, color: appTheme.secondaryText }]}>NO attempts {formatNumber(item.summary.totalNoAttempts)}</Text>
             </View>
           </Pressable>
         )}
@@ -114,20 +116,24 @@ export default function AnalyticsDashboardScreen() {
 }
 
 function Metric({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.metricCard}>
-      <Ionicons color="#ec0e68" name={icon} size={17} />
-      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.metricValue}>{value}</Text>
-      <Text numberOfLines={1} style={styles.metricLabel}>{label}</Text>
+    <View style={[styles.metricCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
+      <Ionicons color={appTheme.primary} name={icon} size={17} />
+      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.metricValue, { color: appTheme.text }]}>{value}</Text>
+      <Text numberOfLines={1} style={[styles.metricLabel, { color: appTheme.secondaryText }]}>{label}</Text>
     </View>
   );
 }
 
 function SmallStat({ label, value }: { label: string; value: string }) {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.smallStat}>
-      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.smallStatValue}>{value}</Text>
-      <Text numberOfLines={1} style={styles.smallStatLabel}>{label}</Text>
+    <View style={[styles.smallStat, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.navBorder }]}>
+      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.smallStatValue, { color: appTheme.text }]}>{value}</Text>
+      <Text numberOfLines={1} style={[styles.smallStatLabel, { color: appTheme.secondaryText }]}>{label}</Text>
     </View>
   );
 }

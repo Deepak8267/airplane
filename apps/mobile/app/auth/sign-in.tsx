@@ -5,8 +5,10 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleShee
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { signInWithEmail, signUpWithEmail } from "@/features/auth/auth-service";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 export default function SignInScreen() {
+  const appTheme = useAppTheme();
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,25 +35,25 @@ export default function SignInScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top", "bottom"]} style={styles.safeArea}>
+    <SafeAreaView edges={["top", "bottom"]} style={[styles.safeArea, { backgroundColor: appTheme.background }]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.keyboard}>
-        <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.screen, { backgroundColor: appTheme.background }]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.brandRow}>
-            <View style={styles.logoMark}>
+            <View style={[styles.logoMark, { backgroundColor: appTheme.primary }]}>
               <Ionicons color="#ffffff" name="paper-plane" size={20} />
             </View>
             <View style={styles.brandCopy}>
-              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.logo}>AIRPLANE</Text>
-              <Text numberOfLines={1} style={styles.tagline}>Premium - Personal - Interactive</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.logo, { color: appTheme.text }]}>AIRPLANE</Text>
+              <Text numberOfLines={1} style={[styles.tagline, { color: appTheme.secondaryText }]}>Premium - Personal - Interactive</Text>
             </View>
           </View>
 
-          <View style={styles.card}>
-            <View style={styles.heroIcon}>
-              <Ionicons color="#ec0e68" name={mode === "sign-in" ? "lock-open-outline" : "person-add-outline"} size={28} />
+          <View style={[styles.card, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+            <View style={[styles.heroIcon, { backgroundColor: appTheme.muted }]}>
+              <Ionicons color={appTheme.primary} name={mode === "sign-in" ? "lock-open-outline" : "person-add-outline"} size={28} />
             </View>
-            <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={styles.title}>{mode === "sign-in" ? "Welcome back" : "Create account"}</Text>
-            <Text numberOfLines={3} style={styles.copy}>
+            <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={[styles.title, { color: appTheme.text }]}>{mode === "sign-in" ? "Welcome back" : "Create account"}</Text>
+            <Text numberOfLines={3} style={[styles.copy, { color: appTheme.secondaryText }]}>
               {mode === "sign-in" ? "Sign in to keep building and publishing shareable moments." : "Create your creator account to save experiences."}
             </Text>
 
@@ -67,42 +69,42 @@ export default function SignInScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={[styles.label, { color: appTheme.text }]}>Email</Text>
               <TextInput
                 autoCapitalize="none"
                 keyboardType="email-address"
                 onChangeText={setEmail}
                 placeholder="you@example.com"
                 placeholderTextColor="#98a2b3"
-                style={[styles.input, emailError ? styles.inputError : null]}
+                style={[styles.input, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.navBorder, color: appTheme.text }, emailError ? styles.inputError : null]}
                 value={email}
               />
               {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={[styles.label, { color: appTheme.text }]}>Password</Text>
               <TextInput
                 autoCapitalize="none"
                 onChangeText={setPassword}
                 placeholder="Minimum 6 characters"
                 placeholderTextColor="#98a2b3"
                 secureTextEntry
-                style={[styles.input, passwordError ? styles.inputError : null]}
+                style={[styles.input, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.navBorder, color: appTheme.text }, passwordError ? styles.inputError : null]}
                 value={password}
               />
               {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
             </View>
 
             {authMutation.error instanceof Error ? <Text style={styles.error}>{authMutation.error.message}</Text> : null}
-            <Pressable style={[styles.primaryButton, { opacity: authMutation.isPending ? 0.7 : 1 }]} onPress={submit} disabled={authMutation.isPending}>
+            <Pressable style={[styles.primaryButton, { backgroundColor: appTheme.primary, opacity: authMutation.isPending ? 0.7 : 1 }]} onPress={submit} disabled={authMutation.isPending}>
               <Ionicons color="#ffffff" name={authMutation.isPending ? "hourglass-outline" : "arrow-forward"} size={20} />
               <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.primaryButtonText}>
                 {authMutation.isPending ? "Please wait..." : mode === "sign-in" ? "Sign in" : "Create account"}
               </Text>
             </Pressable>
-            <Pressable style={styles.oauthButton} onPress={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}>
-              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.oauthButtonText}>
+            <Pressable style={[styles.oauthButton, { backgroundColor: appTheme.surfaceAlt }]} onPress={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.oauthButtonText, { color: appTheme.primary }]}>
                 {mode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
               </Text>
             </Pressable>
@@ -114,11 +116,13 @@ export default function SignInScreen() {
 }
 
 function AuthProvider({ icon, label, onPress }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
+  const appTheme = useAppTheme();
+
   return (
-    <Pressable style={styles.providerButton} onPress={onPress}>
-      <Ionicons color="#101828" name={icon} size={20} />
-      <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.providerText}>{label}</Text>
-      <Text style={styles.soonBadge}>Soon</Text>
+    <Pressable style={[styles.providerButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={onPress}>
+      <Ionicons color={appTheme.text} name={icon} size={20} />
+      <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.providerText, { color: appTheme.text }]}>{label}</Text>
+      <Text style={[styles.soonBadge, { backgroundColor: appTheme.muted, color: appTheme.secondaryText }]}>Soon</Text>
     </Pressable>
   );
 }

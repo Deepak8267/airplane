@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 const ARTICLES = [
   { title: "How to create an experience", category: "Builder", icon: "create-outline" },
@@ -13,6 +14,7 @@ const ARTICLES = [
 ] as const;
 
 export default function HelpScreen() {
+  const appTheme = useAppTheme();
   const [query, setQuery] = useState("");
   const filteredArticles = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -33,27 +35,27 @@ export default function HelpScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.root}>
+    <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: appTheme.background }]}>
       <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Go back" style={styles.iconButton} onPress={() => router.back()}>
-            <Ionicons color="#101828" name="chevron-back" size={22} />
+          <Pressable accessibilityLabel="Go back" style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
+            <Ionicons color={appTheme.text} name="chevron-back" size={22} />
           </Pressable>
-          <View style={styles.badge}>
-            <Ionicons color="#ec0e68" name="help-circle-outline" size={17} />
-            <Text style={styles.badgeText}>Support</Text>
+          <View style={[styles.badge, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+            <Ionicons color={appTheme.primary} name="help-circle-outline" size={17} />
+            <Text style={[styles.badgeText, { color: appTheme.primary }]}>Support</Text>
           </View>
         </View>
 
-        <View style={styles.hero}>
-          <View style={styles.heroIcon}>
-            <Ionicons color="#ec0e68" name="chatbubble-ellipses-outline" size={30} />
+        <View style={[styles.hero, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <View style={[styles.heroIcon, { backgroundColor: appTheme.muted }]}>
+            <Ionicons color={appTheme.primary} name="chatbubble-ellipses-outline" size={30} />
           </View>
-          <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={styles.title}>How can we help?</Text>
-          <Text style={styles.subtitle}>Find answers for creating, publishing, sharing, and tracking AIRPLANE experiences.</Text>
+          <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={[styles.title, { color: appTheme.text }]}>How can we help?</Text>
+          <Text style={[styles.subtitle, { color: appTheme.secondaryText }]}>Find answers for creating, publishing, sharing, and tracking AIRPLANE experiences.</Text>
         </View>
 
-        <View style={styles.searchBox}>
+        <View style={[styles.searchBox, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
           <Ionicons color="#98a2b3" name="search-outline" size={19} />
           <TextInput
             autoCapitalize="none"
@@ -70,25 +72,25 @@ export default function HelpScreen() {
           ) : null}
         </View>
 
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
           <View style={styles.sectionHeader}>
-            <Text numberOfLines={1} style={styles.sectionTitle}>Popular articles</Text>
-            <Text style={styles.sectionCount}>{filteredArticles.length}</Text>
+            <Text numberOfLines={1} style={[styles.sectionTitle, { color: appTheme.text }]}>Popular articles</Text>
+            <Text style={[styles.sectionCount, { backgroundColor: appTheme.muted, color: appTheme.primary }]}>{filteredArticles.length}</Text>
           </View>
           {filteredArticles.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons color="#ec0e68" name="file-tray-outline" size={24} />
-              <Text style={styles.emptyText}>No matching articles.</Text>
+              <Ionicons color={appTheme.primary} name="file-tray-outline" size={24} />
+              <Text style={[styles.emptyText, { color: appTheme.secondaryText }]}>No matching articles.</Text>
             </View>
           ) : (
             filteredArticles.map((article) => (
               <Pressable key={article.title} style={styles.articleRow} onPress={() => openArticle(article.title)}>
-                <View style={styles.articleIcon}>
-                  <Ionicons color="#ec0e68" name={article.icon} size={19} />
+                <View style={[styles.articleIcon, { backgroundColor: appTheme.muted }]}>
+                  <Ionicons color={appTheme.primary} name={article.icon} size={19} />
                 </View>
                 <View style={styles.articleCopy}>
-                  <Text numberOfLines={1} style={styles.articleText}>{article.title}</Text>
-                  <Text style={styles.articleCategory}>{article.category}</Text>
+                  <Text numberOfLines={1} style={[styles.articleText, { color: appTheme.text }]}>{article.title}</Text>
+                  <Text style={[styles.articleCategory, { color: appTheme.secondaryText }]}>{article.category}</Text>
                 </View>
                 <Ionicons color="#98a2b3" name="chevron-forward" size={18} />
               </Pressable>
@@ -96,10 +98,10 @@ export default function HelpScreen() {
           )}
         </View>
 
-        <View style={styles.supportCard}>
-          <Text numberOfLines={1} style={styles.supportTitle}>Need hands-on help?</Text>
-          <Text numberOfLines={3} style={styles.supportCopy}>Use this once support inbox is connected. For now, the MVP can be tested locally end to end.</Text>
-          <Pressable style={styles.primaryButton} onPress={contactSupport}>
+        <View style={[styles.supportCard, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <Text numberOfLines={1} style={[styles.supportTitle, { color: appTheme.text }]}>Need hands-on help?</Text>
+          <Text numberOfLines={3} style={[styles.supportCopy, { color: appTheme.secondaryText }]}>Use this once support inbox is connected. For now, the MVP can be tested locally end to end.</Text>
+          <Pressable style={[styles.primaryButton, { backgroundColor: appTheme.primary }]} onPress={contactSupport}>
             <Ionicons color="#ffffff" name="chatbubble-ellipses-outline" size={20} />
             <Text style={styles.primaryButtonText}>Contact support</Text>
           </Pressable>

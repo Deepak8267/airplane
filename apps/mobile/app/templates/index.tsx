@@ -7,10 +7,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
 import type { Template, TemplateCategory } from "@airplane/shared";
 import { getTemplates } from "@/features/templates/template-service";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 type CategoryFilter = "all" | TemplateCategory;
 
 export default function TemplatesScreen() {
+  const appTheme = useAppTheme();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CategoryFilter>("all");
   const templatesQuery = useQuery({
@@ -29,7 +31,7 @@ export default function TemplatesScreen() {
   }, [category, query, templates]);
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: appTheme.background }]}>
       <FlatList
         data={filteredTemplates}
         keyExtractor={(item) => item.id}
@@ -40,15 +42,15 @@ export default function TemplatesScreen() {
         ListHeaderComponent={
           <View style={styles.headerStack}>
             <View style={styles.header}>
-              <View style={styles.headerIcon}>
-                <Ionicons color="#ec0e68" name="grid-outline" size={26} />
+              <View style={[styles.headerIcon, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+                <Ionicons color={appTheme.primary} name="grid-outline" size={26} />
               </View>
-              <Text style={styles.eyebrow}>Templates</Text>
-              <Text style={styles.title}>Pick the perfect starting point.</Text>
-              <Text style={styles.subtitle}>Search love, birthday, friends, family, and fun templates.</Text>
+              <Text style={[styles.eyebrow, { color: appTheme.primary }]}>Templates</Text>
+              <Text style={[styles.title, { color: appTheme.text }]}>Pick the perfect starting point.</Text>
+              <Text style={[styles.subtitle, { color: appTheme.secondaryText }]}>Search love, birthday, friends, family, and fun templates.</Text>
             </View>
 
-            <View style={styles.searchBox}>
+            <View style={[styles.searchBox, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
               <Ionicons color="#98a2b3" name="search-outline" size={19} />
               <TextInput
                 autoCapitalize="none"
@@ -76,9 +78,9 @@ export default function TemplatesScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ selected: item === category }}
                   onPress={() => setCategory(item)}
-                  style={[styles.chip, item === category ? styles.activeChip : null]}
+                  style={[styles.chip, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }, item === category ? { backgroundColor: appTheme.primary, borderColor: appTheme.primary } : null]}
                 >
-                  <Text style={[styles.chipText, item === category ? styles.activeChipText : null]}>{item}</Text>
+                  <Text style={[styles.chipText, { color: item === category ? "#ffffff" : appTheme.text }]}>{item}</Text>
                 </Pressable>
               )}
             />
@@ -89,9 +91,9 @@ export default function TemplatesScreen() {
         ListEmptyComponent={
           !templatesQuery.isLoading ? (
             <View style={styles.emptyCard}>
-              <Ionicons color="#ec0e68" name="file-tray-outline" size={28} />
-              <Text style={styles.emptyTitle}>No templates found</Text>
-              <Text style={styles.emptyCopy}>Try another search or category.</Text>
+              <Ionicons color={appTheme.primary} name="file-tray-outline" size={28} />
+              <Text style={[styles.emptyTitle, { color: appTheme.text }]}>No templates found</Text>
+              <Text style={[styles.emptyCopy, { color: appTheme.secondaryText }]}>Try another search or category.</Text>
             </View>
           ) : null
         }
@@ -102,28 +104,30 @@ export default function TemplatesScreen() {
 }
 
 function TemplateCard({ template }: { template: Template }) {
+  const appTheme = useAppTheme();
+
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
-      <Pressable style={styles.card}>
+      <Pressable style={[styles.card, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
         <View style={[styles.preview, { backgroundColor: template.defaultTheme.background }]}>
           <View style={[styles.previewIcon, { backgroundColor: template.defaultTheme.muted }]}>
             <Ionicons color={template.defaultTheme.accent} name={getTemplateIcon(template.category)} size={28} />
           </View>
           <Text style={[styles.previewText, { color: template.defaultTheme.foreground }]} numberOfLines={2}>{template.name}</Text>
-          {template.isPremium ? <Text style={styles.premiumBadge}>Premium</Text> : null}
+          {template.isPremium ? <Text style={[styles.premiumBadge, { backgroundColor: appTheme.primary }]}>Premium</Text> : null}
         </View>
         <View style={styles.metaRow}>
-          <Text style={styles.categoryLabel}>{template.category}</Text>
+          <Text style={[styles.categoryLabel, { color: appTheme.primary }]}>{template.category}</Text>
           <View style={styles.swatches}>
             <View style={[styles.swatch, { backgroundColor: template.defaultTheme.muted }]} />
             <View style={[styles.swatch, { backgroundColor: template.defaultTheme.accent }]} />
           </View>
         </View>
-        <Text style={styles.cardTitle} numberOfLines={2}>{template.name}</Text>
-        <Text style={styles.cardCopy} numberOfLines={2}>{template.description}</Text>
+        <Text style={[styles.cardTitle, { color: appTheme.text }]} numberOfLines={2}>{template.name}</Text>
+        <Text style={[styles.cardCopy, { color: appTheme.secondaryText }]} numberOfLines={2}>{template.description}</Text>
         <View style={styles.footerRow}>
-          <Text style={styles.pageCount}>{template.defaultPages.length} pages</Text>
-          <Ionicons color="#98a2b3" name="chevron-forward" size={17} />
+          <Text style={[styles.pageCount, { color: appTheme.secondaryText }]}>{template.defaultPages.length} pages</Text>
+          <Ionicons color={appTheme.secondaryText} name="chevron-forward" size={17} />
         </View>
       </Pressable>
     </Link>

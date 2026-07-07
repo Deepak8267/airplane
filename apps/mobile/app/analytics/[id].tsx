@@ -4,8 +4,10 @@ import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getExperienceAnalytics } from "@/features/analytics/analytics-service";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 export default function AnalyticsScreen() {
+  const appTheme = useAppTheme();
   const params = useLocalSearchParams<{ id: string | string[] }>();
   const experienceId = Array.isArray(params.id) ? params.id[0] : params.id;
   const analyticsQuery = useQuery({
@@ -24,9 +26,9 @@ export default function AnalyticsScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "Analytics" }} />
-      <SafeAreaView edges={["top"]} style={styles.safeArea}>
+      <SafeAreaView edges={["top"]} style={[styles.safeArea, { backgroundColor: appTheme.background }]}>
       <ScrollView
-        contentContainerStyle={styles.screen}
+        contentContainerStyle={[styles.screen, { backgroundColor: appTheme.background }]}
         refreshControl={<RefreshControl refreshing={analyticsQuery.isRefetching} onRefresh={() => analyticsQuery.refetch()} />}
       >
         {analyticsQuery.isLoading ? <Text style={styles.stateText}>Loading analytics...</Text> : null}
@@ -34,19 +36,19 @@ export default function AnalyticsScreen() {
 
         {data ? (
           <>
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
               <View style={styles.headerTop}>
-                <Pressable accessibilityLabel="Go back" style={styles.backButton} onPress={() => router.back()}>
-                  <Ionicons color="#101828" name="chevron-back" size={21} />
+                <Pressable accessibilityLabel="Go back" style={[styles.backButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={() => router.back()}>
+                  <Ionicons color={appTheme.text} name="chevron-back" size={21} />
                 </Pressable>
                 <View style={styles.liveBadge}>
                   <Ionicons color="#067647" name="radio-outline" size={16} />
                   <Text style={styles.liveBadgeText}>Live</Text>
                 </View>
               </View>
-              <Text style={styles.eyebrow}>Performance</Text>
-              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={2} style={styles.title}>{data.experience.title}</Text>
-              <Text style={styles.recipient}>{data.experience.recipientName || "No recipient"}</Text>
+              <Text style={[styles.eyebrow, { color: appTheme.primary }]}>Performance</Text>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={2} style={[styles.title, { color: appTheme.text }]}>{data.experience.title}</Text>
+              <Text style={[styles.recipient, { color: appTheme.secondaryText }]}>{data.experience.recipientName || "No recipient"}</Text>
             </View>
 
             <View style={styles.metricGrid}>
@@ -56,13 +58,13 @@ export default function AnalyticsScreen() {
               <Metric icon="time-outline" label="Average time" value={formatDuration(data.summary.averageCompletionTimeSeconds)} />
             </View>
 
-            <View style={styles.section}>
+            <View style={[styles.section, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
               <View style={styles.sectionHeading}>
-                <Text numberOfLines={1} style={styles.sectionTitle}>Completion rate</Text>
+                <Text numberOfLines={1} style={[styles.sectionTitle, { color: appTheme.text }]}>Completion rate</Text>
                 <Text numberOfLines={1} style={styles.rate}>{formatPercent(data.insights.completionRate)}</Text>
               </View>
-              <View style={styles.progressTrack}>
-                <View style={[styles.progressValue, { width: `${data.insights.completionRate}%` }]} />
+              <View style={[styles.progressTrack, { backgroundColor: appTheme.border }]}>
+                <View style={[styles.progressValue, { backgroundColor: appTheme.primary, width: `${data.insights.completionRate}%` }]} />
               </View>
               <Text style={styles.sectionHint}>
                 {formatNumber(data.summary.completions)} completions from {formatNumber(data.summary.views)} views.
@@ -98,12 +100,12 @@ export default function AnalyticsScreen() {
               </View>
             </View>
 
-            <View style={styles.activitySection}>
-              <Text style={styles.sectionTitle}>Recent activity</Text>
+            <View style={[styles.activitySection, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+              <Text style={[styles.sectionTitle, { color: appTheme.text }]}>Recent activity</Text>
               {data.recentActivity.length === 0 ? (
                 <View style={styles.emptyActivityCard}>
-                  <Ionicons color="#ec0e68" name="pulse-outline" size={24} />
-                  <Text style={styles.emptyActivity}>No recipient activity yet.</Text>
+                  <Ionicons color={appTheme.primary} name="pulse-outline" size={24} />
+                  <Text style={[styles.emptyActivity, { color: appTheme.secondaryText }]}>No recipient activity yet.</Text>
                 </View>
               ) : (
                 data.recentActivity.map((activity) => (
@@ -129,11 +131,13 @@ export default function AnalyticsScreen() {
 }
 
 function Metric({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.metric}>
-      <Ionicons color="#ec0e68" name={icon} size={22} />
-      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={styles.metricValue}>{value}</Text>
-      <Text numberOfLines={1} style={styles.metricLabel}>{label}</Text>
+    <View style={[styles.metric, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+      <Ionicons color={appTheme.primary} name={icon} size={22} />
+      <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.metricValue, { color: appTheme.text }]}>{value}</Text>
+      <Text numberOfLines={1} style={[styles.metricLabel, { color: appTheme.secondaryText }]}>{label}</Text>
     </View>
   );
 }

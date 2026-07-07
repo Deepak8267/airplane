@@ -9,6 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomNav } from "@/components/bottom-nav";
 import { duplicateExperience, getExperienceForEditing, getMyExperiences, setExperienceArchived } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 const FONT = {
   regular: "Poppins_400Regular",
@@ -18,6 +19,7 @@ const FONT = {
 };
 
 export default function ExperiencesScreen() {
+  const appTheme = useAppTheme();
   const [menuExperience, setMenuExperience] = useState<Experience | null>(null);
   const [copiedExperienceId, setCopiedExperienceId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "published" | "draft" | "archived">("all");
@@ -141,14 +143,14 @@ export default function ExperiencesScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: appTheme.background }]}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.eyebrow}>Library</Text>
-          <Text style={styles.title}>My experiences</Text>
+          <Text style={[styles.eyebrow, { color: appTheme.primary }]}>Library</Text>
+          <Text style={[styles.title, { color: appTheme.text }]}>My experiences</Text>
         </View>
         <Link href="/home" asChild>
-          <Pressable style={styles.createButton}>
+          <Pressable style={[styles.createButton, { backgroundColor: appTheme.primary, shadowColor: appTheme.primary }]}>
             <Ionicons color="#ffffff" name="add" size={18} />
           </Pressable>
         </Link>
@@ -177,14 +179,14 @@ export default function ExperiencesScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <View style={styles.emptyIcon}>
-              <Ionicons color="#ec0e68" name={experiencesQuery.isLoading ? "hourglass-outline" : "albums-outline"} size={21} />
+              <Ionicons color={appTheme.primary} name={experiencesQuery.isLoading ? "hourglass-outline" : "albums-outline"} size={21} />
             </View>
-            <Text style={styles.emptyTitle}>{experiencesQuery.isLoading ? "Loading experiences..." : filter === "all" ? "No experiences yet" : `No ${filter} experiences`}</Text>
-            <Text style={styles.emptyCopy}>
+            <Text style={[styles.emptyTitle, { color: appTheme.text }]}>{experiencesQuery.isLoading ? "Loading experiences..." : filter === "all" ? "No experiences yet" : `No ${filter} experiences`}</Text>
+            <Text style={[styles.emptyCopy, { color: appTheme.secondaryText }]}>
               {experiencesQuery.error instanceof Error ? experiencesQuery.error.message : "Create one from a template, then drafts and live links will appear here."}
             </Text>
             <Link href="/home" asChild>
-              <Pressable style={styles.primaryButton}>
+              <Pressable style={[styles.primaryButton, { backgroundColor: appTheme.primary }]}>
                 <Ionicons color="#ffffff" name="sparkles-outline" size={15} />
                 <Text style={styles.primaryButtonText}>Choose template</Text>
               </Pressable>
@@ -195,7 +197,7 @@ export default function ExperiencesScreen() {
           const isArchived = item.status === "archived";
 
           return (
-            <View style={styles.card}>
+            <View style={[styles.card, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
               <View style={styles.visualRow}>
                 <View style={[styles.thumbnail, { backgroundColor: item.theme.muted }]}>
                   {item.coverPhotoUrl ? (
@@ -206,13 +208,13 @@ export default function ExperiencesScreen() {
                 </View>
                 <View style={styles.cardMain}>
               <View style={styles.cardHeader}>
-                <Text numberOfLines={1} style={styles.cardTitle}>{item.title}</Text>
+                <Text numberOfLines={1} style={[styles.cardTitle, { color: appTheme.text }]}>{item.title}</Text>
                 <Text style={[styles.status, item.isPublished ? styles.published : isArchived ? styles.archived : styles.draft]}>
                   {item.isPublished ? "published" : isArchived ? "archived" : "draft"}
                 </Text>
               </View>
-              <Text style={styles.recipient}>{item.recipientName || "No recipient yet"}</Text>
-              <Text style={styles.message} numberOfLines={2}>
+              <Text style={[styles.recipient, { color: appTheme.text }]}>{item.recipientName || "No recipient yet"}</Text>
+              <Text style={[styles.message, { color: appTheme.secondaryText }]} numberOfLines={2}>
                 {item.message || "No message yet"}
               </Text>
                 </View>
@@ -220,25 +222,25 @@ export default function ExperiencesScreen() {
               <View style={styles.cardActions}>
                 <Pressable
                   disabled={editMutation.isPending}
-                  style={[styles.secondaryButton, editMutation.isPending && editMutation.variables === item.id ? styles.pendingButton : null]}
+                  style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }, editMutation.isPending && editMutation.variables === item.id ? styles.pendingButton : null]}
                   onPress={() => editMutation.mutate(item.id)}
                 >
-                  <Ionicons color="#101828" name="create-outline" size={15} />
-                  <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.secondaryButtonText}>
+                  <Ionicons color={appTheme.text} name="create-outline" size={15} />
+                  <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.secondaryButtonText, { color: appTheme.text }]}>
                     {editMutation.isPending && editMutation.variables === item.id ? "Opening..." : "Edit"}
                   </Text>
                 </Pressable>
                 {item.isPublished ? (
                   <Pressable
-                    style={styles.secondaryButton}
+                    style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}
                     onPress={() => openExperienceLink(item)}
                   >
-                    <Ionicons color="#101828" name="open-outline" size={15} />
-                    <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.secondaryButtonText}>Open</Text>
+                    <Ionicons color={appTheme.text} name="open-outline" size={15} />
+                    <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.secondaryButtonText, { color: appTheme.text }]}>Open</Text>
                   </Pressable>
                 ) : null}
-                <Pressable style={styles.iconButton} accessibilityLabel="More experience actions" onPress={() => openActionMenu(item)}>
-                  <Ionicons color="#101828" name="ellipsis-horizontal" size={17} />
+                <Pressable style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} accessibilityLabel="More experience actions" onPress={() => openActionMenu(item)}>
+                  <Ionicons color={appTheme.text} name="ellipsis-horizontal" size={17} />
                 </Pressable>
               </View>
               {editMutation.variables === item.id && editMutation.error instanceof Error ? (
@@ -316,18 +318,22 @@ function getExperienceLink(slug: string) {
 }
 
 function Metric({ label, value }: { label: string; value: number }) {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.metric}>
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
+    <View style={[styles.metric, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
+      <Text style={[styles.metricValue, { color: appTheme.text }]}>{value}</Text>
+      <Text style={[styles.metricLabel, { color: appTheme.secondaryText }]}>{label}</Text>
     </View>
   );
 }
 
 function FilterPill({ active, label, onPress }: { active: boolean; label: string; onPress: () => void }) {
+  const appTheme = useAppTheme();
+
   return (
-    <Pressable style={[styles.filterPill, active && styles.filterPillActive]} onPress={onPress}>
-      <Text style={[styles.filterPillText, active && styles.filterPillTextActive]}>{label}</Text>
+    <Pressable style={[styles.filterPill, { backgroundColor: appTheme.surface, borderColor: appTheme.border }, active ? { backgroundColor: appTheme.primary, borderColor: appTheme.primary } : null]} onPress={onPress}>
+      <Text style={[styles.filterPillText, { color: active ? "#ffffff" : appTheme.secondaryText }]}>{label}</Text>
     </Pressable>
   );
 }
