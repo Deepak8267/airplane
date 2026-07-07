@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { getCountdownParts } from "@airplane/shared";
 import type { ExperiencePageDraft, Theme } from "@airplane/shared";
-import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useBuilderStore } from "@/stores/builder-store";
@@ -10,6 +10,7 @@ import { useAppTheme } from "@/stores/app-theme-store";
 
 export default function CurrentPreviewScreen() {
   const appTheme = useAppTheme();
+  const { width } = useWindowDimensions();
   const draft = useBuilderStore((state) => state.draft);
   const [index, setIndex] = useState(0);
   const [now, setNow] = useState(() => Date.now());
@@ -47,6 +48,7 @@ export default function CurrentPreviewScreen() {
   const progress = Math.round(((index + 1) / draft.pages.length) * 100);
   const pagePhotoUrl = page.mediaUrls[0] ?? (page.pageType === "cover" ? draft.coverPhotoUrl : null);
   const themedFont = { fontFamily: getMobileFontFamily(draft.theme.fontFamily) };
+  const previewMaxWidth = Math.min(width - 32, 430);
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: draft.theme.background }]}>
@@ -68,7 +70,16 @@ export default function CurrentPreviewScreen() {
           <Text style={styles.progressText}>{index + 1}/{draft.pages.length}</Text>
         </View>
 
-        <View style={styles.phoneCard}>
+        <View style={[styles.phoneCard, { maxWidth: previewMaxWidth, alignSelf: "center" }]}>
+          <View style={styles.previewHeader}>
+            <View>
+              <Text style={[styles.previewPageType, { color: draft.theme.accent }]}>{formatPageType(page.pageType)}</Text>
+              <Text style={[styles.previewPageTitle, { color: draft.theme.foreground }]} numberOfLines={1}>{page.title}</Text>
+            </View>
+            <View style={[styles.previewCounter, { backgroundColor: draft.theme.muted }]}>
+              <Text style={[styles.previewCounterText, { color: draft.theme.accent }]}>{index + 1}/{draft.pages.length}</Text>
+            </View>
+          </View>
           <PreviewPageBody
             coverPhotoUrl={draft.coverPhotoUrl}
             fontFamily={themedFont.fontFamily}
@@ -87,10 +98,10 @@ export default function CurrentPreviewScreen() {
           <Pressable
             accessibilityLabel="Previous page"
             disabled={index === 0}
-            style={[styles.navIconButton, index === 0 && styles.disabledButton]}
+            style={[styles.navIconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }, index === 0 && styles.disabledButton]}
             onPress={() => setIndex((value) => Math.max(value - 1, 0))}
           >
-            <Ionicons color="#101828" name="chevron-back" size={24} />
+            <Ionicons color={appTheme.text} name="chevron-back" size={24} />
           </Pressable>
           <Pressable
             style={[styles.button, { backgroundColor: draft.theme.accent }]}
@@ -220,6 +231,10 @@ function PageDots({ activeIndex, count, accent }: { activeIndex: number; count: 
   );
 }
 
+function formatPageType(pageType: ExperiencePageDraft["pageType"]) {
+  return pageType.charAt(0).toUpperCase() + pageType.slice(1);
+}
+
 function getPageIcon(pageType: ExperiencePageDraft["pageType"]): keyof typeof Ionicons.glyphMap {
   if (pageType === "cover") {
     return "sparkles-outline";
@@ -274,6 +289,11 @@ const styles = StyleSheet.create({
   progressFill: { height: "100%", borderRadius: 999 },
   progressText: { color: "#667085", fontSize: 12, fontWeight: "900" },
   phoneCard: { gap: 14, padding: 16, borderRadius: 22, backgroundColor: "rgba(255, 255, 255, 0.82)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.88)", shadowColor: "#101828", shadowOpacity: 0.1, shadowRadius: 18, shadowOffset: { width: 0, height: 10 } },
+  previewHeader: { minHeight: 42, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  previewPageType: { fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
+  previewPageTitle: { fontSize: 14, fontWeight: "900" },
+  previewCounter: { minWidth: 48, height: 34, borderRadius: 14, alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
+  previewCounterText: { fontSize: 12, fontWeight: "900" },
   cardContent: { gap: 12 },
   mediaFrame: { overflow: "hidden", borderRadius: 18, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.84)", backgroundColor: "#ffffff" },
   coverImage: { width: "100%", aspectRatio: 4 / 5 },

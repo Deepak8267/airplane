@@ -92,8 +92,8 @@ export default function PublishScreen() {
         </View>
 
         <View style={[styles.hero, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
-          <View style={[styles.heroIcon, { backgroundColor: appTheme.muted }]}>
-            <Ionicons color={appTheme.primary} name={link ? "paper-plane" : "rocket-outline"} size={34} />
+          <View style={[styles.heroIcon, { backgroundColor: link ? "#ECFDF3" : appTheme.muted }]}>
+            <Ionicons color={link ? appTheme.success : appTheme.primary} name={link ? "checkmark-circle" : "rocket-outline"} size={34} />
           </View>
           <Text style={[styles.title, { color: appTheme.text }]}>{link ? "Your link is live." : `${draft?.title ?? "Your experience"} is ready to fly.`}</Text>
           <Text style={[styles.copy, { color: appTheme.secondaryText }]}>
@@ -121,6 +121,15 @@ export default function PublishScreen() {
           </View>
         ) : (
           <View style={[styles.linkPanel, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+            <View style={styles.successRow}>
+              <View style={[styles.successIcon, { backgroundColor: "#ECFDF3" }]}>
+                <Ionicons color={appTheme.success} name="shield-checkmark-outline" size={22} />
+              </View>
+              <View style={styles.successCopy}>
+                <Text style={[styles.successTitle, { color: appTheme.text }]}>Published successfully</Text>
+                <Text style={[styles.successSubtitle, { color: appTheme.secondaryText }]}>Analytics tracking is now active for this experience.</Text>
+              </View>
+            </View>
             <View style={styles.linkHeader}>
               <View>
                 <Text style={[styles.linkLabel, { color: appTheme.primary }]}>Live link</Text>
@@ -130,7 +139,7 @@ export default function PublishScreen() {
                 <Ionicons color={appTheme.primary} name={copied ? "checkmark-circle" : "copy-outline"} size={22} />
               </Pressable>
             </View>
-            <Text style={styles.linkHint}>Views, completions, quiz answers, and proposal attempts will appear in Analytics.</Text>
+            <Text style={[styles.linkHint, { color: appTheme.secondaryText }]}>Views, completions, quiz answers, and proposal attempts will appear in Analytics.</Text>
           </View>
         )}
 
@@ -174,7 +183,7 @@ export default function PublishScreen() {
         )}
 
         <Pressable style={styles.textButton} onPress={() => router.replace("/experiences")}>
-          <Text style={styles.textButtonText}>Back to my experiences</Text>
+          <Text style={[styles.textButtonText, { color: appTheme.secondaryText }]}>Back to my experiences</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
@@ -226,6 +235,11 @@ const styles = StyleSheet.create({
   checkItem: { minHeight: 38, flexDirection: "row", alignItems: "center", gap: 9 },
   checkLabel: { color: "#344054", fontWeight: "800" },
   linkPanel: { gap: 12, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", padding: 16, borderRadius: 20 },
+  successRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  successIcon: { width: 44, height: 44, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  successCopy: { flex: 1, minWidth: 0, gap: 2 },
+  successTitle: { fontSize: 15, fontWeight: "900" },
+  successSubtitle: { fontSize: 12, lineHeight: 17 },
   linkHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
   linkLabel: { color: "#ec0e68", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
   link: { color: "#101828", fontWeight: "800", lineHeight: 20, flexShrink: 1 },
