@@ -2,10 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppTheme } from "@/stores/app-theme-store";
 
-const PRIMARY = "#FF3D81";
-const TEXT_MUTED = "#6B7280";
-const BORDER = "#F3F4F6";
 const FONT_MEDIUM = "Poppins_500Medium";
 
 type BottomNavKey = "home" | "library" | "analytics" | "profile";
@@ -25,11 +23,12 @@ const NAV_ITEMS: Array<{
 
 export function BottomNav({ active, variant = "compact" }: { active: BottomNavKey; variant?: "compact" | "main" }) {
   const insets = useSafeAreaInsets();
+  const theme = useAppTheme();
   const isMain = variant === "main";
 
   return (
     <View style={[styles.shell, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-      <View style={[styles.nav, isMain ? styles.navMain : null]}>
+      <View style={[styles.nav, { backgroundColor: theme.surface, borderColor: theme.navBorder }, isMain ? styles.navMain : null]}>
         {NAV_ITEMS.slice(0, 2).map((item) => {
           const selected = item.key === active;
 
@@ -41,14 +40,18 @@ export function BottomNav({ active, variant = "compact" }: { active: BottomNavKe
               onPress={() => router.push(item.route as never)}
               style={styles.item}
             >
-              <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={21} />
-              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.label, selected ? styles.activeLabel : null]}>
+              <Ionicons color={selected ? theme.primary : theme.secondaryText} name={selected ? item.activeIcon : item.icon} size={21} />
+              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.label, { color: selected ? theme.primary : theme.secondaryText }]}>
                 {item.label}
               </Text>
             </Pressable>
           );
         })}
-        <Pressable accessibilityLabel="Create experience" style={[styles.createButton, isMain ? styles.createButtonMain : null]} onPress={() => router.push("/templates" as never)}>
+        <Pressable
+          accessibilityLabel="Create experience"
+          style={[styles.createButton, { backgroundColor: theme.primary, borderColor: theme.background, shadowColor: theme.primary }, isMain ? styles.createButtonMain : null]}
+          onPress={() => router.push("/templates" as never)}
+        >
           <Ionicons color="#ffffff" name="add" size={isMain ? 36 : 32} />
         </Pressable>
         {NAV_ITEMS.slice(2).map((item) => {
@@ -62,8 +65,8 @@ export function BottomNav({ active, variant = "compact" }: { active: BottomNavKe
               onPress={() => router.push(item.route as never)}
               style={styles.item}
             >
-              <Ionicons color={selected ? PRIMARY : TEXT_MUTED} name={selected ? item.activeIcon : item.icon} size={21} />
-              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.label, selected ? styles.activeLabel : null]}>
+              <Ionicons color={selected ? theme.primary : theme.secondaryText} name={selected ? item.activeIcon : item.icon} size={21} />
+              <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.label, { color: selected ? theme.primary : theme.secondaryText }]}>
                 {item.label}
               </Text>
             </Pressable>
@@ -88,7 +91,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
     backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: "#F3F4F6",
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
@@ -120,14 +123,14 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: PRIMARY,
+    backgroundColor: "#FF3D81",
     alignItems: "center",
     justifyContent: "center",
     marginTop: -24,
     flexShrink: 0,
     borderWidth: 5,
     borderColor: "#fff7fb",
-    shadowColor: PRIMARY,
+    shadowColor: "#FF3D81",
     shadowOpacity: 0.2,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -139,6 +142,5 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     marginTop: -28
   },
-  label: { color: TEXT_MUTED, fontFamily: FONT_MEDIUM, fontSize: 9, lineHeight: 12, textAlign: "center" },
-  activeLabel: { color: PRIMARY }
+  label: { fontFamily: FONT_MEDIUM, fontSize: 9, lineHeight: 12, textAlign: "center" }
 });

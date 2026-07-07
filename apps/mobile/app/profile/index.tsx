@@ -9,6 +9,7 @@ import type { UserProfile } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
 import { useSignOut } from "@/features/auth/use-sign-out";
 import { getMyProfile } from "@/features/profile/profile-service";
+import { useAppTheme } from "@/stores/app-theme-store";
 import { useSessionStore } from "@/stores/session-store";
 
 const COLORS = {
@@ -61,6 +62,7 @@ const MENU_ITEMS = [
 
 export default function ProfileScreen() {
   const session = useSessionStore((state) => state.session);
+  const appTheme = useAppTheme();
   const signOutMutation = useSignOut();
   const profileQuery = useQuery({
     queryKey: ["my-profile"],
@@ -82,7 +84,7 @@ export default function ProfileScreen() {
   }, [entrance]);
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.shell}>
+    <SafeAreaView edges={["top"]} style={[styles.shell, { backgroundColor: appTheme.background }]}>
       <Animated.View
         style={[
           styles.animatedContent,
@@ -99,8 +101,8 @@ export default function ProfileScreen() {
           }
         ]}
       >
-        <ScrollView
-          contentContainerStyle={styles.screen}
+          <ScrollView
+          contentContainerStyle={[styles.screen, { backgroundColor: appTheme.background }]}
           refreshControl={<RefreshControl refreshing={profileQuery.isRefetching} onRefresh={() => profileQuery.refetch()} />}
           showsVerticalScrollIndicator={false}
         >
@@ -118,11 +120,13 @@ export default function ProfileScreen() {
 }
 
 const ProfileHeader = memo(function ProfileHeader() {
+  const appTheme = useAppTheme();
+
   return (
     <View style={styles.header}>
       <View style={styles.headerCopy}>
-        <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.pageTitle}>Profile</Text>
-        <Text numberOfLines={2} style={styles.pageSubtitle}>Manage your account and preferences</Text>
+        <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.pageTitle, { color: appTheme.text }]}>Profile</Text>
+        <Text numberOfLines={2} style={[styles.pageSubtitle, { color: appTheme.secondaryText }]}>Manage your account and preferences</Text>
       </View>
       <View style={styles.headerActions}>
         <IconButton dot icon="notifications-outline" onPress={() => undefined} />
@@ -145,8 +149,10 @@ const ProfileCard = memo(function ProfileCard({
   phone: string;
   profile: UserProfile | undefined;
 }) {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.profileCard}>
+    <View style={[styles.profileCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
       <View style={styles.profileTop}>
         <View style={styles.avatarWrap}>
           {profile?.avatarUrl ? (
@@ -166,12 +172,12 @@ const ProfileCard = memo(function ProfileCard({
             <Text numberOfLines={1} style={styles.userName}>
               {name}
             </Text>
-            <View style={styles.proBadge}>
-              <Ionicons color={COLORS.primary} name="diamond" size={14} />
-              <Text style={styles.proBadgeText}>Pro</Text>
+            <View style={[styles.proBadge, { backgroundColor: appTheme.surfaceAlt }]}>
+              <Ionicons color={appTheme.primary} name="diamond" size={14} />
+              <Text style={[styles.proBadgeText, { color: appTheme.primary }]}>Pro</Text>
             </View>
           </View>
-          <Text numberOfLines={1} style={styles.profileBio}>
+          <Text numberOfLines={1} style={[styles.profileBio, { color: appTheme.secondaryText }]}>
             Create beautiful experiences, share love
           </Text>
           <ContactLine icon="mail-outline" text={email} />
@@ -188,16 +194,18 @@ const ProfileCard = memo(function ProfileCard({
 });
 
 const StatsRow = memo(function StatsRow() {
+  const appTheme = useAppTheme();
+
   return (
     <View style={styles.statsRow}>
       {STATS.map((stat, index) => (
         <View key={stat.label} style={styles.statColumn}>
-          {index > 0 ? <View style={styles.statDivider} /> : null}
-          <View style={[styles.statIcon, { backgroundColor: stat.tone }]}>
-            <Ionicons color={stat.iconColor} name={stat.icon} size={16} />
+          {index > 0 ? <View style={[styles.statDivider, { backgroundColor: appTheme.navBorder }]} /> : null}
+          <View style={[styles.statIcon, { backgroundColor: appTheme.muted }]}>
+            <Ionicons color={appTheme.primary} name={stat.icon} size={16} />
           </View>
-          <Text style={styles.statValue}>{stat.value}</Text>
-          <Text numberOfLines={1} style={styles.statLabel}>
+          <Text style={[styles.statValue, { color: appTheme.text }]}>{stat.value}</Text>
+          <Text numberOfLines={1} style={[styles.statLabel, { color: appTheme.secondaryText }]}>
             {stat.label}
           </Text>
         </View>
@@ -207,18 +215,20 @@ const StatsRow = memo(function StatsRow() {
 });
 
 const PremiumBanner = memo(function PremiumBanner() {
+  const appTheme = useAppTheme();
+
   return (
-    <LinearGradient colors={["#FFF7FA", "#FFFFFF"]} end={{ x: 1, y: 0 }} start={{ x: 0, y: 0 }} style={styles.premiumBanner}>
-      <View style={styles.premiumIcon}>
+    <LinearGradient colors={[appTheme.surfaceAlt, appTheme.surface]} end={{ x: 1, y: 0 }} start={{ x: 0, y: 0 }} style={[styles.premiumBanner, { borderColor: appTheme.border }]}>
+      <View style={[styles.premiumIcon, { backgroundColor: appTheme.surface }]}>
         <Ionicons color={COLORS.warning} name="diamond" size={20} />
       </View>
       <View style={styles.premiumCopy}>
-          <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.premiumTitle}>You're on Pro Plan</Text>
-        <Text numberOfLines={2} style={styles.premiumSubtitle}>
+          <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.premiumTitle, { color: appTheme.text }]}>You're on Pro Plan</Text>
+        <Text numberOfLines={2} style={[styles.premiumSubtitle, { color: appTheme.secondaryText }]}>
           Enjoy unlimited creativity and premium features.
         </Text>
       </View>
-      <Pressable style={({ pressed }) => [styles.manageButton, pressed ? styles.pressed : null]} onPress={() => router.push("/subscription" as never)}>
+      <Pressable style={({ pressed }) => [styles.manageButton, { backgroundColor: appTheme.primary }, pressed ? styles.pressed : null]} onPress={() => router.push("/subscription" as never)}>
         <Text adjustsFontSizeToFit minimumFontScale={0.8} numberOfLines={1} style={styles.manageButtonText}>Manage Plan</Text>
       </Pressable>
     </LinearGradient>
@@ -226,8 +236,10 @@ const PremiumBanner = memo(function PremiumBanner() {
 });
 
 const MenuCard = memo(function MenuCard() {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.menuCard}>
+    <View style={[styles.menuCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
       {MENU_ITEMS.map((item, index) => (
         <MenuItem
           icon={item.icon}
@@ -261,29 +273,33 @@ function MenuItem({
   title: string;
   tone: string;
 }) {
+  const appTheme = useAppTheme();
+
   return (
     <Pressable style={({ pressed }) => [styles.menuItem, pressed ? styles.pressed : null]} onPress={onPress}>
-      <View style={[styles.menuIcon, { backgroundColor: tone }]}>
-        <Ionicons color={iconColor} name={icon} size={18} />
+      <View style={[styles.menuIcon, { backgroundColor: appTheme.muted }]}>
+        <Ionicons color={appTheme.primary} name={icon} size={18} />
       </View>
-      <View style={[styles.menuCopy, isLast ? styles.menuCopyLast : null]}>
+      <View style={[styles.menuCopy, { borderBottomColor: appTheme.navBorder }, isLast ? styles.menuCopyLast : null]}>
         <View style={styles.menuTextBlock}>
-          <Text numberOfLines={1} style={styles.menuTitle}>{title}</Text>
-          <Text numberOfLines={1} style={styles.menuSubtitle}>
+          <Text numberOfLines={1} style={[styles.menuTitle, { color: appTheme.text }]}>{title}</Text>
+          <Text numberOfLines={1} style={[styles.menuSubtitle, { color: appTheme.secondaryText }]}>
             {subtitle}
           </Text>
         </View>
-        <Ionicons color="#475467" name="chevron-forward" size={18} />
+        <Ionicons color={appTheme.secondaryText} name="chevron-forward" size={18} />
       </View>
     </Pressable>
   );
 }
 
 function ContactLine({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; text: string }) {
+  const appTheme = useAppTheme();
+
   return (
     <View style={styles.contactLine}>
-      <Ionicons color="#667085" name={icon} size={14} />
-      <Text numberOfLines={1} style={styles.contactText}>
+      <Ionicons color={appTheme.secondaryText} name={icon} size={14} />
+      <Text numberOfLines={1} style={[styles.contactText, { color: appTheme.secondaryText }]}>
         {text}
       </Text>
     </View>
@@ -291,19 +307,23 @@ function ContactLine({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; tex
 }
 
 function IconButton({ dot, icon, onPress }: { dot?: boolean; icon: keyof typeof Ionicons.glyphMap; onPress: () => void }) {
+  const appTheme = useAppTheme();
+
   return (
     <Pressable accessibilityRole="button" style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]} onPress={onPress}>
-      <Ionicons color="#111827" name={icon} size={20} />
-      {dot ? <View style={styles.notificationDot} /> : null}
+      <Ionicons color={appTheme.text} name={icon} size={20} />
+      {dot ? <View style={[styles.notificationDot, { backgroundColor: appTheme.primary }]} /> : null}
     </Pressable>
   );
 }
 
 function LogoutButton({ isPending, onPress }: { isPending: boolean; onPress: () => void }) {
+  const appTheme = useAppTheme();
+
   return (
-    <Pressable disabled={isPending} style={({ pressed }) => [styles.logoutCard, pressed ? styles.pressed : null, isPending ? styles.disabled : null]} onPress={onPress}>
-      <Ionicons color={COLORS.danger} name="log-out-outline" size={18} />
-      <Text style={styles.logoutText}>{isPending ? "Logging out..." : "Log Out"}</Text>
+    <Pressable disabled={isPending} style={({ pressed }) => [styles.logoutCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }, pressed ? styles.pressed : null, isPending ? styles.disabled : null]} onPress={onPress}>
+      <Ionicons color={appTheme.danger} name="log-out-outline" size={18} />
+      <Text style={[styles.logoutText, { color: appTheme.danger }]}>{isPending ? "Logging out..." : "Log Out"}</Text>
     </Pressable>
   );
 }

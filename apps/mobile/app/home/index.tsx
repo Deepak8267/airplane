@@ -25,6 +25,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { getMyExperiences } from "@/features/experiences/experience-service";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplates } from "@/features/templates/template-service";
+import { useAppTheme } from "@/stores/app-theme-store";
 
 const COLORS = {
   primary: "#FF3D81",
@@ -140,6 +141,7 @@ const HOME_BANNERS: HomeBanner[] = [
 
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
+  const appTheme = useAppTheme();
   const templatesQuery = useQuery({
     queryKey: ["templates"],
     queryFn: getTemplates
@@ -170,7 +172,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: appTheme.background }]}>
       <ScrollView
         contentContainerStyle={[styles.content, isNarrow ? styles.contentNarrow : null]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
@@ -178,34 +180,34 @@ export default function HomeScreen() {
       >
         <View style={styles.topBar}>
           <View style={styles.brandRow}>
-            <View style={styles.logoMark}>
+            <View style={[styles.logoMark, { backgroundColor: appTheme.primary }]}>
               <Ionicons color="#ffffff" name="paper-plane" size={21} />
             </View>
             <View style={styles.brandCopy}>
-              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.logo, isNarrow ? styles.logoNarrow : null]}>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.logo, { color: appTheme.text }, isNarrow ? styles.logoNarrow : null]}>
                 AIRPLANE
               </Text>
-              <Text numberOfLines={1} style={styles.tagline}>
+              <Text numberOfLines={1} style={[styles.tagline, { color: appTheme.secondaryText }]}>
                 Create moments that fly
               </Text>
             </View>
           </View>
           <View style={styles.topActions}>
             <Link href={"/subscription" as never} asChild>
-              <Pressable style={styles.proPill}>
+              <Pressable style={[styles.proPill, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
                 <Ionicons color="#f59e0b" name="diamond" size={14} />
-                <Text style={styles.proText}>{usage?.plan === "pro" ? "Pro" : "Pro"}</Text>
+                <Text style={[styles.proText, { color: appTheme.primary }]}>{usage?.plan === "pro" ? "Pro" : "Pro"}</Text>
               </Pressable>
             </Link>
-            <Pressable accessibilityLabel="Notifications" style={styles.bellButton}>
-              <Ionicons color={COLORS.text} name="notifications-outline" size={20} />
-              <View style={styles.notificationDot} />
+            <Pressable accessibilityLabel="Notifications" style={[styles.bellButton, { backgroundColor: appTheme.surface }]}>
+              <Ionicons color={appTheme.text} name="notifications-outline" size={20} />
+              <View style={[styles.notificationDot, { backgroundColor: appTheme.primary }]} />
             </Pressable>
           </View>
         </View>
 
         <View style={styles.searchRow}>
-          <Pressable style={styles.searchBox} onPress={() => router.push("/templates" as never)}>
+          <Pressable style={[styles.searchBox, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={() => router.push("/templates" as never)}>
             <Ionicons color="#9CA3AF" name="search-outline" size={17} />
             <TextInput
               editable={false}
@@ -215,18 +217,18 @@ export default function HomeScreen() {
               style={styles.searchInput}
             />
           </Pressable>
-          <Pressable accessibilityLabel="Discover templates" style={styles.sparkleButton} onPress={() => router.push("/templates" as never)}>
-            <Ionicons color={COLORS.primary} name="sparkles-outline" size={20} />
+          <Pressable accessibilityLabel="Discover templates" style={[styles.sparkleButton, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }]} onPress={() => router.push("/templates" as never)}>
+            <Ionicons color={appTheme.primary} name="sparkles-outline" size={20} />
           </Pressable>
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRail}>
           {HOME_CATEGORIES.map((category) => (
             <Pressable key={category.label} style={[styles.categoryTile, isNarrow ? styles.categoryTileNarrow : null]} onPress={() => router.push("/templates" as never)}>
-              <View style={[styles.categoryIcon, { backgroundColor: category.tone }]}>
-                <Ionicons color={COLORS.primary} name={category.icon} size={21} />
+              <View style={[styles.categoryIcon, { backgroundColor: appTheme.muted }]}>
+                <Ionicons color={appTheme.primary} name={category.icon} size={21} />
               </View>
-              <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.categoryLabel}>
+              <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.categoryLabel, { color: appTheme.text }]}>
                 {category.label}
               </Text>
             </Pressable>
@@ -258,20 +260,20 @@ export default function HomeScreen() {
         )}
 
         <Link href={"/subscription" as never} asChild>
-          <Pressable style={[styles.premiumBanner, isNarrow ? styles.premiumBannerNarrow : null]}>
-            <View style={styles.crownBox}>
+          <Pressable style={[styles.premiumBanner, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }, isNarrow ? styles.premiumBannerNarrow : null]}>
+            <View style={[styles.crownBox, { backgroundColor: appTheme.surface }]}>
               <Ionicons color="#f59e0b" name="diamond" size={22} />
             </View>
             <View style={styles.premiumCopy}>
-              <Text adjustsFontSizeToFit minimumFontScale={0.85} numberOfLines={1} style={styles.premiumTitle}>
+              <Text adjustsFontSizeToFit minimumFontScale={0.85} numberOfLines={1} style={[styles.premiumTitle, { color: appTheme.text }]}>
                 Unlock Premium Templates
               </Text>
-              <Text numberOfLines={2} style={styles.premiumText}>
+              <Text numberOfLines={2} style={[styles.premiumText, { color: appTheme.secondaryText }]}>
                 Get access to 100+ premium templates.
               </Text>
             </View>
-            <View style={styles.upgradePill}>
-              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.upgradeText}>
+            <View style={[styles.upgradePill, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.upgradeText, { color: appTheme.primary }]}>
                 Upgrade to Pro
               </Text>
             </View>
