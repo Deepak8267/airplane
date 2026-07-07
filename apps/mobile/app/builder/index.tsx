@@ -16,6 +16,12 @@ import { useAppTheme } from "@/stores/app-theme-store";
 
 type AutosaveState = { status: "saved" | "pending" | "saving" | "error"; error?: string };
 type PickedImage = { contentType?: string | undefined; uri: string };
+type DraftProgress = {
+  coverReady: boolean;
+  pageCount: number;
+  pagesWithPhotos: number;
+  requiredIssues: number;
+};
 
 const BUILDER_STEPS = [
   { label: "Info", icon: "create-outline" as const },
@@ -80,6 +86,7 @@ export default function BuilderScreen() {
   });
   const validation = draft ? validateBuilderDraft(draft) : null;
   const visibleValidation = showValidation ? validation : null;
+  const progress = draft && validation ? getDraftProgress(draft, validation) : null;
 
   useEffect(() => {
     if (!draft?.experienceId) {
@@ -184,10 +191,11 @@ export default function BuilderScreen() {
       </View>
       <Text style={[styles.title, { color: appTheme.text }]}>Personalize the experience.</Text>
       <BuilderStepper />
+      {progress ? <DraftProgressCard progress={progress} /> : null}
       {visibleValidation && !visibleValidation.isValid ? (
-        <View style={styles.validationSummary}>
-          <Ionicons color="#b42318" name="alert-circle-outline" size={20} />
-          <Text style={styles.validationSummaryText}>Fix the highlighted fields before previewing or publishing.</Text>
+        <View style={[styles.validationSummary, { borderColor: appTheme.danger, backgroundColor: appTheme.surface }]}>
+          <Ionicons color={appTheme.danger} name="alert-circle-outline" size={20} />
+          <Text style={[styles.validationSummaryText, { color: appTheme.danger }]}>Fix the highlighted fields before previewing or publishing.</Text>
         </View>
       ) : null}
 
@@ -210,8 +218,8 @@ export default function BuilderScreen() {
             <Image source={{ uri: draft.coverPhotoUrl }} style={styles.coverImage} />
           ) : (
             <View style={styles.coverEmptyState}>
-              <Ionicons color="#667085" name="image-outline" size={32} />
-              <Text style={styles.coverPlaceholder}>Cover photo</Text>
+              <Ionicons color={appTheme.secondaryText} name="image-outline" size={32} />
+              <Text style={[styles.coverPlaceholder, { color: appTheme.secondaryText }]}>Cover photo</Text>
             </View>
           )}
         </View>
@@ -221,12 +229,12 @@ export default function BuilderScreen() {
             style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder, opacity: uploadMutation.isPending ? 0.7 : 1 }]}
             onPress={() => uploadMutation.mutate()}
           >
-            <Ionicons color="#101828" name="image-outline" size={19} />
-            <Text style={styles.secondaryButtonText}>{uploadMutation.isPending ? "Uploading..." : draft.coverPhotoUrl ? "Replace cover" : "Choose cover"}</Text>
+            <Ionicons color={appTheme.text} name="image-outline" size={19} />
+            <Text style={[styles.secondaryButtonText, { color: appTheme.text }]}>{uploadMutation.isPending ? "Uploading..." : draft.coverPhotoUrl ? "Replace cover" : "Choose cover"}</Text>
           </Pressable>
           {draft.coverPhotoUrl ? (
             <Pressable accessibilityLabel="Remove cover photo" disabled={uploadMutation.isPending} style={styles.smallIconButton} onPress={() => updateDraft({ coverPhotoUrl: null })}>
-              <Ionicons color="#b42318" name="trash-outline" size={19} />
+              <Ionicons color={appTheme.danger} name="trash-outline" size={19} />
             </Pressable>
           ) : null}
         </View>
@@ -263,7 +271,7 @@ export default function BuilderScreen() {
 
       <View style={styles.actions}>
             <Pressable style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={openPreview}>
-          <Text style={styles.secondaryButtonText}>Preview</Text>
+          <Text style={[styles.secondaryButtonText, { color: appTheme.text }]}>Preview</Text>
         </Pressable>
             <Pressable
               style={[styles.button, { backgroundColor: appTheme.primary, opacity: saveMutation.isPending ? 0.7 : 1 }]}
@@ -285,9 +293,9 @@ export default function BuilderScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.pagePicker}>
             <View style={styles.pagePickerHeader}>
-              <Text style={styles.pagePickerTitle}>Add a page</Text>
+              <Text style={[styles.pagePickerTitle, { color: appTheme.text }]}>Add a page</Text>
               <Pressable accessibilityLabel="Close page picker" style={styles.smallIconButton} onPress={() => setPagePickerVisible(false)}>
-                <Ionicons color="#101828" name="close" size={22} />
+                <Ionicons color={appTheme.text} name="close" size={22} />
               </Pressable>
             </View>
             {PAGE_TYPES.map((option) => (
@@ -299,14 +307,14 @@ export default function BuilderScreen() {
                   setPagePickerVisible(false);
                 }}
               >
-                <View style={styles.pageOptionIcon}>
-                  <Ionicons color="#ec0e68" name="document-text-outline" size={21} />
+                <View style={[styles.pageOptionIcon, { backgroundColor: appTheme.muted }]}>
+                  <Ionicons color={appTheme.primary} name="document-text-outline" size={21} />
                 </View>
                 <View style={styles.pageOptionCopy}>
-                  <Text style={styles.pageOptionTitle}>{option.label}</Text>
-                  <Text style={styles.pageOptionDescription}>{option.description}</Text>
+                  <Text style={[styles.pageOptionTitle, { color: appTheme.text }]}>{option.label}</Text>
+                  <Text style={[styles.pageOptionDescription, { color: appTheme.secondaryText }]}>{option.description}</Text>
                 </View>
-                <Ionicons color="#667085" name="chevron-forward" size={20} />
+                <Ionicons color={appTheme.secondaryText} name="chevron-forward" size={20} />
               </Pressable>
             ))}
           </View>
@@ -346,6 +354,30 @@ function SectionHeading({ icon, subtitle, title }: { icon: keyof typeof Ionicons
         <Text style={[styles.sectionTitle, { color: appTheme.text }]}>{title}</Text>
         <Text style={[styles.sectionSubtitle, { color: appTheme.secondaryText }]}>{subtitle}</Text>
       </View>
+    </View>
+  );
+}
+
+function DraftProgressCard({ progress }: { progress: DraftProgress }) {
+  const appTheme = useAppTheme();
+  const items = [
+    { icon: "document-text-outline" as const, label: "Pages", value: String(progress.pageCount) },
+    { icon: progress.coverReady ? "image-outline" as const : "image-outline" as const, label: "Cover", value: progress.coverReady ? "Ready" : "Add" },
+    { icon: "images-outline" as const, label: "Photos", value: String(progress.pagesWithPhotos) },
+    { icon: progress.requiredIssues === 0 ? "checkmark-circle-outline" as const : "alert-circle-outline" as const, label: "Issues", value: String(progress.requiredIssues) }
+  ];
+
+  return (
+    <View style={[styles.progressCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
+      {items.map((item, index) => (
+        <View key={item.label} style={[styles.progressItem, index > 0 ? { borderLeftColor: appTheme.navBorder, borderLeftWidth: 1 } : null]}>
+          <View style={[styles.progressIcon, { backgroundColor: appTheme.muted }]}>
+            <Ionicons color={item.label === "Issues" && progress.requiredIssues > 0 ? appTheme.danger : appTheme.primary} name={item.icon} size={17} />
+          </View>
+          <Text style={[styles.progressValue, { color: appTheme.text }]} numberOfLines={1}>{item.value}</Text>
+          <Text style={[styles.progressLabel, { color: appTheme.secondaryText }]} numberOfLines={1}>{item.label}</Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -450,6 +482,7 @@ function PageEditor({
   photoUploading: boolean;
   validationErrors: string[];
 }) {
+  const appTheme = useAppTheme();
   const updateContent = (patch: Partial<PageContent>) => onChange({ content: { ...page.content, ...patch } });
   const updateSettings = (patch: Record<string, unknown>) => onChange({ settings: { ...page.settings, ...patch } });
   const quizAnswers = page.content.answers ?? [];
@@ -492,25 +525,25 @@ function PageEditor({
   }
 
   return (
-    <View style={[styles.pageEditor, validationErrors.length > 0 ? styles.pageEditorError : null]}>
+    <View style={[styles.pageEditor, { backgroundColor: appTheme.surface, borderColor: validationErrors.length > 0 ? appTheme.danger : appTheme.navBorder }]}>
       <View style={styles.pageHeader}>
         <View style={styles.pageHeading}>
-          <Text style={styles.pageNumber}>Page {index + 1}</Text>
-          <Text style={styles.pageType}>{formatPageType(page.pageType)}</Text>
-          <Text style={styles.pageSummary} numberOfLines={1}>{getPageSummary(page)}</Text>
+          <Text style={[styles.pageNumber, { color: appTheme.text }]}>Page {index + 1}</Text>
+          <Text style={[styles.pageType, { color: appTheme.primary }]}>{formatPageType(page.pageType)}</Text>
+          <Text style={[styles.pageSummary, { color: appTheme.secondaryText }]} numberOfLines={1}>{getPageSummary(page)}</Text>
         </View>
         <View style={styles.pageControls}>
           <Pressable accessibilityLabel="Move page up" disabled={!canMoveUp} style={[styles.smallIconButton, !canMoveUp && styles.disabledControl]} onPress={onMoveUp}>
-            <Ionicons color="#344054" name="chevron-up" size={20} />
+            <Ionicons color={appTheme.secondaryText} name="chevron-up" size={20} />
           </Pressable>
           <Pressable accessibilityLabel="Move page down" disabled={!canMoveDown} style={[styles.smallIconButton, !canMoveDown && styles.disabledControl]} onPress={onMoveDown}>
-            <Ionicons color="#344054" name="chevron-down" size={20} />
+            <Ionicons color={appTheme.secondaryText} name="chevron-down" size={20} />
           </Pressable>
           <Pressable accessibilityLabel="Duplicate page" style={styles.smallIconButton} onPress={onDuplicate}>
-            <Ionicons color="#344054" name="copy-outline" size={19} />
+            <Ionicons color={appTheme.secondaryText} name="copy-outline" size={19} />
           </Pressable>
           <Pressable accessibilityLabel="Remove page" disabled={!canRemove} style={[styles.smallIconButton, !canRemove && styles.disabledControl]} onPress={onRemove}>
-            <Ionicons color="#b42318" name="trash-outline" size={19} />
+            <Ionicons color={appTheme.danger} name="trash-outline" size={19} />
           </Pressable>
         </View>
       </View>
@@ -522,18 +555,18 @@ function PageEditor({
             <Image source={{ uri: page.mediaUrls[0] }} style={styles.pagePhoto} />
           ) : (
             <View style={styles.pagePhotoPlaceholder}>
-              <Ionicons color="#667085" name="image-outline" size={28} />
-              <Text style={styles.coverPlaceholder}>Memory photo</Text>
+              <Ionicons color={appTheme.secondaryText} name="image-outline" size={28} />
+              <Text style={[styles.coverPlaceholder, { color: appTheme.secondaryText }]}>Memory photo</Text>
             </View>
           )}
           <View style={styles.pagePhotoActions}>
-            <Pressable disabled={photoUploading} style={styles.photoButton} onPress={onChoosePhoto}>
-              <Ionicons color="#ec0e68" name="image-outline" size={19} />
-              <Text style={styles.photoButtonText}>{photoUploading ? "Uploading..." : page.mediaUrls[0] ? "Replace" : "Choose photo"}</Text>
+            <Pressable disabled={photoUploading} style={[styles.photoButton, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }]} onPress={onChoosePhoto}>
+              <Ionicons color={appTheme.primary} name="image-outline" size={19} />
+              <Text style={[styles.photoButtonText, { color: appTheme.primary }]}>{photoUploading ? "Uploading..." : page.mediaUrls[0] ? "Replace" : "Choose photo"}</Text>
             </Pressable>
             {page.mediaUrls[0] ? (
               <Pressable accessibilityLabel="Remove page photo" style={styles.smallIconButton} onPress={onRemovePhoto}>
-                <Ionicons color="#b42318" name="trash-outline" size={19} />
+                <Ionicons color={appTheme.danger} name="trash-outline" size={19} />
               </Pressable>
             ) : null}
           </View>
@@ -560,8 +593,8 @@ function PageEditor({
                     })
                   }
                 >
-                  <Ionicons color={answer.isCorrect ? "#067647" : "#667085"} name={answer.isCorrect ? "radio-button-on" : "radio-button-off"} size={20} />
-                  <Text style={[styles.correctAnswerText, answer.isCorrect ? styles.correctAnswerTextSelected : null]}>Correct</Text>
+                  <Ionicons color={answer.isCorrect ? appTheme.success : appTheme.secondaryText} name={answer.isCorrect ? "radio-button-on" : "radio-button-off"} size={20} />
+                  <Text style={[styles.correctAnswerText, { color: answer.isCorrect ? appTheme.success : appTheme.secondaryText }]}>Correct</Text>
                 </Pressable>
                 <Pressable
                   accessibilityLabel={`Remove answer ${answerIndex + 1}`}
@@ -569,7 +602,7 @@ function PageEditor({
                   style={[styles.smallIconButton, quizAnswers.length <= 2 ? styles.disabledControl : null]}
                   onPress={() => removeQuizAnswer(answerIndex)}
                 >
-                  <Ionicons color="#b42318" name="remove-circle-outline" size={20} />
+                  <Ionicons color={appTheme.danger} name="remove-circle-outline" size={20} />
                 </Pressable>
               </View>
               <Field
@@ -585,9 +618,9 @@ function PageEditor({
               />
             </View>
           ))}
-          <Pressable style={styles.inlineAddButton} onPress={addQuizAnswer}>
-            <Ionicons color="#ec0e68" name="add-circle-outline" size={20} />
-            <Text style={styles.inlineAddText}>Add answer</Text>
+          <Pressable style={[styles.inlineAddButton, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }]} onPress={addQuizAnswer}>
+            <Ionicons color={appTheme.primary} name="add-circle-outline" size={20} />
+            <Text style={[styles.inlineAddText, { color: appTheme.primary }]}>Add answer</Text>
           </Pressable>
         </>
       ) : null}
@@ -597,8 +630,8 @@ function PageEditor({
           <Field label="Question" value={page.content.question ?? ""} onChangeText={(question) => updateContent({ question })} multiline />
           <View style={styles.settingBlock}>
             <View style={styles.settingCopy}>
-              <Text style={styles.label}>NO button behavior</Text>
-              <Text style={styles.helperText}>Moving NO tracks attempts. Fixed NO lets recipients answer no.</Text>
+              <Text style={[styles.label, { color: appTheme.text }]}>NO button behavior</Text>
+              <Text style={[styles.helperText, { color: appTheme.secondaryText }]}>Moving NO tracks attempts. Fixed NO lets recipients answer no.</Text>
             </View>
             <View style={styles.segmentedControl}>
               <SegmentButton
@@ -626,7 +659,7 @@ function PageEditor({
         <>
           <Field label="Message" value={page.content.body ?? ""} onChangeText={(body) => updateContent({ body })} multiline />
           <Field label="Target date and time" value={page.content.targetDate ?? ""} onChangeText={(targetDate) => updateContent({ targetDate })} />
-          <Text style={styles.helperText}>{formatTargetDate(page.content.targetDate)}</Text>
+          <Text style={[styles.helperText, { color: appTheme.secondaryText }]}>{formatTargetDate(page.content.targetDate)}</Text>
           <View style={styles.presetRow}>
             <PresetButton label="Tomorrow" onPress={() => setCountdownPreset(1)} />
             <PresetButton label="1 week" onPress={() => setCountdownPreset(7)} />
@@ -644,7 +677,7 @@ function PageEditor({
       ) : null}
       {validationErrors.length > 0 ? (
         <View style={styles.validationList}>
-          {validationErrors.map((error) => <Text key={error} style={styles.error}>{error}</Text>)}
+          {validationErrors.map((error) => <Text key={error} style={[styles.error, { color: appTheme.danger }]}>{error}</Text>)}
         </View>
       ) : null}
     </View>
@@ -652,9 +685,11 @@ function PageEditor({
 }
 
 function PresetButton({ label, onPress }: { label: string; onPress: () => void }) {
+  const appTheme = useAppTheme();
+
   return (
-    <Pressable style={styles.presetButton} onPress={onPress}>
-      <Text style={styles.presetButtonText}>{label}</Text>
+    <Pressable style={[styles.presetButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={onPress}>
+      <Text style={[styles.presetButtonText, { color: appTheme.text }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -670,30 +705,39 @@ function SegmentButton({
   onPress: () => void;
   selected: boolean;
 }) {
+  const appTheme = useAppTheme();
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      style={[styles.segmentButton, selected ? styles.segmentButtonSelected : null]}
+      style={[styles.segmentButton, selected ? { backgroundColor: appTheme.surfaceAlt } : null]}
       onPress={onPress}
     >
-      <Ionicons color={selected ? "#ec0e68" : "#667085"} name={icon} size={18} />
-      <Text style={[styles.segmentButtonText, selected ? styles.segmentButtonTextSelected : null]}>{label}</Text>
+      <Ionicons color={selected ? appTheme.primary : appTheme.secondaryText} name={icon} size={18} />
+      <Text style={[styles.segmentButtonText, { color: selected ? appTheme.primary : appTheme.secondaryText }]}>{label}</Text>
     </Pressable>
   );
 }
 
 function Field(props: { error?: string | undefined; label: string; value: string; onChangeText: (value: string) => void; multiline?: boolean }) {
+  const appTheme = useAppTheme();
+
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{props.label}</Text>
+      <Text style={[styles.label, { color: appTheme.secondaryText }]}>{props.label}</Text>
       <TextInput
+        placeholderTextColor={appTheme.secondaryText}
         multiline={props.multiline}
         onChangeText={props.onChangeText}
-        style={[styles.input, props.multiline ? styles.textarea : null, props.error ? styles.inputError : null]}
+        style={[
+          styles.input,
+          { backgroundColor: appTheme.surface, borderColor: props.error ? appTheme.danger : appTheme.navBorder, color: appTheme.text },
+          props.multiline ? styles.textarea : null
+        ]}
         value={props.value}
       />
-      {props.error ? <Text style={styles.fieldError}>{props.error}</Text> : null}
+      {props.error ? <Text style={[styles.fieldError, { color: appTheme.danger }]}>{props.error}</Text> : null}
     </View>
   );
 }
@@ -732,6 +776,18 @@ function toDraftInput(draft: BuilderDraft): ExperienceDraftInput {
 
 function formatPageType(pageType: ExperiencePageDraft["pageType"]) {
   return pageType.charAt(0).toUpperCase() + pageType.slice(1);
+}
+
+function getDraftProgress(draft: BuilderDraft, validation: ReturnType<typeof validateBuilderDraft>): DraftProgress {
+  const topLevelIssues = [validation.title, validation.recipientName, validation.message].filter(Boolean).length;
+  const pageIssues = Object.values(validation.pageErrors).reduce((total, errors) => total + errors.length, 0);
+
+  return {
+    coverReady: Boolean(draft.coverPhotoUrl),
+    pageCount: draft.pages.length,
+    pagesWithPhotos: draft.pages.filter((page) => page.mediaUrls.length > 0).length,
+    requiredIssues: topLevelIssues + pageIssues
+  };
 }
 
 function getPageSummary(page: ExperiencePageDraft) {
@@ -799,8 +855,12 @@ const styles = StyleSheet.create({
   stepper: { minHeight: 82, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 10 },
   stepItem: { flex: 1, alignItems: "center", gap: 6 },
   stepIcon: { width: 34, height: 34, borderRadius: 14, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
-  activeStepIcon: { backgroundColor: "#ec0e68", borderColor: "#ec0e68" },
   stepLabel: { color: "#344054", fontSize: 11, fontWeight: "900" },
+  progressCard: { minHeight: 88, borderRadius: 18, borderWidth: 1, backgroundColor: "#ffffff", flexDirection: "row", paddingVertical: 12, shadowColor: "#101828", shadowOpacity: 0.04, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 1 },
+  progressItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4, paddingHorizontal: 4 },
+  progressIcon: { width: 30, height: 30, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+  progressValue: { fontSize: 14, fontWeight: "900" },
+  progressLabel: { fontSize: 10, fontWeight: "800", textTransform: "uppercase" },
   sectionCard: { gap: 16, borderRadius: 18, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", padding: 16 },
   sectionHeadingBlock: { flexDirection: "row", alignItems: "center", gap: 10 },
   sectionIcon: { width: 38, height: 38, borderRadius: 16, backgroundColor: "#fff1f7", alignItems: "center", justifyContent: "center" },
@@ -811,7 +871,6 @@ const styles = StyleSheet.create({
   field: { gap: 7 },
   label: { color: "#344054", fontWeight: "800" },
   input: { minHeight: 50, borderWidth: 1, borderColor: "#d0d5dd", borderRadius: 16, paddingHorizontal: 13, backgroundColor: "#ffffff", fontSize: 13, color: "#101828" },
-  inputError: { borderColor: "#f04438" },
   fieldError: { color: "#b42318", fontSize: 12, lineHeight: 17 },
   textarea: { minHeight: 112, paddingTop: 12, textAlignVertical: "top" },
   themeSection: { gap: 10 },
@@ -834,7 +893,6 @@ const styles = StyleSheet.create({
   pages: { gap: 10 },
   sectionTitle: { color: "#101828", fontSize: 14, fontWeight: "900" },
   pageEditor: { padding: 16, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#eaecf0", borderRadius: 18, gap: 16 },
-  pageEditorError: { borderColor: "#f04438" },
   validationList: { gap: 3 },
   pageHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   pageHeading: { flex: 1, gap: 2, paddingRight: 8 },
@@ -852,7 +910,6 @@ const styles = StyleSheet.create({
   correctAnswerButton: { alignSelf: "flex-start", minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", paddingHorizontal: 10, flexDirection: "row", gap: 6, alignItems: "center" },
   correctAnswerSelected: { borderColor: "#75e0a7", backgroundColor: "#ecfdf3" },
   correctAnswerText: { color: "#667085", fontSize: 13, fontWeight: "800" },
-  correctAnswerTextSelected: { color: "#067647" },
   inlineAddButton: { height: 48, borderRadius: 16, borderWidth: 1, borderStyle: "dashed", borderColor: "#fbcfe8", backgroundColor: "#fff1f7", flexDirection: "row", gap: 7, alignItems: "center", justifyContent: "center" },
   inlineAddText: { color: "#ec0e68", fontWeight: "900" },
   helperText: { color: "#667085", fontSize: 13, lineHeight: 18 },
@@ -860,9 +917,7 @@ const styles = StyleSheet.create({
   settingCopy: { gap: 3 },
   segmentedControl: { minHeight: 46, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", flexDirection: "row", padding: 3, gap: 3 },
   segmentButton: { flex: 1, borderRadius: 6, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingHorizontal: 8 },
-  segmentButtonSelected: { backgroundColor: "#fff1f7" },
   segmentButtonText: { color: "#667085", fontSize: 13, fontWeight: "900" },
-  segmentButtonTextSelected: { color: "#ec0e68" },
   presetRow: { flexDirection: "row", gap: 8 },
   presetButton: { flex: 1, minHeight: 40, borderRadius: 8, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   presetButtonText: { color: "#344054", fontSize: 13, fontWeight: "900" },
