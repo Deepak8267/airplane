@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExperiencePageType, Template, TemplateCategory } from "@airplane/shared";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { createDraftExperience } from "@/features/experiences/experience-service";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
@@ -14,7 +14,9 @@ const FEATURE_COPY = ["Web link included", "Editable pages", "Analytics ready"];
 
 export default function TemplateDetailScreen() {
   const appTheme = useAppTheme();
+  const { width } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const isSmallPhone = width < 370;
   const queryClient = useQueryClient();
   const templateQuery = useQuery({
     queryKey: ["template", id],
@@ -81,13 +83,23 @@ export default function TemplateDetailScreen() {
           {template.isPremium ? <Text style={[styles.premiumBadge, { backgroundColor: appTheme.primary }]}>Premium</Text> : null}
         </View>
 
-        <View style={styles.hero}>
-          <View style={[styles.heroIcon, { backgroundColor: template.defaultTheme.muted }]}>
-            <Ionicons color={template.defaultTheme.accent} name={getTemplateIcon(template.category)} size={44} />
+        <View style={[styles.hero, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+          <View style={styles.heroCopy}>
+            <Text style={[styles.category, { color: template.defaultTheme.accent }]}>{template.category}</Text>
+            <Text style={[styles.title, { color: appTheme.text }]} numberOfLines={2}>{template.name}</Text>
+            <Text style={[styles.copy, { color: appTheme.secondaryText }]} numberOfLines={3}>{template.description}</Text>
           </View>
-          <Text style={[styles.category, { color: template.defaultTheme.accent }]}>{template.category}</Text>
-          <Text style={[styles.title, { color: template.defaultTheme.foreground }]}>{template.name}</Text>
-          <Text style={[styles.copy, { color: template.defaultTheme.foreground }]}>{template.description}</Text>
+          <View style={[styles.heroPreview, { backgroundColor: template.defaultTheme.background }]}>
+            <View style={[styles.previewGlow, { backgroundColor: template.defaultTheme.muted }]} />
+            <View style={[styles.heroIcon, { backgroundColor: template.defaultTheme.muted }]}>
+              <Ionicons color={template.defaultTheme.accent} name={getTemplateIcon(template.category)} size={isSmallPhone ? 30 : 34} />
+            </View>
+            <View style={[styles.miniCard, { borderColor: template.defaultTheme.muted }]}>
+              <Text style={[styles.miniCardText, { color: template.defaultTheme.foreground }]} numberOfLines={2}>
+                {template.defaultPages[0]?.title ?? template.name}
+              </Text>
+            </View>
+          </View>
         </View>
 
         <View style={styles.featureGrid}>
@@ -114,7 +126,7 @@ export default function TemplateDetailScreen() {
                   <Text style={[styles.pageType, { color: appTheme.secondaryText }]}>{page.pageType}</Text>
                   <Text style={[styles.pageTitle, { color: appTheme.text }]}>{page.title}</Text>
                 </View>
-                <Text style={styles.pageIndex}>{index + 1}</Text>
+                <Text style={[styles.pageIndex, { color: appTheme.secondaryText }]}>{String(index + 1).padStart(2, "0")}</Text>
               </View>
             ))}
           </View>
@@ -123,10 +135,15 @@ export default function TemplateDetailScreen() {
         <View style={[styles.section, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
           <Text style={[styles.sectionTitle, { color: appTheme.text }]}>Theme</Text>
           <View style={styles.themeRow}>
-            <View style={[styles.themeSwatch, { backgroundColor: template.defaultTheme.background }]} />
-            <View style={[styles.themeSwatch, { backgroundColor: template.defaultTheme.muted }]} />
-            <View style={[styles.themeSwatch, { backgroundColor: template.defaultTheme.accent }]} />
-            <Text style={[styles.themeName, { color: appTheme.text }]}>{template.defaultTheme.name}</Text>
+            <View style={styles.themeSwatches}>
+              <View style={[styles.themeSwatch, { backgroundColor: template.defaultTheme.background }]} />
+              <View style={[styles.themeSwatch, { backgroundColor: template.defaultTheme.muted }]} />
+              <View style={[styles.themeSwatch, { backgroundColor: template.defaultTheme.accent }]} />
+            </View>
+            <View style={styles.themeCopy}>
+              <Text style={[styles.themeName, { color: appTheme.text }]}>{template.defaultTheme.name}</Text>
+              <Text style={[styles.themeMeta, { color: appTheme.secondaryText }]}>You can change this later in Builder.</Text>
+            </View>
           </View>
         </View>
 
@@ -225,10 +242,15 @@ const styles = StyleSheet.create({
   topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   iconButton: { width: 42, height: 42, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
   premiumBadge: { overflow: "hidden", borderRadius: 14, backgroundColor: "#ec0e68", color: "#ffffff", paddingHorizontal: 10, paddingVertical: 7, fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
-  hero: { gap: 10, borderRadius: 22, borderWidth: 1, borderColor: "#ffffff", backgroundColor: "rgba(255,255,255,0.78)", padding: 16 },
-  heroIcon: { width: 92, height: 92, borderRadius: 22, alignItems: "center", justifyContent: "center", marginBottom: 4 },
+  hero: { minHeight: 184, flexDirection: "row", alignItems: "stretch", gap: 14, borderRadius: 22, borderWidth: 1, borderColor: "#ffffff", backgroundColor: "rgba(255,255,255,0.78)", padding: 14, shadowColor: "#101828", shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
+  heroCopy: { flex: 1, minWidth: 0, justifyContent: "center", gap: 8 },
+  heroPreview: { width: "38%", minWidth: 118, borderRadius: 20, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  previewGlow: { position: "absolute", width: 104, height: 104, borderRadius: 52, opacity: 0.72 },
+  heroIcon: { width: 64, height: 64, borderRadius: 20, alignItems: "center", justifyContent: "center", marginBottom: 10, transform: [{ rotate: "-8deg" }], shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
+  miniCard: { width: 92, minHeight: 54, borderRadius: 16, borderWidth: 1, backgroundColor: "rgba(255,255,255,0.86)", alignItems: "center", justifyContent: "center", padding: 8, transform: [{ rotate: "7deg" }] },
+  miniCardText: { fontSize: 11, lineHeight: 14, fontWeight: "900", textAlign: "center" },
   category: { fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
-  title: { fontSize: 34, lineHeight: 40, fontWeight: "900" },
+  title: { fontSize: 27, lineHeight: 32, fontWeight: "900" },
   copy: { fontSize: 13, lineHeight: 20, color: "#475467" },
   featureGrid: { flexDirection: "row", gap: 8 },
   featureCard: { flex: 1, minHeight: 78, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 10, gap: 7, justifyContent: "center" },
@@ -243,10 +265,13 @@ const styles = StyleSheet.create({
   pageCopy: { flex: 1, minWidth: 0, gap: 2 },
   pageType: { color: "#667085", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
   pageTitle: { color: "#101828", fontSize: 14, lineHeight: 18, fontWeight: "900" },
-  pageIndex: { color: "#98a2b3", fontSize: 16, fontWeight: "900" },
-  themeRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  themeSwatch: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: "#d0d5dd" },
+  pageIndex: { color: "#98a2b3", fontSize: 12, fontWeight: "900" },
+  themeRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  themeSwatches: { flexDirection: "row" },
+  themeSwatch: { width: 34, height: 34, borderRadius: 17, borderWidth: 1, borderColor: "#d0d5dd", marginLeft: -8 },
+  themeCopy: { flex: 1, minWidth: 0, gap: 3 },
   themeName: { color: "#101828", fontWeight: "900" },
+  themeMeta: { fontSize: 12, lineHeight: 17 },
   planNotice: { flexDirection: "row", gap: 11, padding: 16, borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff" },
   planIcon: { width: 40, height: 40, borderRadius: 16, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
   planCopy: { flex: 1, minWidth: 0, gap: 4 },
