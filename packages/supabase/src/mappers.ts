@@ -28,6 +28,7 @@ export function mapUserProfile(row: UserRow): UserProfile {
     id: row.id,
     email: row.email,
     fullName: row.full_name,
+    phone: row.phone,
     avatarUrl: row.avatar_url,
     provider: row.provider,
     createdAt: row.created_at,

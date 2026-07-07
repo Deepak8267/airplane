@@ -38,6 +38,7 @@ create table public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   email text,
   full_name text,
+  phone text,
   avatar_url text,
   provider text,
   created_at timestamptz not null default now(),

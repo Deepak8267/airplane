@@ -8,6 +8,7 @@ export type Database = {
           id: string;
           email: string | null;
           full_name: string | null;
+          phone: string | null;
           avatar_url: string | null;
           provider: string | null;
           created_at: string;
@@ -17,6 +18,7 @@ export type Database = {
           id: string;
           email?: string | null;
           full_name?: string | null;
+          phone?: string | null;
           avatar_url?: string | null;
           provider?: string | null;
           created_at?: string;
@@ -25,6 +27,7 @@ export type Database = {
         Update: {
           email?: string | null;
           full_name?: string | null;
+          phone?: string | null;
           avatar_url?: string | null;
           provider?: string | null;
           updated_at?: string;

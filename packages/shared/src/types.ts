@@ -83,6 +83,7 @@ export type UserProfile = {
   id: string;
   email: string | null;
   fullName: string | null;
+  phone: string | null;
   avatarUrl: string | null;
   provider: string | null;
   createdAt: string;

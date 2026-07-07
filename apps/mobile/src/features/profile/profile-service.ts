@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 export type ProfileInput = {
   fullName: string;
   email: string;
+  phone: string;
 };
 
 export async function getMyProfile(): Promise<UserProfile> {
@@ -42,6 +43,7 @@ export async function updateMyProfile(input: ProfileInput): Promise<UserProfile>
 
   const fullName = input.fullName.trim();
   const email = input.email.trim().toLowerCase();
+  const phone = input.phone.trim();
 
   if (!fullName) {
     throw new Error("Full name is required.");
@@ -51,12 +53,17 @@ export async function updateMyProfile(input: ProfileInput): Promise<UserProfile>
     throw new Error("Enter a valid email address.");
   }
 
+  if (!phone) {
+    throw new Error("Phone number is required.");
+  }
+
   const { data, error } = await supabase
     .from("users")
     .upsert({
       id: user.id,
       full_name: fullName,
       email,
+      phone,
       provider: user.app_metadata.provider ?? "email"
     })
     .select("*")

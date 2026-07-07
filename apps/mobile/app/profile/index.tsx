@@ -1,14 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { memo, useEffect, useMemo, useRef } from "react";
-import { Animated, Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Image, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { UserProfile } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
 import { useSignOut } from "@/features/auth/use-sign-out";
-import { getMyProfile } from "@/features/profile/profile-service";
+import { getMyProfile, updateMyProfile } from "@/features/profile/profile-service";
 import { useAppTheme } from "@/stores/app-theme-store";
 import { useSessionStore } from "@/stores/session-store";
 
@@ -63,6 +63,8 @@ const MENU_ITEMS = [
 export default function ProfileScreen() {
   const session = useSessionStore((state) => state.session);
   const appTheme = useAppTheme();
+  const queryClient = useQueryClient();
+  const [editorVisible, setEditorVisible] = useState(false);
   const signOutMutation = useSignOut();
   const profileQuery = useQuery({
     queryKey: ["my-profile"],
@@ -72,8 +74,15 @@ export default function ProfileScreen() {
   const profile = profileQuery.data;
   const displayName = profile?.fullName?.trim() || session?.user.user_metadata?.full_name || "Riya Sharma";
   const displayEmail = profile?.email || session?.user.email || "riya.sharma@email.com";
-  const displayPhone = "+91 98765 43210";
+  const displayPhone = profile?.phone || "";
   const initials = useMemo(() => getInitials(displayName), [displayName]);
+  const profileMutation = useMutation({
+    mutationFn: updateMyProfile,
+    onSuccess: (updatedProfile) => {
+      queryClient.setQueryData(["my-profile"], updatedProfile);
+      setEditorVisible(false);
+    }
+  });
 
   useEffect(() => {
     Animated.timing(entrance, {
@@ -107,13 +116,23 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
         >
           <ProfileHeader />
-          <ProfileCard email={displayEmail} initials={initials} name={displayName} phone={displayPhone} profile={profile} />
+          <ProfileCard email={displayEmail} initials={initials} name={displayName} phone={displayPhone || "Phone not added"} profile={profile} onEdit={() => setEditorVisible(true)} />
           <PremiumBanner />
-          <MenuCard />
+          <MenuCard onEditProfile={() => setEditorVisible(true)} />
           {profileQuery.error instanceof Error ? <Text style={styles.errorText}>{profileQuery.error.message}</Text> : null}
           <LogoutButton isPending={signOutMutation.isPending} onPress={() => signOutMutation.mutate()} />
         </ScrollView>
       </Animated.View>
+      <ProfileEditor
+        email={displayEmail}
+        error={profileMutation.error instanceof Error ? profileMutation.error.message : null}
+        fullName={displayName}
+        isPending={profileMutation.isPending}
+        phone={displayPhone}
+        visible={editorVisible}
+        onClose={() => setEditorVisible(false)}
+        onSave={(input) => profileMutation.mutate(input)}
+      />
       <BottomNav active="profile" />
     </SafeAreaView>
   );
@@ -140,19 +159,21 @@ const ProfileCard = memo(function ProfileCard({
   email,
   initials,
   name,
+  onEdit,
   phone,
   profile
 }: {
   email: string;
   initials: string;
   name: string;
+  onEdit: () => void;
   phone: string;
   profile: UserProfile | undefined;
 }) {
   const appTheme = useAppTheme();
 
   return (
-    <View style={[styles.profileCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
+    <Pressable style={[styles.profileCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={onEdit}>
       <View style={styles.profileTop}>
         <View style={styles.avatarWrap}>
           {profile?.avatarUrl ? (
@@ -184,12 +205,12 @@ const ProfileCard = memo(function ProfileCard({
           <ContactLine icon="call-outline" text={phone} />
         </View>
 
-        <Ionicons color="#111827" name="chevron-forward" size={18} />
+        <Ionicons color={appTheme.text} name="chevron-forward" size={18} />
       </View>
 
       <View style={styles.cardDivider} />
       <StatsRow />
-    </View>
+    </Pressable>
   );
 });
 
@@ -235,7 +256,7 @@ const PremiumBanner = memo(function PremiumBanner() {
   );
 });
 
-const MenuCard = memo(function MenuCard() {
+const MenuCard = memo(function MenuCard({ onEditProfile }: { onEditProfile: () => void }) {
   const appTheme = useAppTheme();
 
   return (
@@ -246,7 +267,7 @@ const MenuCard = memo(function MenuCard() {
           iconColor={item.iconColor}
           isLast={index === MENU_ITEMS.length - 1}
           key={item.title}
-          onPress={() => router.push(item.route as never)}
+          onPress={() => (item.title === "Account Settings" ? onEditProfile() : router.push(item.route as never))}
           subtitle={item.subtitle}
           title={item.title}
           tone={item.tone}
@@ -328,11 +349,126 @@ function LogoutButton({ isPending, onPress }: { isPending: boolean; onPress: () 
   );
 }
 
+function ProfileEditor({
+  email,
+  error,
+  fullName,
+  isPending,
+  onClose,
+  onSave,
+  phone,
+  visible
+}: {
+  email: string;
+  error: string | null;
+  fullName: string;
+  isPending: boolean;
+  onClose: () => void;
+  onSave: (input: { email: string; fullName: string; phone: string }) => void;
+  phone: string;
+  visible: boolean;
+}) {
+  const appTheme = useAppTheme();
+  const [nameValue, setNameValue] = useState(fullName);
+  const [emailValue, setEmailValue] = useState(email);
+  const [phoneValue, setPhoneValue] = useState(phone);
+  const [showValidation, setShowValidation] = useState(false);
+  const nameError = showValidation && !nameValue.trim() ? "Full name is required." : null;
+  const emailError = showValidation && !isValidEmail(emailValue.trim()) ? "Enter a valid email." : null;
+  const phoneError = showValidation && !phoneValue.trim() ? "Phone number is required." : null;
+
+  useEffect(() => {
+    if (visible) {
+      setNameValue(fullName);
+      setEmailValue(email);
+      setPhoneValue(phone);
+      setShowValidation(false);
+    }
+  }, [email, fullName, phone, visible]);
+
+  function submit() {
+    setShowValidation(true);
+
+    if (!nameValue.trim() || !isValidEmail(emailValue.trim()) || !phoneValue.trim()) {
+      return;
+    }
+
+    onSave({ fullName: nameValue, email: emailValue, phone: phoneValue });
+  }
+
+  return (
+    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+      <View style={styles.modalOverlay}>
+        <View style={[styles.editorSheet, { backgroundColor: appTheme.surface }]}>
+          <View style={styles.editorHeader}>
+            <View>
+              <Text style={[styles.editorTitle, { color: appTheme.text }]}>Edit profile</Text>
+              <Text style={[styles.editorSubtitle, { color: appTheme.secondaryText }]}>Name, email, and phone are mandatory.</Text>
+            </View>
+            <Pressable accessibilityLabel="Close profile editor" style={[styles.editorClose, { borderColor: appTheme.navBorder }]} onPress={onClose}>
+              <Ionicons color={appTheme.text} name="close" size={18} />
+            </Pressable>
+          </View>
+
+          <EditorField error={nameError} label="Full name" value={nameValue} onChangeText={setNameValue} />
+          <EditorField autoCapitalize="none" error={emailError} keyboardType="email-address" label="Email" value={emailValue} onChangeText={setEmailValue} />
+          <EditorField error={phoneError} keyboardType="phone-pad" label="Phone" value={phoneValue} onChangeText={setPhoneValue} />
+
+          {error ? <Text style={styles.editorError}>{error}</Text> : null}
+
+          <Pressable disabled={isPending} style={[styles.editorSave, { backgroundColor: appTheme.primary, opacity: isPending ? 0.7 : 1 }]} onPress={submit}>
+            <Ionicons color="#ffffff" name={isPending ? "hourglass-outline" : "checkmark-circle-outline"} size={19} />
+            <Text style={styles.editorSaveText}>{isPending ? "Saving..." : "Save profile"}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function EditorField({
+  autoCapitalize,
+  error,
+  keyboardType,
+  label,
+  onChangeText,
+  value
+}: {
+  autoCapitalize?: "none";
+  error: string | null;
+  keyboardType?: "default" | "email-address" | "phone-pad";
+  label: string;
+  onChangeText: (value: string) => void;
+  value: string;
+}) {
+  const appTheme = useAppTheme();
+
+  return (
+    <View style={styles.editorField}>
+      <Text style={[styles.editorLabel, { color: appTheme.text }]}>{label}</Text>
+      <TextInput
+        autoCapitalize={autoCapitalize}
+        keyboardType={keyboardType}
+        onChangeText={onChangeText}
+        placeholder={label}
+        placeholderTextColor={appTheme.secondaryText}
+        style={[styles.editorInput, { backgroundColor: appTheme.surfaceAlt, borderColor: error ? appTheme.danger : appTheme.navBorder, color: appTheme.text }]}
+        value={value}
+      />
+      {error ? <Text style={[styles.editorFieldError, { color: appTheme.danger }]}>{error}</Text> : null}
+    </View>
+  );
+}
+
 function getInitials(value: string) {
   const parts = value.trim().split(/\s+/).filter(Boolean);
   const first = parts[0]?.[0] ?? "A";
   const second = parts.length > 1 ? parts[1]?.[0] : parts[0]?.[1];
   return `${first}${second ?? ""}`.toUpperCase();
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 const softShadow = {
@@ -394,5 +530,18 @@ const styles = StyleSheet.create({
   logoutText: { color: COLORS.danger, fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
   pressed: { transform: [{ scale: 0.98 }], opacity: 0.92 },
   disabled: { opacity: 0.6 },
-  errorText: { color: COLORS.danger, fontFamily: FONT.medium, fontSize: 12, lineHeight: 18, textAlign: "center" }
+  errorText: { color: COLORS.danger, fontFamily: FONT.medium, fontSize: 12, lineHeight: 18, textAlign: "center" },
+  modalOverlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(16, 24, 40, 0.45)" },
+  editorSheet: { gap: 14, padding: 16, paddingBottom: 28, borderTopLeftRadius: 22, borderTopRightRadius: 22 },
+  editorHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
+  editorTitle: { fontFamily: FONT.bold, fontSize: 20, lineHeight: 26 },
+  editorSubtitle: { marginTop: 2, fontFamily: FONT.regular, fontSize: 12, lineHeight: 17 },
+  editorClose: { width: 36, height: 36, borderRadius: 14, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  editorField: { gap: 7 },
+  editorLabel: { fontFamily: FONT.semibold, fontSize: 12 },
+  editorInput: { height: 50, borderRadius: 16, borderWidth: 1, paddingHorizontal: 13, fontFamily: FONT.regular, fontSize: 13 },
+  editorFieldError: { fontFamily: FONT.medium, fontSize: 11, lineHeight: 15 },
+  editorError: { color: COLORS.danger, fontFamily: FONT.medium, fontSize: 12, lineHeight: 17 },
+  editorSave: { height: 52, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  editorSaveText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 14 }
 });
