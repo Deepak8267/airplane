@@ -184,19 +184,20 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
   if (completed) {
     return (
       <main
-        className="min-h-dvh overflow-hidden px-4 py-5 sm:px-6"
+        className="relative min-h-dvh overflow-hidden px-4 py-5 sm:px-6"
         style={{ background: theme.background, color: theme.foreground, fontFamily: getThemeFontFamily(theme.fontFamily) }}
       >
+        <ScreenGlow accent={theme.accent} />
         <div className="mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full max-w-[430px] flex-col justify-center gap-5">
           <motion.section
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-[28px] border border-white/70 bg-white/80 px-6 py-8 text-center shadow-2xl shadow-black/10 backdrop-blur"
+            className="relative overflow-hidden rounded-[28px] border border-white/70 bg-white/85 px-6 py-8 text-center shadow-2xl shadow-black/10 backdrop-blur-xl"
             initial={{ opacity: 0, y: 18 }}
             transition={{ duration: 0.32, ease: "easeOut" }}
           >
             <FloatingMarks accent={theme.accent} />
             <div className="mx-auto flex size-20 items-center justify-center rounded-full text-4xl font-black text-white shadow-xl shadow-black/10" style={{ background: theme.accent }}>
-              Y
+              OK
             </div>
             <p className="mt-6 text-xs font-black uppercase tracking-[0.18em] text-current opacity-60">Complete</p>
             <h1 className="mt-2 text-4xl font-black leading-tight tracking-normal sm:text-5xl">Thank you.</h1>
@@ -218,11 +219,21 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
 
   return (
     <main
-      className="min-h-dvh overflow-hidden px-4 py-5 sm:px-6"
+      className="relative min-h-dvh overflow-hidden px-4 py-5 sm:px-6"
       style={{ background: theme.background, color: theme.foreground, fontFamily: getThemeFontFamily(theme.fontFamily) }}
     >
+      <ScreenGlow accent={theme.accent} />
       <div className="mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full max-w-[430px] flex-col justify-center gap-4">
-        <div aria-label={`Page ${index + 1} of ${payload.pages.length}`} className="rounded-full border border-white/70 bg-white/65 px-3 py-3 shadow-lg shadow-black/5 backdrop-blur">
+        <div className="flex items-center justify-between gap-3 rounded-[22px] border border-white/70 bg-white/65 px-4 py-3 shadow-lg shadow-black/5 backdrop-blur-xl">
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-50">AIRPLANE</p>
+            <p className="truncate text-sm font-black">{payload.experience.title}</p>
+          </div>
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl text-lg font-black text-white" style={{ background: theme.accent }}>
+            A
+          </div>
+        </div>
+        <div aria-label={`Page ${index + 1} of ${payload.pages.length}`} className="rounded-full border border-white/70 bg-white/65 px-3 py-3 shadow-lg shadow-black/5 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/10">
               <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: theme.accent }} />
@@ -234,7 +245,7 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
           <motion.section
             key={page.id}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="relative overflow-hidden rounded-[30px] border border-white/70 bg-white/80 p-5 shadow-2xl shadow-black/10 backdrop-blur"
+            className="relative min-h-[560px] overflow-hidden rounded-[30px] border border-white/70 bg-white/85 p-5 shadow-2xl shadow-black/10 backdrop-blur-xl"
             exit={{ opacity: 0, y: -18, scale: 0.98 }}
             initial={{ opacity: 0, y: 18, scale: 0.98 }}
             transition={{ duration: 0.32, ease: "easeOut" }}
@@ -250,7 +261,7 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
               theme={theme}
             />
             {page.pageType === "proposal" ? (
-              <div className="relative z-10 mt-3 flex min-h-28 items-center gap-3">
+              <div className="relative z-10 mt-3 flex min-h-32 items-center gap-3">
                 <button className="h-14 flex-1 rounded-2xl px-5 text-base font-black text-white shadow-lg shadow-black/10 transition hover:-translate-y-0.5 active:translate-y-0" style={{ background: theme.accent }} onClick={handleYes}>
                   YES
                 </button>
@@ -263,6 +274,11 @@ export function ExperienceRenderer({ payload, preview = false }: { payload: Publ
                 >
                   NO
                 </motion.button>
+                {noAttempts > 0 ? (
+                  <p className="absolute -bottom-2 left-0 right-0 text-center text-xs font-bold opacity-55">
+                    NO attempts: {noAttempts}
+                  </p>
+                ) : null}
               </div>
             ) : (
               <button className="relative z-10 mt-5 h-14 rounded-2xl px-5 text-base font-black text-white shadow-lg shadow-black/10 transition hover:-translate-y-0.5 active:translate-y-0" style={{ background: theme.accent }} onClick={handleContinue}>
@@ -336,7 +352,7 @@ function PageBody({
     <div className="relative z-10 flex flex-col gap-4">
       {mediaUrl ? (
         <div className="overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-xl shadow-black/10">
-          <img alt="" className="max-h-[44dvh] w-full object-cover" src={mediaUrl} />
+          <img alt="" className="max-h-[44dvh] min-h-52 w-full object-cover" src={mediaUrl} />
         </div>
       ) : null}
       <PageEyebrow label={recipientName || page.pageType} />
@@ -431,6 +447,15 @@ function FloatingMarks({ accent }: { accent: string }) {
       <span className="absolute right-8 top-20 h-10 w-10 rotate-12 rounded-[12px] border border-current/10 opacity-30" />
       <span className="absolute left-7 top-10 h-3 w-3 rounded-full opacity-30" style={{ background: accent }} />
       <span className="absolute bottom-8 right-14 h-2 w-2 rounded-full opacity-30" style={{ background: accent }} />
+    </div>
+  );
+}
+
+function ScreenGlow({ accent }: { accent: string }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <span className="absolute left-1/2 top-[-120px] h-64 w-64 -translate-x-1/2 rounded-full opacity-[0.14] blur-3xl" style={{ background: accent }} />
+      <span className="absolute bottom-[-140px] right-[-80px] h-72 w-72 rounded-full opacity-[0.1] blur-3xl" style={{ background: accent }} />
     </div>
   );
 }
