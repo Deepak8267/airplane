@@ -351,7 +351,13 @@ function ThemePicker({ onSelect, selectedTheme }: { onSelect: (theme: Theme) => 
 
   return (
     <View style={styles.themeSection}>
-      <Text style={styles.sectionTitle}>Theme</Text>
+      <View style={styles.themeSectionHeader}>
+        <Text style={styles.sectionTitle}>Theme</Text>
+        <Pressable style={styles.viewThemesButton} onPress={() => router.push("/themes" as never)}>
+          <Text style={styles.viewThemesText}>View all</Text>
+          <Ionicons color="#ec0e68" name="chevron-forward" size={15} />
+        </Pressable>
+      </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.themeList}>
         {themes.map((theme) => {
           const selected = theme.id === selectedTheme.id;
@@ -802,6 +808,9 @@ const styles = StyleSheet.create({
   fieldError: { color: "#b42318", fontSize: 12, lineHeight: 17 },
   textarea: { minHeight: 112, paddingTop: 12, textAlignVertical: "top" },
   themeSection: { gap: 10 },
+  themeSectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+  viewThemesButton: { minHeight: 32, borderRadius: 16, backgroundColor: "#fff1f7", flexDirection: "row", alignItems: "center", gap: 2, paddingHorizontal: 10 },
+  viewThemesText: { color: "#ec0e68", fontSize: 11, fontWeight: "900" },
   themeList: { gap: 10, paddingRight: 4 },
   themeOption: { width: 148, height: 112, borderRadius: 18, borderWidth: 2, padding: 12, justifyContent: "space-between" },
   themeOptionHeader: { minHeight: 22, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 6 },

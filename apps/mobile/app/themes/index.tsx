@@ -2,10 +2,32 @@ import { Ionicons } from "@expo/vector-icons";
 import { EXPERIENCE_THEMES } from "@airplane/shared";
 import type { Theme } from "@airplane/shared";
 import { router } from "expo-router";
+import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useBuilderStore } from "@/stores/builder-store";
 
 export default function ThemesScreen() {
+  const draft = useBuilderStore((state) => state.draft);
+  const updateDraft = useBuilderStore((state) => state.updateDraft);
+  const initialThemeId = draft?.theme.id ?? EXPERIENCE_THEMES[0]?.id ?? "rose";
+  const [selectedThemeId, setSelectedThemeId] = useState(initialThemeId);
+  const selectedTheme = useMemo(
+    () => EXPERIENCE_THEMES.find((theme) => theme.id === selectedThemeId) ?? EXPERIENCE_THEMES[0]!,
+    [selectedThemeId]
+  );
+  const canApply = Boolean(draft);
+
+  function applyTheme() {
+    if (!draft) {
+      router.push("/templates" as never);
+      return;
+    }
+
+    updateDraft({ theme: selectedTheme });
+    router.push("/builder" as never);
+  }
+
   return (
     <SafeAreaView edges={["top"]} style={styles.screen}>
       <View style={styles.topBar}>
@@ -21,7 +43,9 @@ export default function ThemesScreen() {
       <View style={styles.header}>
         <Text style={styles.eyebrow}>Theme previews</Text>
         <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={styles.title}>Choose a mood</Text>
-        <Text numberOfLines={2} style={styles.subtitle}>Themes can be applied inside the builder to shape the recipient link.</Text>
+        <Text numberOfLines={2} style={styles.subtitle}>
+          {canApply ? "Select a theme and apply it to your current experience." : "Pick a template first, then apply a theme inside the builder."}
+        </Text>
       </View>
 
       <FlatList
@@ -29,15 +53,43 @@ export default function ThemesScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => <ThemeCard theme={item} />}
+        ListFooterComponent={
+          <View style={styles.footer}>
+            <View style={styles.selectedPanel}>
+              <View style={[styles.selectedSwatch, { backgroundColor: selectedTheme.accent }]} />
+              <View style={styles.selectedCopy}>
+                <Text numberOfLines={1} style={styles.selectedTitle}>{selectedTheme.name}</Text>
+                <Text numberOfLines={1} style={styles.selectedSubtitle}>{canApply ? "Ready to apply to builder" : "Create a draft to use this theme"}</Text>
+              </View>
+            </View>
+            <Pressable style={[styles.applyButton, !canApply ? styles.applyButtonMuted : null]} onPress={applyTheme}>
+              <Ionicons color="#ffffff" name={canApply ? "checkmark-circle-outline" : "albums-outline"} size={20} />
+              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={styles.applyButtonText}>
+                {canApply ? "Apply Theme" : "Choose Template"}
+              </Text>
+            </Pressable>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <ThemeCard
+            isSelected={item.id === selectedThemeId}
+            onPress={() => setSelectedThemeId(item.id)}
+            theme={item}
+          />
+        )}
       />
     </SafeAreaView>
   );
 }
 
-function ThemeCard({ theme }: { theme: Theme }) {
+function ThemeCard({ isSelected, onPress, theme }: { isSelected: boolean; onPress: () => void; theme: Theme }) {
   return (
-    <View style={[styles.themeCard, { backgroundColor: theme.background }]}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
+      style={[styles.themeCard, { backgroundColor: theme.background, borderColor: isSelected ? theme.accent : "#ffffff" }]}
+      onPress={onPress}
+    >
       <View style={styles.themeTop}>
         <View>
           <Text numberOfLines={1} style={[styles.themeName, { color: theme.foreground }]}>{theme.name}</Text>
@@ -48,6 +100,12 @@ function ThemeCard({ theme }: { theme: Theme }) {
           <View style={[styles.swatch, { backgroundColor: theme.accent }]} />
         </View>
       </View>
+      {isSelected ? (
+        <View style={[styles.selectedBadge, { backgroundColor: theme.accent }]}>
+          <Ionicons color="#ffffff" name="checkmark" size={14} />
+          <Text style={styles.selectedBadgeText}>Selected</Text>
+        </View>
+      ) : null}
 
       <View style={styles.previewStage}>
         <View style={[styles.previewIcon, { backgroundColor: theme.muted }]}>
@@ -64,7 +122,7 @@ function ThemeCard({ theme }: { theme: Theme }) {
           </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -79,7 +137,7 @@ const styles = StyleSheet.create({
   title: { color: "#101828", fontSize: 26, lineHeight: 32, fontWeight: "900" },
   subtitle: { color: "#667085", fontSize: 13, lineHeight: 20 },
   list: { gap: 12, paddingTop: 18, paddingBottom: 28 },
-  themeCard: { minHeight: 248, borderRadius: 20, borderWidth: 1, borderColor: "#ffffff", padding: 15, justifyContent: "space-between", shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
+  themeCard: { minHeight: 248, borderRadius: 20, borderWidth: 2, borderColor: "#ffffff", padding: 15, justifyContent: "space-between", shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
   themeTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   themeName: { fontSize: 18, fontWeight: "900", maxWidth: 210 },
   themeMeta: { marginTop: 2, fontSize: 12, fontWeight: "800", opacity: 0.62, textTransform: "capitalize" },
@@ -93,5 +151,16 @@ const styles = StyleSheet.create({
   yesButton: { flex: 1, height: 44, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   yesText: { color: "#ffffff", fontWeight: "900" },
   noButton: { flex: 1, height: 44, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.1)" },
-  noText: { fontWeight: "900" }
+  noText: { fontWeight: "900" },
+  selectedBadge: { position: "absolute", right: 14, top: 58, minHeight: 26, borderRadius: 13, flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 9 },
+  selectedBadgeText: { color: "#ffffff", fontSize: 10, fontWeight: "900", textTransform: "uppercase" },
+  footer: { gap: 12, paddingTop: 4 },
+  selectedPanel: { minHeight: 62, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 10, padding: 12 },
+  selectedSwatch: { width: 38, height: 38, borderRadius: 19 },
+  selectedCopy: { flex: 1, minWidth: 0 },
+  selectedTitle: { color: "#101828", fontSize: 14, fontWeight: "900" },
+  selectedSubtitle: { color: "#667085", fontSize: 12, fontWeight: "700", marginTop: 2 },
+  applyButton: { height: 52, borderRadius: 16, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 16 },
+  applyButtonMuted: { backgroundColor: "#667085" },
+  applyButtonText: { color: "#ffffff", fontSize: 15, fontWeight: "900" }
 });
