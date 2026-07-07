@@ -7,8 +7,10 @@ import { Animated, Image, Modal, Pressable, RefreshControl, ScrollView, StyleShe
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { UserProfile } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
+import { getAnalyticsDashboard } from "@/features/analytics/analytics-service";
 import { useSignOut } from "@/features/auth/use-sign-out";
 import { getMyProfile, updateMyProfile } from "@/features/profile/profile-service";
+import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { useAppTheme } from "@/stores/app-theme-store";
 import { useSessionStore } from "@/stores/session-store";
 
@@ -30,18 +32,11 @@ const FONT = {
   bold: "Poppins_700Bold"
 };
 
-const STATS = [
-  { icon: "briefcase", iconColor: COLORS.primary, tone: "#FFEAF3", label: "Experiences", value: "18" },
-  { icon: "eye", iconColor: "#8B5CF6", tone: "#F0E7FF", label: "Total Views", value: "12.4K" },
-  { icon: "heart", iconColor: COLORS.primary, tone: "#FFEAF3", label: "Reactions", value: "892" },
-  { icon: "arrow-redo", iconColor: "#8B5CF6", tone: "#F0E7FF", label: "Shares", value: "248" }
-] satisfies Array<{
+type ProfileStat = {
   icon: keyof typeof Ionicons.glyphMap;
-  iconColor: string;
   label: string;
-  tone: string;
   value: string;
-}>;
+};
 
 const MENU_ITEMS = [
   { icon: "person-outline", iconColor: COLORS.primary, tone: "#FFEAF3", title: "Account Settings", subtitle: "Edit your personal information", route: "/settings" },
@@ -68,14 +63,29 @@ export default function ProfileScreen() {
   const signOutMutation = useSignOut();
   const profileQuery = useQuery({
     queryKey: ["my-profile"],
-    queryFn: getMyProfile
+    queryFn: getMyProfile,
+    enabled: Boolean(session)
+  });
+  const planUsageQuery = useQuery({
+    queryKey: ["plan-usage"],
+    queryFn: getPlanUsage,
+    enabled: Boolean(session)
+  });
+  const analyticsQuery = useQuery({
+    queryKey: ["analytics-dashboard"],
+    queryFn: getAnalyticsDashboard,
+    enabled: Boolean(session)
   });
   const entrance = useRef(new Animated.Value(0)).current;
   const profile = profileQuery.data;
-  const displayName = profile?.fullName?.trim() || session?.user.user_metadata?.full_name || "Riya Sharma";
-  const displayEmail = profile?.email || session?.user.email || "riya.sharma@email.com";
+  const displayName = profile?.fullName?.trim() || session?.user.user_metadata?.full_name || session?.user.email?.split("@")[0] || "Airplane Creator";
+  const displayEmail = profile?.email || session?.user.email || "Email not added";
   const displayPhone = profile?.phone || "";
   const initials = useMemo(() => getInitials(displayName), [displayName]);
+  const stats = useMemo(
+    () => getProfileStats(planUsageQuery.data?.activeExperienceCount ?? 0, analyticsQuery.data?.totals.views ?? 0, analyticsQuery.data?.totals.completions ?? 0, analyticsQuery.data?.totals.uniqueVisitors ?? 0),
+    [analyticsQuery.data?.totals.completions, analyticsQuery.data?.totals.uniqueVisitors, analyticsQuery.data?.totals.views, planUsageQuery.data?.activeExperienceCount]
+  );
   const profileMutation = useMutation({
     mutationFn: updateMyProfile,
     onSuccess: (updatedProfile) => {
@@ -116,8 +126,8 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
         >
           <ProfileHeader />
-          <ProfileCard email={displayEmail} initials={initials} name={displayName} phone={displayPhone || "Phone not added"} profile={profile} onEdit={() => setEditorVisible(true)} />
-          <PremiumBanner />
+          <ProfileCard email={displayEmail} initials={initials} name={displayName} phone={displayPhone || "Phone not added"} plan={planUsageQuery.data?.plan ?? "free"} profile={profile} stats={stats} onEdit={() => setEditorVisible(true)} />
+          <PremiumBanner activeCount={planUsageQuery.data?.activeExperienceCount ?? 0} freeLimit={planUsageQuery.data?.freeExperienceLimit ?? 3} plan={planUsageQuery.data?.plan ?? "free"} />
           <MenuCard onEditProfile={() => setEditorVisible(true)} />
           {profileQuery.error instanceof Error ? <Text style={styles.errorText}>{profileQuery.error.message}</Text> : null}
           <LogoutButton isPending={signOutMutation.isPending} onPress={() => signOutMutation.mutate()} />
@@ -161,14 +171,18 @@ const ProfileCard = memo(function ProfileCard({
   name,
   onEdit,
   phone,
-  profile
+  plan,
+  profile,
+  stats
 }: {
   email: string;
   initials: string;
   name: string;
   onEdit: () => void;
   phone: string;
+  plan: "free" | "pro";
   profile: UserProfile | undefined;
+  stats: ProfileStat[];
 }) {
   const appTheme = useAppTheme();
 
@@ -194,8 +208,8 @@ const ProfileCard = memo(function ProfileCard({
               {name}
             </Text>
             <View style={[styles.proBadge, { backgroundColor: appTheme.surfaceAlt }]}>
-              <Ionicons color={appTheme.primary} name="diamond" size={14} />
-              <Text style={[styles.proBadgeText, { color: appTheme.primary }]}>Pro</Text>
+              <Ionicons color={appTheme.primary} name={plan === "pro" ? "diamond" : "leaf-outline"} size={14} />
+              <Text style={[styles.proBadgeText, { color: appTheme.primary }]}>{plan === "pro" ? "Pro" : "Free"}</Text>
             </View>
           </View>
           <Text numberOfLines={1} style={[styles.profileBio, { color: appTheme.secondaryText }]}>
@@ -209,17 +223,17 @@ const ProfileCard = memo(function ProfileCard({
       </View>
 
       <View style={styles.cardDivider} />
-      <StatsRow />
+      <StatsRow stats={stats} />
     </Pressable>
   );
 });
 
-const StatsRow = memo(function StatsRow() {
+const StatsRow = memo(function StatsRow({ stats }: { stats: ProfileStat[] }) {
   const appTheme = useAppTheme();
 
   return (
     <View style={styles.statsRow}>
-      {STATS.map((stat, index) => (
+      {stats.map((stat, index) => (
         <View key={stat.label} style={styles.statColumn}>
           {index > 0 ? <View style={[styles.statDivider, { backgroundColor: appTheme.navBorder }]} /> : null}
           <View style={[styles.statIcon, { backgroundColor: appTheme.muted }]}>
@@ -235,22 +249,23 @@ const StatsRow = memo(function StatsRow() {
   );
 });
 
-const PremiumBanner = memo(function PremiumBanner() {
+const PremiumBanner = memo(function PremiumBanner({ activeCount, freeLimit, plan }: { activeCount: number; freeLimit: number; plan: "free" | "pro" }) {
   const appTheme = useAppTheme();
+  const isPro = plan === "pro";
 
   return (
     <LinearGradient colors={[appTheme.surfaceAlt, appTheme.surface]} end={{ x: 1, y: 0 }} start={{ x: 0, y: 0 }} style={[styles.premiumBanner, { borderColor: appTheme.border }]}>
       <View style={[styles.premiumIcon, { backgroundColor: appTheme.surface }]}>
-        <Ionicons color={COLORS.warning} name="diamond" size={20} />
+        <Ionicons color={COLORS.warning} name={isPro ? "diamond" : "sparkles-outline"} size={20} />
       </View>
       <View style={styles.premiumCopy}>
-          <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.premiumTitle, { color: appTheme.text }]}>You're on Pro Plan</Text>
+          <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.premiumTitle, { color: appTheme.text }]}>{isPro ? "You're on Pro Plan" : "Free Plan"}</Text>
         <Text numberOfLines={2} style={[styles.premiumSubtitle, { color: appTheme.secondaryText }]}>
-          Enjoy unlimited creativity and premium features.
+          {isPro ? "Enjoy unlimited creativity and premium features." : `${Math.max(freeLimit - activeCount, 0)} of ${freeLimit} free experiences remaining.`}
         </Text>
       </View>
       <Pressable style={({ pressed }) => [styles.manageButton, { backgroundColor: appTheme.primary }, pressed ? styles.pressed : null]} onPress={() => router.push("/subscription" as never)}>
-        <Text adjustsFontSizeToFit minimumFontScale={0.8} numberOfLines={1} style={styles.manageButtonText}>Manage Plan</Text>
+        <Text adjustsFontSizeToFit minimumFontScale={0.8} numberOfLines={1} style={styles.manageButtonText}>{isPro ? "Manage Plan" : "Upgrade"}</Text>
       </Pressable>
     </LinearGradient>
   );
@@ -469,6 +484,27 @@ function getInitials(value: string) {
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function getProfileStats(experiences: number, views: number, completions: number, visitors: number): ProfileStat[] {
+  return [
+    { icon: "briefcase", label: "Experiences", value: formatCompactNumber(experiences) },
+    { icon: "eye", label: "Total Views", value: formatCompactNumber(views) },
+    { icon: "checkmark-circle", label: "Completions", value: formatCompactNumber(completions) },
+    { icon: "people", label: "Visitors", value: formatCompactNumber(visitors) }
+  ];
+}
+
+function formatCompactNumber(value: number) {
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(value >= 10000000 ? 0 : 1)}M`;
+  }
+
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}K`;
+  }
+
+  return `${value}`;
 }
 
 const softShadow = {
