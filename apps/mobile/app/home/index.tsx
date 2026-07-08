@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   cardPill: { position: "absolute", alignSelf: "center", top: 72, minHeight: 22, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   cardPillText: { fontFamily: FONT.medium, fontSize: 9, lineHeight: 12 },
   upgradeBanner: {
-    minHeight: 70,
+    minHeight: 63,
     borderRadius: 18,
     borderWidth: 1,
     flexDirection: "row",
@@ -366,14 +366,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 8,
     ...softShadow
   },
-  upgradeIcon: { width: 42, height: 42, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  upgradeIcon: { width: 38, height: 38, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   upgradeCopy: { flex: 1, minWidth: 0, gap: 2 },
   upgradeTitle: { fontFamily: FONT.bold, fontSize: 13, lineHeight: 17 },
   upgradeText: { fontFamily: FONT.regular, fontSize: 10, lineHeight: 14 },
-  upgradeButton: { minWidth: 52, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", paddingHorizontal: 12 },
+  upgradeButton: { minWidth: 48, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center", paddingHorizontal: 11 },
   upgradeButtonText: { fontFamily: FONT.bold, fontSize: 12, lineHeight: 15 },
   emptyCard: { minHeight: 84, borderRadius: 16, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   emptyText: { fontFamily: FONT.medium, fontSize: 12 }
