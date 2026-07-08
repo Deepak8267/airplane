@@ -159,7 +159,7 @@ export default function HomeScreen() {
           <TemplateCard
             height={cardHeight}
             marginBottom={gridGap}
-            marginRight={index % columnCount === columnCount - 1 ? 0 : gridGap}
+            marginRight={0}
             template={item}
             width={cardWidth}
           />
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   sectionTitleCompact: { fontSize: 15 },
   seeAllButton: { flexDirection: "row", alignItems: "center", gap: 2 },
   seeAll: { fontFamily: FONT.medium, fontSize: 12, lineHeight: 16 },
-  gridRow: {},
+  gridRow: { columnGap: 12, justifyContent: "flex-start" },
   templateCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden", ...softShadow },
   cardImage: { borderRadius: 16 },
   cardImageFill: { overflow: "hidden" },
