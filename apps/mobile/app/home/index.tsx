@@ -155,6 +155,7 @@ export default function HomeScreen() {
             <Text allowFontScaling={false} style={[styles.emptyText, { color: appTheme.secondaryText }]}>{templatesQuery.isLoading ? "Loading templates..." : "No templates found."}</Text>
           </View>
         }
+        ListFooterComponent={<UpgradeBanner />}
         renderItem={({ index, item }) => (
           <TemplateCard
             height={cardHeight}
@@ -167,6 +168,33 @@ export default function HomeScreen() {
       />
       <BottomNav active="home" variant="main" />
     </SafeAreaView>
+  );
+}
+
+function UpgradeBanner() {
+  const appTheme = useAppTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      style={[styles.upgradeBanner, { backgroundColor: appTheme.surface, borderColor: appTheme.border, shadowColor: appTheme.text }]}
+      onPress={() => router.push("/subscription" as never)}
+    >
+      <View style={[styles.upgradeIcon, { backgroundColor: appTheme.primaryLight }]}>
+        <Ionicons color={appTheme.primaryDark} name="sparkles-outline" size={20} />
+      </View>
+      <View style={styles.upgradeCopy}>
+        <Text allowFontScaling={false} numberOfLines={1} style={[styles.upgradeTitle, { color: appTheme.text }]}>
+          Unlock premium templates
+        </Text>
+        <Text allowFontScaling={false} numberOfLines={2} style={[styles.upgradeText, { color: appTheme.secondaryText }]}>
+          More themes, no watermark, and deeper analytics.
+        </Text>
+      </View>
+      <View style={[styles.upgradeButton, { backgroundColor: appTheme.primary }]}>
+        <Text allowFontScaling={false} style={[styles.upgradeButtonText, { color: appTheme.surface }]}>Pro</Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -328,6 +356,25 @@ const styles = StyleSheet.create({
   },
   cardPill: { position: "absolute", alignSelf: "center", top: 72, minHeight: 22, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   cardPillText: { fontFamily: FONT.medium, fontSize: 9, lineHeight: 12 },
+  upgradeBanner: {
+    minHeight: 78,
+    borderRadius: 18,
+    borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 2,
+    marginBottom: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    ...softShadow
+  },
+  upgradeIcon: { width: 42, height: 42, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  upgradeCopy: { flex: 1, minWidth: 0, gap: 2 },
+  upgradeTitle: { fontFamily: FONT.bold, fontSize: 13, lineHeight: 17 },
+  upgradeText: { fontFamily: FONT.regular, fontSize: 10, lineHeight: 14 },
+  upgradeButton: { minWidth: 52, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", paddingHorizontal: 12 },
+  upgradeButtonText: { fontFamily: FONT.bold, fontSize: 12, lineHeight: 15 },
   emptyCard: { minHeight: 84, borderRadius: 16, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   emptyText: { fontFamily: FONT.medium, fontSize: 12 }
 });
