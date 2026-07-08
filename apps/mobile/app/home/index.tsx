@@ -78,7 +78,7 @@ export default function HomeScreen() {
   const columnCount = contentWidth >= 320 ? 3 : 2;
   const gridGap = 10;
   const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
-  const cardHeight = columnCount === 3 ? Math.max(170, Math.min(186, Math.round(cardWidth * 1.66))) : Math.max(184, Math.min(206, Math.round(cardWidth * 1.12)));
+  const cardHeight = isCompact ? 180 : 190;
   const creator = getCreator(session?.user.user_metadata?.full_name, session?.user.email);
   const templates = useMemo(() => {
     const source = buildPopularTemplates(templatesQuery.data ?? []);
