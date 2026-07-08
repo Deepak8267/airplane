@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     elevation: 2
   },
   navMain: {
-    height: 66,
+    height: 64,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
     borderBottomLeftRadius: 22,
@@ -137,10 +137,10 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   createButtonMain: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginTop: -28
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    marginTop: -26
   },
   label: { fontFamily: FONT_MEDIUM, fontSize: 9, lineHeight: 12, textAlign: "center" }
 });

@@ -2,30 +2,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  Animated,
-  Easing,
-  FlatList,
-  Image,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View
-} from "react-native";
+import { useMemo, useState } from "react";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { Experience, Template, TemplateCategory } from "@airplane/shared";
+import type { Template, TemplateCategory } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
-import { getMyExperiences } from "@/features/experiences/experience-service";
-import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplates } from "@/features/templates/template-service";
 import { useAppTheme } from "@/stores/app-theme-store";
+import { useSessionStore } from "@/stores/session-store";
 
 const FONT = {
   regular: "Poppins_400Regular",
@@ -34,812 +18,287 @@ const FONT = {
   bold: "Poppins_700Bold"
 };
 
-type HomeCategory = {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-};
+type HomeFilter = "all" | "proposal" | "memory" | "surprise" | "anniversary";
 
-type HomeBanner = {
+type DisplayTemplate = {
   id: string;
-  title: string;
-  highlight: string;
-  subtitle: string;
-  button: string;
-  image: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  cardText: string;
-  accent: string;
-  orb: readonly [string, string];
-  gradient: readonly [string, string];
+  name: string;
+  category: HomeFilter;
+  routeId: string;
+  theme: {
+    background: string;
+    foreground: string;
+    accent: string;
+    muted: string;
+  };
 };
 
-const HOME_CATEGORIES: HomeCategory[] = [
-  { icon: "heart", label: "Love" },
-  { icon: "gift", label: "Birthday" },
-  { icon: "people", label: "Friends" },
-  { icon: "sparkles", label: "Anniversary" },
-  { icon: "musical-notes", label: "Celebration" },
-  { icon: "ellipsis-horizontal", label: "More" }
+const FILTERS: Array<{ id: HomeFilter; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
+  { id: "all", label: "All", icon: "leaf-outline" },
+  { id: "proposal", label: "Proposal", icon: "heart-outline" },
+  { id: "memory", label: "Memory", icon: "image-outline" },
+  { id: "surprise", label: "Surprise", icon: "gift-outline" },
+  { id: "anniversary", label: "Anniversary", icon: "calendar-outline" }
 ];
 
-const HOME_BANNERS: HomeBanner[] = [
-  {
-    id: "banner1",
-    title: "Make every\nmoment",
-    highlight: "unforgettable",
-    subtitle: "Create beautiful interactive\nexperiences in minutes.",
-    button: "Create Now",
-    image: "banner1",
-    icon: "heart",
-    cardText: "Will you\nmarry me?",
-    accent: "#FF2D78",
-    orb: ["#FFD3E5", "#FF5C9A"],
-    gradient: ["#FFF7FA", "#FFE8F3"]
-  },
-  {
-    id: "banner2",
-    title: "Birthday\nSurprise",
-    highlight: "magic",
-    subtitle: "Create memorable birthday\nmoments in minutes.",
-    button: "Start Creating",
-    image: "banner2",
-    icon: "gift",
-    cardText: "Happy\nBirthday!",
-    accent: "#FF7A1A",
-    orb: ["#FFE2BC", "#FF8A3D"],
-    gradient: ["#FFF9F1", "#FFEAD8"]
-  },
-  {
-    id: "banner3",
-    title: "Wedding\nInvitation",
-    highlight: "premium",
-    subtitle: "Design elegant invitations\nand share instantly.",
-    button: "Explore",
-    image: "banner3",
-    icon: "diamond",
-    cardText: "You are\ninvited",
-    accent: "#8B5CF6",
-    orb: ["#E9D5FF", "#A78BFA"],
-    gradient: ["#FBF8FF", "#EEE6FF"]
-  },
-  {
-    id: "banner4",
-    title: "Anniversary\nWishes",
-    highlight: "memories",
-    subtitle: "Celebrate your special\nstory beautifully.",
-    button: "Get Started",
-    image: "banner4",
-    icon: "sparkles",
-    cardText: "Our\nStory",
-    accent: "#0EA5E9",
-    orb: ["#CFFAFE", "#38BDF8"],
-    gradient: ["#F5FCFF", "#DFF5FF"]
-  },
-  {
-    id: "banner5",
-    title: "Festival\nGreetings",
-    highlight: "instantly",
-    subtitle: "Share beautiful greeting\ncards with one link.",
-    button: "Create",
-    image: "banner5",
-    icon: "paper-plane",
-    cardText: "Best\nWishes",
-    accent: "#22C55E",
-    orb: ["#DCFCE7", "#4ADE80"],
-    gradient: ["#FAFFF8", "#E8FBEF"]
-  }
+const FALLBACK_TEMPLATES: DisplayTemplate[] = [
+  { id: "fallback-proposal", name: "Will You Marry Me?", category: "proposal", routeId: "marriage-proposal", theme: { background: "#F8EFE3", foreground: "#2F3A2F", accent: "#B87A68", muted: "#E9D8C5" } },
+  { id: "fallback-trip", name: "Our First Trip Together", category: "memory", routeId: "date-proposal", theme: { background: "#DDE8D5", foreground: "#FFFFFF", accent: "#6F8A61", muted: "#C8D7BC" } },
+  { id: "fallback-birthday", name: "Birthday Surprise", category: "surprise", routeId: "birthday-surprise", theme: { background: "#E8E2D2", foreground: "#FFFFFF", accent: "#8B7557", muted: "#D9CBB4" } },
+  { id: "fallback-reasons", name: "Reasons I Love You", category: "memory", routeId: "birthday-memory-book", theme: { background: "#F3EAD9", foreground: "#2F3A2F", accent: "#6F8A61", muted: "#E4D7BF" } },
+  { id: "fallback-anniversary", name: "Anniversary Journey", category: "anniversary", routeId: "anniversary-story", theme: { background: "#F6E6D6", foreground: "#2F3A2F", accent: "#BE7D4F", muted: "#EBD1B8" } },
+  { id: "fallback-girlfriend", name: "Be My Girlfriend?", category: "proposal", routeId: "date-proposal", theme: { background: "#F8E7DD", foreground: "#2F3A2F", accent: "#D96B6B", muted: "#EBCDC4" } }
 ];
 
 export default function HomeScreen() {
-  const { width } = useWindowDimensions();
   const appTheme = useAppTheme();
+  const session = useSessionStore((state) => state.session);
+  const { width } = useWindowDimensions();
+  const [filter, setFilter] = useState<HomeFilter>("all");
   const templatesQuery = useQuery({
     queryKey: ["templates"],
     queryFn: getTemplates
   });
-  const experiencesQuery = useQuery({
-    queryKey: ["my-experiences"],
-    queryFn: getMyExperiences
-  });
-  const planUsageQuery = useQuery({
-    queryKey: ["plan-usage"],
-    queryFn: getPlanUsage
-  });
-  const templates = templatesQuery.data ?? [];
-  const experiences = experiencesQuery.data ?? [];
-  const usage = planUsageQuery.data;
-  const refreshing = templatesQuery.isRefetching || experiencesQuery.isRefetching || planUsageQuery.isRefetching;
-  const recentExperiences = experiences.slice(0, 6);
-  const isNarrow = width < 430;
-  const trendingTemplates = useMemo(() => {
-    const sorted = [...templates].sort((left, right) => Number(right.isPremium) - Number(left.isPremium));
-    return sorted.slice(0, 8);
-  }, [templates]);
-
-  function refresh() {
-    void templatesQuery.refetch();
-    void experiencesQuery.refetch();
-    void planUsageQuery.refetch();
-  }
+  const isCompact = width < 360;
+  const horizontalPadding = isCompact ? 12 : 14;
+  const columnCount = width >= 360 ? 3 : 2;
+  const gridGap = 10;
+  const cardWidth = Math.floor((width - horizontalPadding * 2 - gridGap * (columnCount - 1)) / columnCount);
+  const cardHeight = columnCount === 3 ? Math.max(150, Math.min(cardWidth * 1.58, 165)) : Math.max(180, Math.min(cardWidth * 1.35, 200));
+  const creatorName = getCreatorName(session?.user.user_metadata?.full_name, session?.user.email);
+  const templates = useMemo(() => {
+    const source = templatesQuery.data?.length ? templatesQuery.data.map(mapTemplateForHome) : FALLBACK_TEMPLATES;
+    return source.filter((template) => filter === "all" || template.category === filter).slice(0, 9);
+  }, [filter, templatesQuery.data]);
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: appTheme.background }]}>
-      <ScrollView
-        contentContainerStyle={[styles.content, isNarrow ? styles.contentNarrow : null]}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.topBar}>
-          <View style={styles.brandRow}>
-            <View style={[styles.logoMark, { backgroundColor: appTheme.primary }]}>
-              <Ionicons color="#ffffff" name="paper-plane" size={21} />
-            </View>
-            <View style={styles.brandCopy}>
-              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.logo, { color: appTheme.text }, isNarrow ? styles.logoNarrow : null]}>
-                AIRPLANE
-              </Text>
-              <Text numberOfLines={1} style={[styles.tagline, { color: appTheme.secondaryText }]}>
-                Create moments that fly
-              </Text>
-            </View>
-          </View>
-          <View style={styles.topActions}>
-            <Link href={"/subscription" as never} asChild>
-              <Pressable style={[styles.proPill, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
-                <Ionicons color="#f59e0b" name="diamond" size={14} />
-                <Text style={[styles.proText, { color: appTheme.primary }]}>{usage?.plan === "pro" ? "Pro" : "Pro"}</Text>
-              </Pressable>
-            </Link>
-            <Pressable accessibilityLabel="Notifications" style={[styles.bellButton, { backgroundColor: appTheme.surface }]}>
-              <Ionicons color={appTheme.text} name="notifications-outline" size={20} />
-              <View style={[styles.notificationDot, { backgroundColor: appTheme.primary }]} />
-            </Pressable>
-          </View>
-        </View>
-
-        <View style={styles.searchRow}>
-          <Pressable style={[styles.searchBox, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={() => router.push("/templates" as never)}>
-            <Ionicons color="#9CA3AF" name="search-outline" size={17} />
-            <TextInput
-              editable={false}
-              pointerEvents="none"
-              placeholder="Search templates, occasions, experiences..."
-              placeholderTextColor="#9CA3AF"
-              style={styles.searchInput}
-            />
-          </Pressable>
-          <Pressable accessibilityLabel="Discover templates" style={[styles.sparkleButton, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }]} onPress={() => router.push("/templates" as never)}>
-            <Ionicons color={appTheme.primary} name="sparkles-outline" size={20} />
-          </Pressable>
-        </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryRail}>
-          {HOME_CATEGORIES.map((category) => (
-            <Pressable key={category.label} style={[styles.categoryTile, isNarrow ? styles.categoryTileNarrow : null]} onPress={() => router.push("/templates" as never)}>
-              <View style={[styles.categoryIcon, { backgroundColor: appTheme.muted }]}>
-                <Ionicons color={appTheme.primary} name={category.icon} size={21} />
+      <FlatList
+        data={templates}
+        key={columnCount}
+        keyExtractor={(item) => item.id}
+        numColumns={columnCount}
+        columnWrapperStyle={columnCount > 1 ? { gap: gridGap } : undefined}
+        refreshControl={<RefreshControl refreshing={templatesQuery.isRefetching} onRefresh={() => templatesQuery.refetch()} />}
+        contentContainerStyle={[styles.content, { paddingHorizontal: horizontalPadding }]}
+        ListHeaderComponent={
+          <View style={styles.headerStack}>
+            <View style={styles.header}>
+              <View style={styles.headerCopy}>
+                <View style={styles.greetingRow}>
+                  <Text numberOfLines={1} style={[styles.greeting, { color: appTheme.text }, isCompact ? styles.greetingCompact : null]}>
+                    Good morning, {creatorName}
+                  </Text>
+                  <Ionicons color={appTheme.primary} name="leaf-outline" size={17} />
+                </View>
+                <Text style={[styles.subtitle, { color: appTheme.secondaryText }, isCompact ? styles.subtitleCompact : null]}>What will you create today?</Text>
               </View>
-              <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.categoryLabel, { color: appTheme.text }]}>
-                {category.label}
-              </Text>
+              <View style={styles.headerActions}>
+                <Pressable accessibilityLabel="Notifications" style={[styles.iconButton, { backgroundColor: appTheme.surface }]}>
+                  <Ionicons color={appTheme.text} name="notifications-outline" size={20} />
+                  <View style={[styles.iconDot, { backgroundColor: appTheme.primary }]} />
+                </Pressable>
+                <Pressable accessibilityLabel="Profile" style={[styles.avatar, { backgroundColor: appTheme.accent }]} onPress={() => router.push("/profile" as never)}>
+                  <Text style={styles.avatarText}>{creatorName.charAt(0).toUpperCase()}</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <Pressable style={[styles.searchBar, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.push("/templates" as never)}>
+              <Ionicons color={appTheme.mutedText} name="search-outline" size={20} />
+              <TextInput
+                editable={false}
+                pointerEvents="none"
+                placeholder="Search templates..."
+                placeholderTextColor={appTheme.mutedText}
+                style={[styles.searchInput, { color: appTheme.text }, isCompact ? styles.searchInputCompact : null]}
+              />
+              <Ionicons color={appTheme.secondaryText} name="options-outline" size={20} />
             </Pressable>
-          ))}
-        </ScrollView>
 
-        <HeroCarousel isNarrow={isNarrow} screenWidth={width} />
+            <FlatList
+              data={FILTERS}
+              horizontal
+              keyExtractor={(item) => item.id}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chipRail}
+              renderItem={({ item }) => <CategoryChip active={item.id === filter} icon={item.icon} label={item.label} onPress={() => setFilter(item.id)} />}
+            />
 
-        <SectionHeader title="Recently Used" onSeeAll={() => router.push("/experiences" as never)} />
-        {experiencesQuery.isLoading ? (
-          <LoadingCard label="Loading experiences..." />
-        ) : recentExperiences.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRail}>
-            {recentExperiences.map((experience) => <RecentCard compact={isNarrow} experience={experience} key={experience.id} />)}
-          </ScrollView>
-        ) : (
-          <LoadingCard label="Create your first experience to see it here." />
-        )}
-
-        <SectionHeader title="Trending Templates" onSeeAll={() => router.push("/templates" as never)} />
-        {templatesQuery.isLoading ? (
-          <LoadingCard label="Loading templates..." />
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRail}>
-            {trendingTemplates.map((template, index) => (
-              <TrendingCard compact={isNarrow} key={template.id} rank={index} template={template} />
-            ))}
-          </ScrollView>
-        )}
-
-        <Link href={"/subscription" as never} asChild>
-          <Pressable style={[styles.premiumBanner, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }, isNarrow ? styles.premiumBannerNarrow : null]}>
-            <View style={[styles.crownBox, { backgroundColor: appTheme.surface }]}>
-              <Ionicons color="#f59e0b" name="diamond" size={22} />
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: appTheme.text }, isCompact ? styles.sectionTitleCompact : null]}>Popular Templates</Text>
+              <Pressable style={styles.seeAllButton} onPress={() => router.push("/templates" as never)}>
+                <Text style={[styles.seeAll, { color: appTheme.primary }]}>See All</Text>
+                <Ionicons color={appTheme.primary} name="chevron-forward" size={16} />
+              </Pressable>
             </View>
-            <View style={styles.premiumCopy}>
-              <Text adjustsFontSizeToFit minimumFontScale={0.85} numberOfLines={1} style={[styles.premiumTitle, { color: appTheme.text }]}>
-                Unlock Premium Templates
-              </Text>
-              <Text numberOfLines={2} style={[styles.premiumText, { color: appTheme.secondaryText }]}>
-                Get access to 100+ premium templates.
-              </Text>
-            </View>
-            <View style={[styles.upgradePill, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
-              <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.upgradeText, { color: appTheme.primary }]}>
-                Upgrade to Pro
-              </Text>
-            </View>
-          </Pressable>
-        </Link>
-      </ScrollView>
+          </View>
+        }
+        ListEmptyComponent={
+          <View style={[styles.emptyCard, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+            <Ionicons color={appTheme.primary} name="leaf-outline" size={22} />
+            <Text style={[styles.emptyText, { color: appTheme.secondaryText }]}>{templatesQuery.isLoading ? "Loading templates..." : "No templates found."}</Text>
+          </View>
+        }
+        renderItem={({ item }) => <TemplateCard height={cardHeight} template={item} width={cardWidth} />}
+      />
       <BottomNav active="home" variant="main" />
     </SafeAreaView>
   );
 }
 
-function SectionHeader({ onSeeAll, title }: { onSeeAll: () => void; title: string }) {
+function CategoryChip({ active, icon, label, onPress }: { active: boolean; icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void }) {
   const appTheme = useAppTheme();
 
   return (
-    <View style={styles.sectionHeader}>
-      <Text style={[styles.sectionTitle, { color: appTheme.text }]}>{title}</Text>
-      <Pressable onPress={onSeeAll}>
-        <Text style={[styles.seeAll, { color: appTheme.primary }]}>See All</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-function HeroCarousel({ isNarrow, screenWidth }: { isNarrow: boolean; screenWidth: number }) {
-  const bannerWidth = screenWidth - (isNarrow ? 24 : 28);
-  const listRef = useRef<FlatList<HomeBanner>>(null);
-  const autoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const loopIndexRef = useRef(1);
-  const userDraggingRef = useRef(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const indicatorProgress = useRef(new Animated.Value(0)).current;
-  const loopedBanners = useMemo<HomeBanner[]>(() => {
-    const first = HOME_BANNERS[0]!;
-    const last = HOME_BANNERS[HOME_BANNERS.length - 1]!;
-    return [last, ...HOME_BANNERS, first];
-  }, []);
-
-  const clearAutoTimer = useCallback(() => {
-    if (autoTimerRef.current) {
-      clearInterval(autoTimerRef.current);
-      autoTimerRef.current = null;
-    }
-  }, []);
-
-  const startAutoTimer = useCallback(() => {
-    clearAutoTimer();
-    autoTimerRef.current = setInterval(() => {
-      const nextIndex = loopIndexRef.current + 1;
-      loopIndexRef.current = nextIndex;
-      listRef.current?.scrollToIndex({ animated: true, index: nextIndex });
-    }, 4000);
-  }, [clearAutoTimer]);
-
-  const pauseAutoTimer = useCallback(() => {
-    clearAutoTimer();
-    if (resumeTimerRef.current) {
-      clearTimeout(resumeTimerRef.current);
-      resumeTimerRef.current = null;
-    }
-  }, [clearAutoTimer]);
-
-  const resumeAutoTimerSoon = useCallback(() => {
-    if (resumeTimerRef.current) {
-      clearTimeout(resumeTimerRef.current);
-    }
-
-    resumeTimerRef.current = setTimeout(startAutoTimer, 3000);
-  }, [startAutoTimer]);
-
-  const normalizeIndex = useCallback((index: number) => {
-    if (index === 0) {
-      return HOME_BANNERS.length - 1;
-    }
-
-    if (index === HOME_BANNERS.length + 1) {
-      return 0;
-    }
-
-    return index - 1;
-  }, []);
-
-  const handleMomentumEnd = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const rawIndex = Math.round(event.nativeEvent.contentOffset.x / bannerWidth);
-      const nextActiveIndex = normalizeIndex(rawIndex);
-
-      setActiveIndex(nextActiveIndex);
-      loopIndexRef.current = rawIndex;
-
-      if (rawIndex === 0) {
-        requestAnimationFrame(() => {
-          loopIndexRef.current = HOME_BANNERS.length;
-          listRef.current?.scrollToIndex({ animated: false, index: HOME_BANNERS.length });
-        });
-      }
-
-      if (rawIndex === HOME_BANNERS.length + 1) {
-        requestAnimationFrame(() => {
-          loopIndexRef.current = 1;
-          listRef.current?.scrollToIndex({ animated: false, index: 1 });
-        });
-      }
-
-      if (userDraggingRef.current) {
-        userDraggingRef.current = false;
-        resumeAutoTimerSoon();
-      }
-    },
-    [bannerWidth, normalizeIndex, resumeAutoTimerSoon]
-  );
-
-  useEffect(() => {
-    startAutoTimer();
-
-    return () => {
-      clearAutoTimer();
-      if (resumeTimerRef.current) {
-        clearTimeout(resumeTimerRef.current);
-      }
-    };
-  }, [clearAutoTimer, startAutoTimer]);
-
-  useEffect(() => {
-    Animated.timing(indicatorProgress, {
-      toValue: activeIndex,
-      duration: 420,
-      easing: Easing.inOut(Easing.ease),
-      useNativeDriver: false
-    }).start();
-  }, [activeIndex, indicatorProgress]);
-
-  useEffect(() => {
-    const nextBanner = HOME_BANNERS[(activeIndex + 1) % HOME_BANNERS.length]!;
-
-    if (nextBanner.image.startsWith("http")) {
-      void Image.prefetch(nextBanner.image);
-    }
-  }, [activeIndex]);
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      listRef.current?.scrollToIndex({ animated: false, index: loopIndexRef.current });
-    });
-  }, [bannerWidth]);
-
-  return (
-    <View style={[styles.heroCarousel, isNarrow ? styles.heroCarouselNarrow : null, { width: bannerWidth }]}>
-      <FlatList
-        bounces={false}
-        data={loopedBanners}
-        decelerationRate="fast"
-        getItemLayout={(_, index) => ({ index, length: bannerWidth, offset: bannerWidth * index })}
-        horizontal
-        initialNumToRender={2}
-        initialScrollIndex={1}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
-        maxToRenderPerBatch={2}
-        onMomentumScrollEnd={handleMomentumEnd}
-        onScrollBeginDrag={() => {
-          userDraggingRef.current = true;
-          pauseAutoTimer();
-        }}
-        pagingEnabled
-        ref={listRef}
-        removeClippedSubviews
-        renderItem={({ item }) => <HeroSlide banner={item} isNarrow={isNarrow} width={bannerWidth} />}
-        scrollEventThrottle={16}
-        showsHorizontalScrollIndicator={false}
-        windowSize={3}
-      />
-      <View style={styles.heroIndicator}>
-        {HOME_BANNERS.map((banner, index) => {
-          const inputRange = HOME_BANNERS.map((_, dotIndex) => dotIndex);
-          const width = indicatorProgress.interpolate({
-            inputRange,
-            outputRange: HOME_BANNERS.map((_, dotIndex) => (dotIndex === index ? 22 : 8)),
-            extrapolate: "clamp"
-          });
-          const backgroundColor = indicatorProgress.interpolate({
-            inputRange,
-            outputRange: HOME_BANNERS.map((_, dotIndex) => (dotIndex === index ? "#FF2D78" : "#D8D8D8")),
-            extrapolate: "clamp"
-          });
-
-          return <Animated.View key={banner.id} style={[styles.heroIndicatorDot, { backgroundColor, width }]} />;
-        })}
-      </View>
-    </View>
-  );
-}
-
-function HeroSlide({ banner, isNarrow, width }: { banner: HomeBanner; isNarrow: boolean; width: number }) {
-  return (
-    <LinearGradient colors={banner.gradient} end={{ x: 1, y: 1 }} start={{ x: 0, y: 0 }} style={[styles.heroCard, isNarrow ? styles.heroCardNarrow : null, { width }]}>
-      <View style={[styles.heroGlow, styles.heroGlowLarge, { backgroundColor: banner.accent }]} />
-      <View style={[styles.heroGlow, styles.heroGlowSmall]} />
-      <View style={styles.heroCopy}>
-        <Text style={[styles.heroTitle, isNarrow ? styles.heroTitleNarrow : null]}>{banner.title}</Text>
-        <Text style={[styles.heroAccent, isNarrow ? styles.heroAccentNarrow : null, { color: banner.accent }]}>{banner.highlight}</Text>
-        <Text style={[styles.heroBody, isNarrow ? styles.heroBodyNarrow : null]}>{banner.subtitle}</Text>
-        <Link href={"/templates" as never} asChild>
-          <Pressable style={[styles.heroButton, isNarrow ? styles.heroButtonNarrow : null, { backgroundColor: banner.accent, shadowColor: banner.accent }]}>
-            <Text numberOfLines={1} style={[styles.heroButtonText, isNarrow ? styles.heroButtonTextNarrow : null]}>
-              {banner.button}
-            </Text>
-            <View style={[styles.heroArrow, isNarrow ? styles.heroArrowNarrow : null]}>
-              <Ionicons color={banner.accent} name="arrow-forward" size={16} />
-            </View>
-          </Pressable>
-        </Link>
-      </View>
-      <View style={[styles.heroArt, isNarrow ? styles.heroArtNarrow : null]}>
-        <LinearGradient colors={banner.orb} style={[styles.heroPinkOrb, isNarrow ? styles.heroPinkOrbNarrow : null]} />
-        <View style={[styles.glassAccent, styles.glassAccentTop]} />
-        <View style={[styles.glassAccent, styles.glassAccentBottom]} />
-        <View style={[styles.sparkleDot, styles.sparkleDotOne, { backgroundColor: banner.accent }]} />
-        <View style={[styles.sparkleDot, styles.sparkleDotTwo, { backgroundColor: banner.accent }]} />
-        <Ionicons color={banner.accent} name="sparkles" size={17} style={styles.heroSparkle} />
-        <View style={[styles.envelope, isNarrow ? styles.envelopeNarrow : null]}>
-          <Ionicons color={banner.accent} name={banner.icon} size={24} style={styles.heroCardIcon} />
-          <Text style={[styles.envelopeText, isNarrow ? styles.envelopeTextNarrow : null, { color: banner.accent }]}>{banner.cardText}</Text>
-        </View>
-        <Ionicons color={banner.accent} name="heart" size={24} style={styles.heroHeart} />
-        <Ionicons color="#FDA4C7" name="heart" size={17} style={styles.heroSmallHeart} />
-        <Ionicons color="#FFFFFF" name="paper-plane" size={19} style={styles.heroPlane} />
-      </View>
-    </LinearGradient>
-  );
-}
-
-function RecentCard({ compact, experience }: { compact: boolean; experience: Experience }) {
-  const appTheme = useAppTheme();
-
-  return (
-    <Pressable style={[styles.templateCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }, compact ? styles.templateCardNarrow : null]} onPress={() => router.push("/experiences" as never)}>
-      <CardImage accent={experience.theme.accent} background={experience.theme.background} category="love" compact={compact} uri={experience.coverPhotoUrl} />
-      <View style={styles.templateInfo}>
-        <Text numberOfLines={1} style={[styles.templateTitle, { color: appTheme.text }]}>
-          {experience.title || "Untitled experience"}
-        </Text>
-        <Text style={[styles.templateMeta, { color: appTheme.secondaryText }]}>{experience.isPublished ? "Published" : "Draft"} link</Text>
-      </View>
-      <Ionicons color={appTheme.secondaryText} name="ellipsis-vertical" size={18} style={styles.moreIcon} />
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      style={[styles.chip, { backgroundColor: active ? appTheme.primary : appTheme.surface, borderColor: active ? appTheme.primary : appTheme.border }]}
+      onPress={onPress}
+    >
+      <Ionicons color={active ? "#FFFFFF" : appTheme.secondaryText} name={icon} size={14} />
+      <Text style={[styles.chipText, { color: active ? "#FFFFFF" : appTheme.secondaryText }]}>{label}</Text>
     </Pressable>
   );
 }
 
-function TrendingCard({ compact, rank, template }: { compact: boolean; rank: number; template: Template }) {
+function TemplateCard({ height, template, width }: { height: number; template: DisplayTemplate; width: number }) {
   const appTheme = useAppTheme();
+  const isDarkCard = template.theme.foreground === "#FFFFFF";
 
   return (
-    <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
-      <Pressable style={[styles.templateCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }, compact ? styles.templateCardNarrow : null]}>
-        <CardImage accent={template.defaultTheme.accent} background={template.defaultTheme.background} category={template.category} compact={compact} uri={template.thumbnailUrl} />
-        <Text style={[styles.badge, rank < 2 ? { backgroundColor: appTheme.primary } : styles.newBadge]}>{rank < 2 ? "Popular" : "New"}</Text>
-        <View style={styles.templateInfo}>
-          <Text numberOfLines={1} style={[styles.templateTitle, { color: appTheme.text }]}>
-            {template.name}
-          </Text>
-          <Text style={[styles.templateMeta, { color: appTheme.secondaryText }]}>{getUsageLabel(rank)} uses</Text>
+    <Link href={{ pathname: "/templates/[id]", params: { id: template.routeId } }} asChild>
+      <Pressable style={[styles.templateCard, { width, height, backgroundColor: template.theme.background, borderColor: appTheme.border }]}>
+        <DreamyArt accent={template.theme.accent} muted={template.theme.muted} />
+        <View style={[styles.cardOverlay, isDarkCard ? styles.cardOverlayDark : null]} />
+        <View style={styles.cardContent}>
+          <Text numberOfLines={2} style={[styles.cardTitle, { color: template.theme.foreground }]}>{template.name}</Text>
+          <View style={[styles.cardPill, { backgroundColor: isDarkCard ? "rgba(255,255,255,0.76)" : appTheme.surfaceAlt, borderColor: isDarkCard ? "rgba(255,255,255,0.5)" : appTheme.border }]}>
+            <Text numberOfLines={1} style={[styles.cardPillText, { color: isDarkCard ? appTheme.text : template.theme.accent }]}>{formatCategory(template.category)}</Text>
+          </View>
         </View>
       </Pressable>
     </Link>
   );
 }
 
-function CardImage({
-  accent,
-  background,
-  category,
-  compact,
-  uri
-}: {
-  accent: string;
-  background: string;
-  category: TemplateCategory | "love";
-  compact: boolean;
-  uri: string | null;
-}) {
-  if (uri) {
-    return <Image resizeMode="cover" source={{ uri }} style={[styles.cardImage, compact ? styles.cardImageNarrow : null]} />;
-  }
-
-  return <VisualPanel accent={accent} background={background} category={category} compact={compact} />;
-}
-
-function VisualPanel({ accent, background, category, compact }: { accent: string; background: string; category: TemplateCategory | "love"; compact: boolean }) {
+function DreamyArt({ accent, muted }: { accent: string; muted: string }) {
   return (
-    <View style={[styles.cardImage, compact ? styles.cardImageNarrow : null, styles.visualPanel, { backgroundColor: background }]}>
-      <View style={[styles.visualCircle, { backgroundColor: accent }]} />
-      <Ionicons color={accent} name={getTemplateIcon(category)} size={32} />
-      <View style={[styles.visualLine, { backgroundColor: accent }]} />
+    <View style={styles.artLayer} pointerEvents="none">
+      <LinearGradient colors={[muted, "rgba(255,255,255,0.2)"]} style={styles.artSky} />
+      <View style={[styles.sun, { backgroundColor: accent }]} />
+      <View style={[styles.hillBack, { backgroundColor: muted }]} />
+      <View style={[styles.hillFront, { backgroundColor: accent }]} />
+      <View style={styles.path} />
+      <View style={[styles.flowerDot, styles.flowerOne, { backgroundColor: accent }]} />
+      <View style={[styles.flowerDot, styles.flowerTwo, { backgroundColor: accent }]} />
+      <View style={[styles.flowerDot, styles.flowerThree, { backgroundColor: muted }]} />
     </View>
   );
 }
 
-function LoadingCard({ label }: { label: string }) {
-  const appTheme = useAppTheme();
-
-  return (
-    <View style={[styles.loadingCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
-      <Ionicons color={appTheme.primary} name="sparkles-outline" size={18} />
-      <Text style={[styles.loadingText, { color: appTheme.secondaryText }]}>{label}</Text>
-    </View>
-  );
+function mapTemplateForHome(template: Template): DisplayTemplate {
+  return {
+    id: template.id,
+    name: template.name,
+    category: getHomeCategory(template),
+    routeId: template.id,
+    theme: {
+      background: template.defaultTheme.background,
+      foreground: template.defaultTheme.foreground,
+      accent: template.defaultTheme.accent,
+      muted: template.defaultTheme.muted
+    }
+  };
 }
 
-function getUsageLabel(index: number) {
-  return ["32.1K", "28.6K", "21.3K", "18.7K", "16.4K", "14.2K", "12.8K", "9.9K"][index] ?? "8.4K";
+function getHomeCategory(template: Template): HomeFilter {
+  const value = `${template.name} ${template.description} ${template.category} ${template.templateType}`.toLowerCase();
+
+  if (value.includes("anniversary")) {
+    return "anniversary";
+  }
+
+  if (value.includes("birthday") || value.includes("surprise")) {
+    return "surprise";
+  }
+
+  if (value.includes("memory") || value.includes("friend") || value.includes("family")) {
+    return "memory";
+  }
+
+  return "proposal";
 }
 
-function getTemplateIcon(category: TemplateCategory | "love"): keyof typeof Ionicons.glyphMap {
-  if (category === "birthday") {
-    return "gift";
+function getCreatorName(fullName?: unknown, email?: string) {
+  if (typeof fullName === "string" && fullName.trim()) {
+    return fullName.trim().split(/\s+/)[0] ?? "Aradhya";
   }
 
-  if (category === "friends") {
-    return "people";
+  if (email) {
+    return email.split("@")[0]?.split(/[._-]/)[0] ?? "Aradhya";
   }
 
-  if (category === "family") {
-    return "home";
-  }
+  return "Aradhya";
+}
 
-  if (category === "fun") {
-    return "sparkles";
-  }
-
-  return "heart";
+function formatCategory(category: HomeFilter) {
+  return category === "all" ? "All" : category.charAt(0).toUpperCase() + category.slice(1);
 }
 
 const softShadow = {
   shadowColor: "#111827",
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
+  shadowOpacity: 0.06,
+  shadowRadius: 10,
   shadowOffset: { width: 0, height: 4 },
   elevation: 2
 };
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  content: { gap: 20, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 96 },
-  contentNarrow: { paddingHorizontal: 16 },
-  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
-  brandRow: { flex: 1, flexDirection: "row", alignItems: "center", gap: 8 },
-  brandCopy: { flex: 1, minWidth: 0 },
-  logoMark: {
-    width: 34,
-    height: 34,
-    borderRadius: 11,
-    alignItems: "center",
-    justifyContent: "center",
-    transform: [{ rotate: "-10deg" }]
-  },
-  logo: { fontFamily: FONT.bold, fontSize: 22, lineHeight: 25, letterSpacing: 0 },
-  logoNarrow: { fontSize: 20, lineHeight: 23 },
-  tagline: { fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
-  topActions: { flexShrink: 0, flexDirection: "row", alignItems: "center", gap: 6 },
-  proPill: {
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 8,
-    ...softShadow
-  },
-  proText: { fontFamily: FONT.semibold, fontSize: 10 },
-  bellButton: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
-  notificationDot: { position: "absolute", right: 8, top: 6, width: 8, height: 8, borderRadius: 4 },
-  searchRow: { flexDirection: "row", gap: 10 },
-  searchBox: {
-    flex: 1,
-    height: 48,
-    borderRadius: 18,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 14,
-    ...softShadow
-  },
+  content: { gap: 10, paddingTop: 6, paddingBottom: 92 },
+  headerStack: { gap: 12, marginBottom: 10 },
+  header: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+  headerCopy: { flex: 1, minWidth: 0, gap: 3 },
+  greetingRow: { flexDirection: "row", alignItems: "center", gap: 5 },
+  greeting: { fontFamily: FONT.bold, fontSize: 16, lineHeight: 20 },
+  greetingCompact: { fontSize: 15, lineHeight: 19 },
+  subtitle: { fontFamily: FONT.medium, fontSize: 11, lineHeight: 14 },
+  subtitleCompact: { fontSize: 10 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 10 },
+  iconButton: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center", ...softShadow },
+  iconDot: { position: "absolute", right: 8, top: 7, width: 8, height: 8, borderRadius: 4 },
+  avatar: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  avatarText: { color: "#FFFFFF", fontFamily: FONT.bold, fontSize: 15, lineHeight: 19 },
+  searchBar: { height: 44, borderRadius: 16, borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, ...softShadow },
   searchInput: { flex: 1, fontFamily: FONT.regular, fontSize: 13, padding: 0 },
-  sparkleButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#FCE7F3",
-    backgroundColor: "#FFF1F7",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  categoryRail: { gap: 10, paddingRight: 4 },
-  categoryTile: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 3,
-    paddingHorizontal: 5,
-    ...softShadow
-  },
-  categoryTileNarrow: { width: 60, height: 62 },
-  categoryIcon: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
-  categoryLabel: { fontFamily: FONT.medium, fontSize: 11, lineHeight: 13, textAlign: "center" },
-  heroCarousel: {
-    height: 188,
-    borderRadius: 24,
-    shadowColor: "#FF2D78",
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4
-  },
-  heroCarouselNarrow: { height: 190 },
-  heroCard: {
-    height: 188,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#FFE0EE",
-    overflow: "hidden",
-    paddingLeft: 24,
-    paddingRight: 20,
-    paddingTop: 28,
-    paddingBottom: 20,
-    flexDirection: "row",
-    shadowColor: "#FF2D78",
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4
-  },
-  heroCardNarrow: { height: 190, paddingLeft: 18, paddingRight: 16, paddingTop: 26, paddingBottom: 20 },
-  heroGlow: { position: "absolute", borderRadius: 999, opacity: 0.42 },
-  heroGlowLarge: { width: 154, height: 154, right: -38, top: -22, backgroundColor: "#FFD1E4" },
-  heroGlowSmall: { width: 92, height: 92, left: 84, bottom: -42, backgroundColor: "#FFFFFF" },
-  heroCopy: { flex: 0.55, justifyContent: "flex-start", zIndex: 2 },
-  heroTitle: { color: "#111111", fontFamily: FONT.bold, fontSize: 30, lineHeight: 34, letterSpacing: 0 },
-  heroTitleNarrow: { fontSize: 20, lineHeight: 23 },
-  heroAccent: { color: "#FF2D78", fontFamily: FONT.bold, fontSize: 34, lineHeight: 37, marginTop: 0 },
-  heroAccentNarrow: { fontSize: 24, lineHeight: 28 },
-  heroBody: { color: "#666666", fontFamily: FONT.regular, fontSize: 16, lineHeight: 24, marginTop: 8 },
-  heroBodyNarrow: { fontSize: 11, lineHeight: 16, marginTop: 6 },
-  heroButton: {
-    position: "absolute",
-    left: 0,
-    bottom: 0,
-    width: 170,
-    height: 52,
-    alignSelf: "flex-start",
-    borderRadius: 26,
-    backgroundColor: "#FF2D78",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingLeft: 22,
-    paddingRight: 8,
-    shadowColor: "#FF2D78",
-    shadowOpacity: 0.22,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3
-  },
-  heroButtonNarrow: { width: 142, height: 44, borderRadius: 22, paddingLeft: 17 },
-  heroButtonText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
-  heroButtonTextNarrow: { fontSize: 13, lineHeight: 17 },
-  heroArrow: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
-  heroArrowNarrow: { width: 32, height: 32, borderRadius: 16 },
-  heroArt: { flex: 0.45, alignItems: "center", justifyContent: "center", minWidth: 126, zIndex: 2 },
-  heroArtNarrow: { minWidth: 112 },
-  heroPinkOrb: { position: "absolute", width: 136, height: 136, borderRadius: 68, opacity: 0.92 },
-  heroPinkOrbNarrow: { width: 118, height: 118, borderRadius: 59 },
-  glassAccent: { position: "absolute", borderWidth: 1, borderColor: "rgba(255,255,255,0.72)", backgroundColor: "rgba(255,255,255,0.42)" },
-  glassAccentTop: { width: 34, height: 34, borderRadius: 17, top: 16, right: 4 },
-  glassAccentBottom: { width: 22, height: 22, borderRadius: 11, bottom: 28, left: -2 },
-  sparkleDot: { position: "absolute", width: 7, height: 7, borderRadius: 3.5, backgroundColor: "#FF8EBA" },
-  sparkleDotOne: { top: 32, left: 4 },
-  sparkleDotTwo: { right: 10, bottom: 40, opacity: 0.7 },
-  heroSparkle: { position: "absolute", top: 16, left: 8 },
-  envelope: {
-    width: 145,
-    height: 110,
-    borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.96)",
-    alignItems: "center",
-    justifyContent: "center",
-    transform: [{ rotate: "-8deg" }],
-    shadowColor: "#9F1239",
-    shadowOpacity: 0.14,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 5
-  },
-  envelopeNarrow: { width: 120, height: 92, borderRadius: 20 },
-  heroCardIcon: { position: "absolute", top: 18, opacity: 0.28 },
-  envelopeText: { color: "#8A123A", fontFamily: FONT.semibold, fontSize: 16, lineHeight: 23, fontStyle: "italic", textAlign: "center" },
-  envelopeTextNarrow: { fontSize: 14, lineHeight: 20 },
-  heroHeart: { position: "absolute", bottom: 23, left: 4 },
-  heroSmallHeart: { position: "absolute", top: 30, right: 4 },
-  heroPlane: { position: "absolute", top: 20, right: -4, transform: [{ rotate: "23deg" }] },
-  heroIndicator: { position: "absolute", bottom: 16, left: 0, right: 0, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 6 },
-  heroIndicatorDot: { height: 8, borderRadius: 4 },
-  sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -10 },
-  sectionTitle: { fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
-  seeAll: { fontFamily: FONT.medium, fontSize: 11 },
-  cardRail: { gap: 12, paddingRight: 4 },
-  templateCard: {
-    width: 122,
-    height: 162,
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: "hidden",
-    padding: 8,
-    ...softShadow
-  },
-  templateCardNarrow: { width: 112, height: 154 },
-  cardImage: { width: "100%", height: 82, borderRadius: 18 },
-  cardImageNarrow: { height: 76 },
-  visualPanel: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
-  visualCircle: { position: "absolute", width: 86, height: 86, borderRadius: 43, opacity: 0.14 },
-  visualLine: { position: "absolute", bottom: 0, left: 0, right: 0, height: 3, opacity: 0.7 },
-  templateInfo: { gap: 2, paddingTop: 7, paddingRight: 14 },
-  templateTitle: { fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
-  templateMeta: { fontFamily: FONT.regular, fontSize: 12, lineHeight: 15 },
-  moreIcon: { position: "absolute", right: 8, bottom: 17 },
-  badge: {
-    position: "absolute",
-    left: 12,
-    top: 12,
-    overflow: "hidden",
-    borderRadius: 10,
-    color: "#ffffff",
-    paddingHorizontal: 6,
-    paddingVertical: 4,
-    fontFamily: FONT.semibold,
-    fontSize: 9
-  },
-  popularBadge: {},
-  newBadge: { backgroundColor: "#22C55E" },
-  premiumBanner: {
-    minHeight: 76,
-    borderRadius: 20,
-    backgroundColor: "#FFF8E7",
-    borderWidth: 1,
-    borderColor: "#FFF1C2",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    padding: 14,
-    overflow: "hidden"
-  },
-  premiumBannerNarrow: { minHeight: 82, gap: 8, paddingHorizontal: 12 },
-  crownBox: { width: 34, height: 34, borderRadius: 12, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  premiumCopy: { flex: 1, minWidth: 0, gap: 3 },
-  premiumTitle: { fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
-  premiumText: { fontFamily: FONT.regular, fontSize: 12, lineHeight: 15 },
-  upgradePill: {
-    width: 112,
-    height: 36,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#FBCFE8",
-    backgroundColor: "#FFF1F7",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 8,
-    flexShrink: 0
-  },
-  upgradeText: { fontFamily: FONT.semibold, fontSize: 11 },
-  loadingCard: { minHeight: 66, borderRadius: 14, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 6 },
-  loadingText: { fontFamily: FONT.medium, fontSize: 11 }
+  searchInputCompact: { fontSize: 12 },
+  chipRail: { gap: 8, paddingRight: 4 },
+  chip: { height: 30, borderRadius: 999, borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 12, ...softShadow },
+  chipText: { fontFamily: FONT.medium, fontSize: 11, lineHeight: 14 },
+  sectionHeader: { minHeight: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 2 },
+  sectionTitle: { fontFamily: FONT.bold, fontSize: 16, lineHeight: 20 },
+  sectionTitleCompact: { fontSize: 15 },
+  seeAllButton: { flexDirection: "row", alignItems: "center", gap: 2 },
+  seeAll: { fontFamily: FONT.medium, fontSize: 12, lineHeight: 16 },
+  templateCard: { marginBottom: 12, borderRadius: 16, borderWidth: 1, overflow: "hidden", ...softShadow },
+  artLayer: { ...StyleSheet.absoluteFillObject, overflow: "hidden" },
+  artSky: { ...StyleSheet.absoluteFillObject },
+  sun: { position: "absolute", right: 16, top: 18, width: 32, height: 32, borderRadius: 16, opacity: 0.28 },
+  hillBack: { position: "absolute", left: -34, right: 24, bottom: 20, height: 84, borderTopLeftRadius: 120, borderTopRightRadius: 150, opacity: 0.42, transform: [{ rotate: "-8deg" }] },
+  hillFront: { position: "absolute", left: 20, right: -44, bottom: -24, height: 104, borderTopLeftRadius: 130, borderTopRightRadius: 120, opacity: 0.54, transform: [{ rotate: "8deg" }] },
+  path: { position: "absolute", left: "42%", bottom: -8, width: 28, height: 118, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.38)", transform: [{ rotate: "9deg" }] },
+  flowerDot: { position: "absolute", width: 5, height: 5, borderRadius: 2.5, opacity: 0.75 },
+  flowerOne: { left: 16, bottom: 22 },
+  flowerTwo: { right: 24, bottom: 36 },
+  flowerThree: { left: 36, bottom: 48 },
+  cardOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(255,255,255,0.16)" },
+  cardOverlayDark: { backgroundColor: "rgba(21,33,24,0.24)" },
+  cardContent: { flex: 1, alignItems: "center", justifyContent: "center", padding: 8, gap: 9 },
+  cardTitle: { fontFamily: FONT.bold, fontSize: 12, lineHeight: 16, textAlign: "center" },
+  cardPill: { minHeight: 24, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 9 },
+  cardPillText: { fontFamily: FONT.medium, fontSize: 9, lineHeight: 12 },
+  emptyCard: { minHeight: 84, borderRadius: 16, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 8 },
+  emptyText: { fontFamily: FONT.medium, fontSize: 12 }
 });
