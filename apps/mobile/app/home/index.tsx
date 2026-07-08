@@ -191,8 +191,8 @@ function TemplateCard({ height, marginBottom, marginRight, template, width }: { 
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.routeId } }} asChild>
-      <Pressable style={[styles.templateCard, { width, height, minHeight: height, maxHeight: height, marginBottom, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border, shadowColor: appTheme.text }]}>
-        <ImageBackground imageStyle={styles.cardImage} resizeMode="cover" source={template.image} style={[styles.cardImageFill, { width, height }]}>
+      <Pressable style={[styles.templateCard, { width, height, minHeight: height, maxHeight: height, marginBottom, marginRight, shadowColor: appTheme.text }]}>
+        <ImageBackground imageStyle={styles.cardImage} resizeMode="cover" source={template.image} style={[styles.cardImageFill, { width, height, backgroundColor: appTheme.background }]}>
           <LinearGradient
             colors={[transparentColor(appTheme.text, 0), transparentColor(appTheme.text, 0.04), transparentColor(appTheme.text, 0.38)]}
             locations={[0, 0.62, 1]}
@@ -313,9 +313,9 @@ const styles = StyleSheet.create({
   seeAllButton: { flexDirection: "row", alignItems: "center", gap: 2 },
   seeAll: { fontFamily: FONT.medium, fontSize: 12, lineHeight: 16 },
   gridRow: { columnGap: 12, justifyContent: "flex-start" },
-  templateCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden", ...softShadow },
-  cardImage: { borderRadius: 16 },
-  cardImageFill: { overflow: "hidden" },
+  templateCard: { borderRadius: 16, overflow: "hidden", ...softShadow },
+  cardImage: { borderRadius: 16, width: "100%", height: "100%" },
+  cardImageFill: { borderRadius: 16, overflow: "hidden" },
   cardShade: { ...StyleSheet.absoluteFillObject },
   cardContent: { alignItems: "center", paddingHorizontal: 7, paddingTop: 22 },
   cardTitle: {
