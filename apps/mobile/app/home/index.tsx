@@ -55,16 +55,19 @@ export default function HomeScreen() {
   const session = useSessionStore((state) => state.session);
   const { width } = useWindowDimensions();
   const [filter, setFilter] = useState<HomeFilter>("all");
+  const [measuredWidth, setMeasuredWidth] = useState(0);
   const templatesQuery = useQuery({
     queryKey: ["templates"],
     queryFn: getTemplates
   });
-  const isCompact = width < 360;
-  const horizontalPadding = isCompact ? 12 : 14;
-  const columnCount = width >= 360 ? 3 : 2;
-  const gridGap = 10;
-  const cardWidth = Math.floor((width - horizontalPadding * 2 - gridGap * (columnCount - 1)) / columnCount);
-  const cardHeight = columnCount === 3 ? Math.max(150, Math.min(cardWidth * 1.58, 165)) : Math.max(180, Math.min(cardWidth * 1.35, 200));
+  const availableWidth = measuredWidth || width;
+  const isCompact = availableWidth < 380;
+  const horizontalPadding = isCompact ? 12 : 16;
+  const contentWidth = Math.max(0, availableWidth - horizontalPadding * 2);
+  const columnCount = contentWidth >= 340 ? 3 : 2;
+  const gridGap = isCompact ? 10 : 12;
+  const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
+  const cardHeight = columnCount === 3 ? Math.max(170, Math.min(cardWidth * 1.58, 186)) : Math.max(190, Math.min(cardWidth * 1.32, 220));
   const creatorName = getCreatorName(session?.user.user_metadata?.full_name, session?.user.email);
   const templates = useMemo(() => {
     const source = templatesQuery.data?.length ? templatesQuery.data.map(mapTemplateForHome) : FALLBACK_TEMPLATES;
@@ -78,7 +81,8 @@ export default function HomeScreen() {
         key={columnCount}
         keyExtractor={(item) => item.id}
         numColumns={columnCount}
-        columnWrapperStyle={columnCount > 1 ? { gap: gridGap } : undefined}
+        columnWrapperStyle={columnCount > 1 ? styles.gridRow : undefined}
+        onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}
         refreshControl={<RefreshControl refreshing={templatesQuery.isRefetching} onRefresh={() => templatesQuery.refetch()} />}
         contentContainerStyle={[styles.content, { paddingHorizontal: horizontalPadding }]}
         ListHeaderComponent={
@@ -140,7 +144,14 @@ export default function HomeScreen() {
             <Text style={[styles.emptyText, { color: appTheme.secondaryText }]}>{templatesQuery.isLoading ? "Loading templates..." : "No templates found."}</Text>
           </View>
         }
-        renderItem={({ item }) => <TemplateCard height={cardHeight} template={item} width={cardWidth} />}
+        renderItem={({ index, item }) => (
+          <TemplateCard
+            height={cardHeight}
+            marginRight={index % columnCount === columnCount - 1 ? 0 : gridGap}
+            template={item}
+            width={cardWidth}
+          />
+        )}
       />
       <BottomNav active="home" variant="main" />
     </SafeAreaView>
@@ -163,13 +174,13 @@ function CategoryChip({ active, icon, label, onPress }: { active: boolean; icon:
   );
 }
 
-function TemplateCard({ height, template, width }: { height: number; template: DisplayTemplate; width: number }) {
+function TemplateCard({ height, marginRight, template, width }: { height: number; marginRight: number; template: DisplayTemplate; width: number }) {
   const appTheme = useAppTheme();
   const isDarkCard = template.theme.foreground === "#FFFFFF";
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.routeId } }} asChild>
-      <Pressable style={[styles.templateCard, { width, height, backgroundColor: template.theme.background, borderColor: appTheme.border }]}>
+      <Pressable style={[styles.templateCard, { width, height, marginRight, backgroundColor: template.theme.background, borderColor: appTheme.border }]}>
         <DreamyArt accent={template.theme.accent} muted={template.theme.muted} />
         <View style={[styles.cardOverlay, isDarkCard ? styles.cardOverlayDark : null]} />
         <View style={styles.cardContent}>
@@ -282,6 +293,7 @@ const styles = StyleSheet.create({
   sectionTitleCompact: { fontSize: 15 },
   seeAllButton: { flexDirection: "row", alignItems: "center", gap: 2 },
   seeAll: { fontFamily: FONT.medium, fontSize: 12, lineHeight: 16 },
+  gridRow: {},
   templateCard: { marginBottom: 12, borderRadius: 16, borderWidth: 1, overflow: "hidden", ...softShadow },
   artLayer: { ...StyleSheet.absoluteFillObject, overflow: "hidden" },
   artSky: { ...StyleSheet.absoluteFillObject },

@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
 import type { Template, TemplateCategory } from "@airplane/shared";
@@ -13,13 +13,22 @@ type CategoryFilter = "all" | TemplateCategory;
 
 export default function TemplatesScreen() {
   const appTheme = useAppTheme();
+  const { width } = useWindowDimensions();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CategoryFilter>("all");
+  const [measuredWidth, setMeasuredWidth] = useState(0);
   const templatesQuery = useQuery({
     queryKey: ["templates"],
     queryFn: getTemplates
   });
   const templates = templatesQuery.data ?? [];
+  const availableWidth = measuredWidth || width;
+  const horizontalPadding = availableWidth < 380 ? 12 : 16;
+  const contentWidth = Math.max(0, availableWidth - horizontalPadding * 2);
+  const columnCount = contentWidth >= 340 ? 3 : 2;
+  const gridGap = contentWidth >= 340 ? 10 : 12;
+  const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
+  const previewHeight = columnCount === 3 ? 112 : 126;
   const filteredTemplates = useMemo(() => {
     const search = query.trim().toLowerCase();
 
@@ -34,11 +43,13 @@ export default function TemplatesScreen() {
     <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: appTheme.background }]}>
       <FlatList
         data={filteredTemplates}
+        key={columnCount}
         keyExtractor={(item) => item.id}
-        numColumns={2}
+        numColumns={columnCount}
         columnWrapperStyle={styles.gridRow}
+        onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}
         refreshControl={<RefreshControl refreshing={templatesQuery.isRefetching} onRefresh={() => templatesQuery.refetch()} />}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingHorizontal: horizontalPadding }]}
         ListHeaderComponent={
           <View style={styles.headerStack}>
             <View style={styles.header}>
@@ -51,18 +62,18 @@ export default function TemplatesScreen() {
             </View>
 
             <View style={[styles.searchBox, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
-              <Ionicons color="#98a2b3" name="search-outline" size={19} />
+              <Ionicons color={appTheme.mutedText} name="search-outline" size={19} />
               <TextInput
                 autoCapitalize="none"
                 onChangeText={setQuery}
                 placeholder="Search templates..."
-                placeholderTextColor="#98a2b3"
-                style={styles.searchInput}
+                placeholderTextColor={appTheme.mutedText}
+                style={[styles.searchInput, { color: appTheme.text }]}
                 value={query}
               />
               {query ? (
                 <Pressable accessibilityLabel="Clear search" onPress={() => setQuery("")}>
-                  <Ionicons color="#98a2b3" name="close-circle" size={19} />
+                  <Ionicons color={appTheme.mutedText} name="close-circle" size={19} />
                 </Pressable>
               ) : null}
             </View>
@@ -97,19 +108,26 @@ export default function TemplatesScreen() {
             </View>
           ) : null
         }
-        renderItem={({ item }) => <TemplateCard template={item} />}
+        renderItem={({ index, item }) => (
+          <TemplateCard
+            marginRight={index % columnCount === columnCount - 1 ? 0 : gridGap}
+            previewHeight={previewHeight}
+            template={item}
+            width={cardWidth}
+          />
+        )}
       />
     </SafeAreaView>
   );
 }
 
-function TemplateCard({ template }: { template: Template }) {
+function TemplateCard({ marginRight, previewHeight, template, width }: { marginRight: number; previewHeight: number; template: Template; width: number }) {
   const appTheme = useAppTheme();
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
-      <Pressable style={[styles.card, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
-        <View style={[styles.preview, { backgroundColor: template.defaultTheme.background }]}>
+      <Pressable style={[styles.card, { width, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+        <View style={[styles.preview, { height: previewHeight, backgroundColor: template.defaultTheme.background }]}>
           <View style={[styles.previewIcon, { backgroundColor: template.defaultTheme.muted }]}>
             <Ionicons color={template.defaultTheme.accent} name={getTemplateIcon(template.category)} size={28} />
           </View>
@@ -155,33 +173,33 @@ function getTemplateIcon(category: TemplateCategory): keyof typeof Ionicons.glyp
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#fff7fb" },
-  list: { gap: 20, padding: 16, paddingBottom: 40 },
-  headerStack: { gap: 20 },
-  header: { gap: 7, paddingTop: 8 },
+  screen: { flex: 1 },
+  list: { gap: 16, paddingTop: 8, paddingBottom: 40 },
+  headerStack: { gap: 14 },
+  header: { gap: 5, paddingTop: 4 },
   headerIcon: { width: 48, height: 48, borderRadius: 18, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", alignItems: "center", justifyContent: "center", marginBottom: 3 },
   eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
-  title: { color: "#101828", fontSize: 32, lineHeight: 38, fontWeight: "900" },
-  subtitle: { color: "#667085", fontSize: 15, lineHeight: 22 },
-  searchBox: { height: 52, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 13 },
-  searchInput: { flex: 1, color: "#101828", fontSize: 13 },
-  chips: { gap: 10 },
-  chip: { minHeight: 36, borderRadius: 18, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", paddingHorizontal: 13 },
+  title: { color: "#101828", fontSize: 24, lineHeight: 30, fontWeight: "900" },
+  subtitle: { color: "#667085", fontSize: 13, lineHeight: 19 },
+  searchBox: { height: 44, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 13 },
+  searchInput: { flex: 1, color: "#101828", fontSize: 13, padding: 0 },
+  chips: { gap: 8 },
+  chip: { minHeight: 32, borderRadius: 16, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", paddingHorizontal: 12 },
   activeChip: { borderColor: "#ec0e68", backgroundColor: "#ec0e68" },
   chipText: { color: "#344054", fontSize: 13, fontWeight: "900", textTransform: "capitalize" },
   activeChipText: { color: "#ffffff" },
-  gridRow: { gap: 12 },
-  card: { flex: 1, minHeight: 268, borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 10, gap: 9 },
-  preview: { height: 128, borderRadius: 18, alignItems: "center", justifyContent: "center", overflow: "hidden", gap: 8, padding: 10 },
-  previewIcon: { width: 52, height: 52, borderRadius: 18, alignItems: "center", justifyContent: "center" },
-  previewText: { fontSize: 16, lineHeight: 20, fontWeight: "900", textAlign: "center" },
+  gridRow: {},
+  card: { minHeight: 216, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 8, gap: 7, marginBottom: 12 },
+  preview: { borderRadius: 16, alignItems: "center", justifyContent: "center", overflow: "hidden", gap: 7, padding: 8 },
+  previewIcon: { width: 42, height: 42, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  previewText: { fontSize: 13, lineHeight: 17, fontWeight: "900", textAlign: "center" },
   premiumBadge: { position: "absolute", right: 8, top: 8, overflow: "hidden", borderRadius: 14, backgroundColor: "#ec0e68", color: "#ffffff", paddingHorizontal: 7, paddingVertical: 4, fontSize: 10, fontWeight: "900" },
   metaRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   categoryLabel: { color: "#ec0e68", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
   swatches: { flexDirection: "row", gap: 5 },
   swatch: { width: 16, height: 16, borderRadius: 8, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)" },
-  cardTitle: { color: "#101828", fontSize: 14, lineHeight: 18, fontWeight: "900" },
-  cardCopy: { color: "#667085", fontSize: 12, lineHeight: 17 },
+  cardTitle: { color: "#101828", fontSize: 12, lineHeight: 16, fontWeight: "900" },
+  cardCopy: { color: "#667085", fontSize: 10, lineHeight: 14 },
   footerRow: { marginTop: "auto", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   pageCount: { color: "#667085", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
   emptyCard: { gap: 8, alignItems: "center", borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 18 },
