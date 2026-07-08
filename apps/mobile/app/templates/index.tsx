@@ -25,10 +25,9 @@ export default function TemplatesScreen() {
   const availableWidth = measuredWidth || width;
   const horizontalPadding = availableWidth < 380 ? 12 : 16;
   const contentWidth = Math.max(0, availableWidth - horizontalPadding * 2);
-  const columnCount = contentWidth >= 340 ? 3 : 2;
-  const gridGap = contentWidth >= 340 ? 10 : 12;
-  const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
-  const previewHeight = columnCount === 3 ? 112 : 126;
+  const gridGap = 12;
+  const cardWidth = Math.floor((contentWidth - gridGap) / 2);
+  const previewHeight = Math.max(126, Math.min(146, Math.round(cardWidth * 0.78)));
   const filteredTemplates = useMemo(() => {
     const search = query.trim().toLowerCase();
 
@@ -38,15 +37,13 @@ export default function TemplatesScreen() {
       return matchesCategory && matchesSearch;
     });
   }, [category, query, templates]);
+  const templateRows = useMemo(() => chunkTemplates(filteredTemplates, 2), [filteredTemplates]);
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: appTheme.background }]}>
       <FlatList
-        data={filteredTemplates}
-        key={columnCount}
-        keyExtractor={(item) => item.id}
-        numColumns={columnCount}
-        columnWrapperStyle={styles.gridRow}
+        data={templateRows}
+        keyExtractor={(item, index) => item.map((template) => template.id).join("-") || `row-${index}`}
         onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}
         refreshControl={<RefreshControl refreshing={templatesQuery.isRefetching} onRefresh={() => templatesQuery.refetch()} />}
         contentContainerStyle={[styles.list, { paddingHorizontal: horizontalPadding }]}
@@ -108,25 +105,25 @@ export default function TemplatesScreen() {
             </View>
           ) : null
         }
-        renderItem={({ index, item }) => (
-          <TemplateCard
-            marginRight={index % columnCount === columnCount - 1 ? 0 : gridGap}
-            previewHeight={previewHeight}
-            template={item}
-            width={cardWidth}
-          />
+        renderItem={({ item }) => (
+          <View style={styles.gridRow}>
+            {item.map((template) => (
+              <TemplateCard key={template.id} previewHeight={previewHeight} template={template} width={cardWidth} />
+            ))}
+            {item.length === 1 ? <View style={[styles.cardSpacer, { width: cardWidth }]} /> : null}
+          </View>
         )}
       />
     </SafeAreaView>
   );
 }
 
-function TemplateCard({ marginRight, previewHeight, template, width }: { marginRight: number; previewHeight: number; template: Template; width: number }) {
+function TemplateCard({ previewHeight, template, width }: { previewHeight: number; template: Template; width: number }) {
   const appTheme = useAppTheme();
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
-      <Pressable style={[styles.card, { width, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+      <Pressable style={[styles.card, { width, backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
         <View style={[styles.preview, { height: previewHeight, backgroundColor: template.defaultTheme.background }]}>
           <View style={[styles.previewIcon, { backgroundColor: template.defaultTheme.muted }]}>
             <Ionicons color={template.defaultTheme.accent} name={getTemplateIcon(template.category)} size={28} />
@@ -150,6 +147,16 @@ function TemplateCard({ marginRight, previewHeight, template, width }: { marginR
       </Pressable>
     </Link>
   );
+}
+
+function chunkTemplates(items: Template[], size: number) {
+  const rows: Template[][] = [];
+
+  for (let index = 0; index < items.length; index += size) {
+    rows.push(items.slice(index, index + size));
+  }
+
+  return rows;
 }
 
 function getTemplateIcon(category: TemplateCategory): keyof typeof Ionicons.glyphMap {
@@ -188,7 +195,8 @@ const styles = StyleSheet.create({
   activeChip: { borderColor: "#ec0e68", backgroundColor: "#ec0e68" },
   chipText: { color: "#344054", fontSize: 13, fontWeight: "900", textTransform: "capitalize" },
   activeChipText: { color: "#ffffff" },
-  gridRow: {},
+  gridRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+  cardSpacer: { flexShrink: 0 },
   card: { minHeight: 216, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 8, gap: 7, marginBottom: 12 },
   preview: { borderRadius: 16, alignItems: "center", justifyContent: "center", overflow: "hidden", gap: 7, padding: 8 },
   previewIcon: { width: 42, height: 42, borderRadius: 14, alignItems: "center", justifyContent: "center" },
