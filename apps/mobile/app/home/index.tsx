@@ -78,7 +78,7 @@ export default function HomeScreen() {
   const columnCount = 2;
   const gridGap = 12;
   const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
-  const cardHeight = isCompact ? 320 : 350;
+  const cardHeight = isCompact ? 480 : 540;
   const creator = getCreator(session?.user.user_metadata?.full_name, session?.user.email);
   const templates = useMemo(() => {
     const source = buildPopularTemplates(templatesQuery.data ?? []);
@@ -190,7 +190,7 @@ function TemplateCard({ height, marginRight, template, width }: { height: number
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.routeId } }} asChild>
-      <Pressable style={[styles.templateCard, { width, height, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border, shadowColor: appTheme.text }]}>
+      <Pressable style={[styles.templateCard, { width, height, minHeight: height, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border, shadowColor: appTheme.text }]}>
         <ImageBackground imageStyle={styles.cardImage} resizeMode="cover" source={template.image} style={styles.cardImageFill}>
           <LinearGradient
             colors={[transparentColor(appTheme.surface, 0.1), transparentColor(appTheme.surface, 0.34), transparentColor(appTheme.text, 0.34)]}
