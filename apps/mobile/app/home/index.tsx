@@ -78,7 +78,7 @@ export default function HomeScreen() {
   const columnCount = contentWidth >= 320 ? 3 : 2;
   const gridGap = 10;
   const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
-  const cardHeight = columnCount === 3 ? Math.max(158, Math.min(178, Math.round(cardWidth * 1.55))) : Math.max(170, Math.min(188, Math.round(cardWidth * 1.05)));
+  const cardHeight = columnCount === 3 ? Math.max(170, Math.min(186, Math.round(cardWidth * 1.66))) : Math.max(184, Math.min(206, Math.round(cardWidth * 1.12)));
   const creator = getCreator(session?.user.user_metadata?.full_name, session?.user.email);
   const templates = useMemo(() => {
     const source = buildPopularTemplates(templatesQuery.data ?? []);
@@ -311,10 +311,10 @@ const styles = StyleSheet.create({
   cardImage: { borderRadius: 16 },
   cardImageFill: { flex: 1, overflow: "hidden" },
   cardShade: { ...StyleSheet.absoluteFillObject },
-  cardTopWash: { position: "absolute", left: 0, right: 0, top: 0, height: 64 },
-  cardContent: { alignItems: "center", paddingHorizontal: 8, paddingTop: 18 },
+  cardTopWash: { position: "absolute", left: 0, right: 0, top: 0, height: 74 },
+  cardContent: { alignItems: "center", paddingHorizontal: 7, paddingTop: 20 },
   cardTitle: { fontFamily: FONT.bold, fontSize: 12, lineHeight: 16, textAlign: "center" },
-  cardPill: { position: "absolute", alignSelf: "center", top: 66, minHeight: 24, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 9 },
+  cardPill: { position: "absolute", alignSelf: "center", top: 74, minHeight: 24, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 9 },
   cardPillText: { fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
   emptyCard: { minHeight: 84, borderRadius: 16, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   emptyText: { fontFamily: FONT.medium, fontSize: 12 }
