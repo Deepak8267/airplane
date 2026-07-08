@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   cardPill: { position: "absolute", alignSelf: "center", top: 72, minHeight: 22, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   cardPillText: { fontFamily: FONT.medium, fontSize: 9, lineHeight: 12 },
   upgradeBanner: {
-    minHeight: 78,
+    minHeight: 74,
     borderRadius: 18,
     borderWidth: 1,
     flexDirection: "row",
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
     marginBottom: 10,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 11,
     ...softShadow
   },
   upgradeIcon: { width: 42, height: 42, borderRadius: 16, alignItems: "center", justifyContent: "center" },
