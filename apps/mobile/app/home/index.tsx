@@ -85,15 +85,14 @@ export default function HomeScreen() {
     const source = buildPopularTemplates(templatesQuery.data ?? []);
     return source.filter((template) => filter === "all" || template.category === filter);
   }, [filter, templatesQuery.data]);
+  const templateRows = useMemo(() => chunkTemplates(templates, columnCount), [columnCount, templates]);
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: appTheme.background }]}>
       <FlatList
-        data={templates}
+        data={templateRows}
         key={columnCount}
-        keyExtractor={(item) => item.id}
-        numColumns={columnCount}
-        columnWrapperStyle={columnCount > 1 ? styles.gridRow : undefined}
+        keyExtractor={(item, index) => item.map((template) => template.id).join("-") || `row-${index}`}
         onLayout={(event) => setMeasuredWidth(event.nativeEvent.layout.width)}
         refreshControl={<RefreshControl refreshing={templatesQuery.isRefetching} onRefresh={() => templatesQuery.refetch()} />}
         contentContainerStyle={[styles.content, { paddingHorizontal: horizontalPadding }]}
@@ -157,14 +156,17 @@ export default function HomeScreen() {
           </View>
         }
         ListFooterComponent={<UpgradeBanner />}
-        renderItem={({ index, item }) => (
-          <TemplateCard
-            height={cardHeight}
-            marginBottom={rowGap}
-            marginRight={0}
-            template={item}
-            width={cardWidth}
-          />
+        renderItem={({ item }) => (
+          <View style={[styles.gridRow, { gap: gridGap, marginBottom: rowGap }]}>
+            {item.map((template) => (
+              <TemplateCard key={template.id} height={cardHeight} template={template} width={cardWidth} />
+            ))}
+            {item.length < columnCount
+              ? Array.from({ length: columnCount - item.length }).map((_, index) => (
+                  <View key={`spacer-${index}`} style={[styles.cardSpacer, { width: cardWidth }]} />
+                ))
+              : null}
+          </View>
         )}
       />
       <BottomNav active="home" variant="main" />
@@ -215,12 +217,12 @@ function CategoryChip({ active, icon, label, onPress }: { active: boolean; icon:
   );
 }
 
-function TemplateCard({ height, marginBottom, marginRight, template, width }: { height: number; marginBottom: number; marginRight: number; template: DisplayTemplate; width: number }) {
+function TemplateCard({ height, template, width }: { height: number; template: DisplayTemplate; width: number }) {
   const appTheme = useAppTheme();
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.routeId } }} asChild>
-      <Pressable style={[styles.templateCard, { width, height, minHeight: height, maxHeight: height, marginBottom, marginRight, shadowColor: appTheme.text }]}>
+      <Pressable style={[styles.templateCard, { width, height, minHeight: height, maxHeight: height, shadowColor: appTheme.text }]}>
         <ImageBackground imageStyle={styles.cardImage} resizeMode="cover" source={template.image} style={[styles.cardImageFill, { width, height, backgroundColor: appTheme.background }]}>
           <LinearGradient
             colors={[transparentColor(appTheme.text, 0), transparentColor(appTheme.text, 0.04), transparentColor(appTheme.text, 0.38)]}
@@ -258,6 +260,16 @@ function buildPopularTemplates(templates: Template[]): DisplayTemplate[] {
       image: card.image
     };
   });
+}
+
+function chunkTemplates(items: DisplayTemplate[], size: number) {
+  const rows: DisplayTemplate[][] = [];
+
+  for (let index = 0; index < items.length; index += size) {
+    rows.push(items.slice(index, index + size));
+  }
+
+  return rows;
 }
 
 function findMatchingTemplate(templates: Template[], matchers: string[]) {
@@ -341,7 +353,8 @@ const styles = StyleSheet.create({
   sectionTitleCompact: { fontSize: 15 },
   seeAllButton: { flexDirection: "row", alignItems: "center", gap: 2 },
   seeAll: { fontFamily: FONT.medium, fontSize: 12, lineHeight: 16 },
-  gridRow: { columnGap: 12, justifyContent: "flex-start" },
+  gridRow: { flexDirection: "row", justifyContent: "flex-start" },
+  cardSpacer: { flexShrink: 0 },
   templateCard: { borderRadius: 16, overflow: "hidden", ...softShadow },
   cardImage: { borderRadius: 16, width: "100%", height: "100%" },
   cardImageFill: { borderRadius: 16, overflow: "hidden" },
