@@ -1,8 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { FlatList, ImageBackground, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import type { ImageSourcePropType } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
 import type { Template, TemplateCategory } from "@airplane/shared";
@@ -10,6 +12,15 @@ import { getTemplates } from "@/features/templates/template-service";
 import { useAppTheme } from "@/stores/app-theme-store";
 
 type CategoryFilter = "all" | TemplateCategory;
+
+const CARD_IMAGES = {
+  proposal: require("../../assets/templates/proposal-garden.png") as ImageSourcePropType,
+  lake: require("../../assets/templates/lake-memory.png") as ImageSourcePropType,
+  birthday: require("../../assets/templates/birthday-garden.png") as ImageSourcePropType,
+  memory: require("../../assets/templates/memory-table.png") as ImageSourcePropType,
+  anniversary: require("../../assets/templates/anniversary-path.png") as ImageSourcePropType,
+  candlelight: require("../../assets/templates/candlelight-couple.png") as ImageSourcePropType
+};
 
 export default function TemplatesScreen() {
   const appTheme = useAppTheme();
@@ -25,9 +36,11 @@ export default function TemplatesScreen() {
   const availableWidth = measuredWidth || width;
   const horizontalPadding = availableWidth < 380 ? 12 : 16;
   const contentWidth = Math.max(0, availableWidth - horizontalPadding * 2);
-  const gridGap = 12;
-  const cardWidth = Math.floor((contentWidth - gridGap) / 2);
-  const previewHeight = Math.max(126, Math.min(146, Math.round(cardWidth * 0.78)));
+  const columnCount = contentWidth >= 330 ? 3 : 2;
+  const gridGap = contentWidth >= 330 ? 12 : 10;
+  const rowGap = contentWidth >= 330 ? 14 : 12;
+  const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
+  const cardHeight = columnCount === 3 ? Math.max(186, Math.min(206, Math.round(cardWidth * 1.72))) : Math.max(240, Math.min(280, Math.round(cardWidth * 1.45)));
   const filteredTemplates = useMemo(() => {
     const search = query.trim().toLowerCase();
 
@@ -37,7 +50,7 @@ export default function TemplatesScreen() {
       return matchesCategory && matchesSearch;
     });
   }, [category, query, templates]);
-  const templateRows = useMemo(() => chunkTemplates(filteredTemplates, 2), [filteredTemplates]);
+  const templateRows = useMemo(() => chunkTemplates(filteredTemplates, columnCount), [columnCount, filteredTemplates]);
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: appTheme.background }]}>
@@ -106,11 +119,15 @@ export default function TemplatesScreen() {
           ) : null
         }
         renderItem={({ item }) => (
-          <View style={styles.gridRow}>
+          <View style={[styles.gridRow, { gap: gridGap, marginBottom: rowGap }]}>
             {item.map((template) => (
-              <TemplateCard key={template.id} previewHeight={previewHeight} template={template} width={cardWidth} />
+              <TemplateCard key={template.id} height={cardHeight} template={template} width={cardWidth} />
             ))}
-            {item.length === 1 ? <View style={[styles.cardSpacer, { width: cardWidth }]} /> : null}
+            {item.length < columnCount
+              ? Array.from({ length: columnCount - item.length }).map((_, index) => (
+                  <View key={`spacer-${index}`} style={[styles.cardSpacer, { width: cardWidth }]} />
+                ))
+              : null}
           </View>
         )}
       />
@@ -118,32 +135,35 @@ export default function TemplatesScreen() {
   );
 }
 
-function TemplateCard({ previewHeight, template, width }: { previewHeight: number; template: Template; width: number }) {
+function TemplateCard({ height, template, width }: { height: number; template: Template; width: number }) {
   const appTheme = useAppTheme();
+  const group = getTemplateGroup(template);
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
-      <Pressable style={[styles.card, { width, backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
-        <View style={[styles.preview, { height: previewHeight, backgroundColor: template.defaultTheme.background }]}>
-          <View style={[styles.previewIcon, { backgroundColor: template.defaultTheme.muted }]}>
-            <Ionicons color={template.defaultTheme.accent} name={getTemplateIcon(template.category)} size={28} />
+      <Pressable style={[styles.card, { width, height, minHeight: height, maxHeight: height, shadowColor: appTheme.text }]}>
+        <ImageBackground imageStyle={styles.cardImage} resizeMode="cover" source={getTemplateImage(template)} style={[styles.cardImageFill, { width, height, backgroundColor: appTheme.background }]}>
+          <LinearGradient
+            colors={[transparentColor(appTheme.text, 0), transparentColor(appTheme.text, 0.04), transparentColor(appTheme.text, 0.38)]}
+            locations={[0, 0.62, 1]}
+            style={styles.cardShade}
+          />
+          {template.isPremium ? <Text allowFontScaling={false} style={[styles.premiumBadge, { backgroundColor: appTheme.primary, color: appTheme.surface }]}>Premium</Text> : null}
+          <View style={styles.cardContent}>
+            <Text
+              allowFontScaling={false}
+              numberOfLines={2}
+              style={[styles.cardTitle, { color: appTheme.text, textShadowColor: transparentColor(appTheme.surface, 0.82) }]}
+            >
+              {template.name}
+            </Text>
           </View>
-          <Text style={[styles.previewText, { color: template.defaultTheme.foreground }]} numberOfLines={2}>{template.name}</Text>
-          {template.isPremium ? <Text style={[styles.premiumBadge, { backgroundColor: appTheme.primary }]}>Premium</Text> : null}
-        </View>
-        <View style={styles.metaRow}>
-          <Text style={[styles.categoryLabel, { color: appTheme.primary }]}>{template.category}</Text>
-          <View style={styles.swatches}>
-            <View style={[styles.swatch, { backgroundColor: template.defaultTheme.muted }]} />
-            <View style={[styles.swatch, { backgroundColor: template.defaultTheme.accent }]} />
+          <View style={[styles.cardPill, { backgroundColor: transparentColor(appTheme.surface, 0.82), borderColor: transparentColor(appTheme.surface, 0.7) }]}>
+            <Text allowFontScaling={false} numberOfLines={1} style={[styles.cardPillText, { color: getCategoryColor(group, appTheme.primary, appTheme.accent, appTheme.primaryDark) }]}>
+              {formatCategory(group)}
+            </Text>
           </View>
-        </View>
-        <Text style={[styles.cardTitle, { color: appTheme.text }]} numberOfLines={2}>{template.name}</Text>
-        <Text style={[styles.cardCopy, { color: appTheme.secondaryText }]} numberOfLines={2}>{template.description}</Text>
-        <View style={styles.footerRow}>
-          <Text style={[styles.pageCount, { color: appTheme.secondaryText }]}>{template.defaultPages.length} pages</Text>
-          <Ionicons color={appTheme.secondaryText} name="chevron-forward" size={17} />
-        </View>
+        </ImageBackground>
       </Pressable>
     </Link>
   );
@@ -159,24 +179,74 @@ function chunkTemplates(items: Template[], size: number) {
   return rows;
 }
 
-function getTemplateIcon(category: TemplateCategory): keyof typeof Ionicons.glyphMap {
-  if (category === "birthday") {
-    return "gift-outline";
+function getTemplateGroup(template: Template) {
+  const value = `${template.id} ${template.name} ${template.description} ${template.category} ${template.templateType}`.toLowerCase();
+
+  if (value.includes("anniversary")) {
+    return "anniversary";
   }
 
-  if (category === "friends") {
-    return "people-outline";
+  if (value.includes("birthday") || value.includes("surprise")) {
+    return "surprise";
   }
 
-  if (category === "family") {
-    return "home-outline";
+  if (value.includes("friend") || value.includes("family") || value.includes("memory")) {
+    return "memory";
   }
 
-  if (category === "fun") {
-    return "sparkles-outline";
+  return "proposal";
+}
+
+function getTemplateImage(template: Template) {
+  const value = `${template.id} ${template.name} ${template.description} ${template.category} ${template.templateType}`.toLowerCase();
+
+  if (value.includes("birthday")) {
+    return CARD_IMAGES.birthday;
   }
 
-  return "heart-outline";
+  if (value.includes("anniversary")) {
+    return CARD_IMAGES.anniversary;
+  }
+
+  if (value.includes("friend") || value.includes("family") || value.includes("memory")) {
+    return CARD_IMAGES.memory;
+  }
+
+  if (value.includes("date") || value.includes("trip")) {
+    return CARD_IMAGES.lake;
+  }
+
+  if (value.includes("mystery")) {
+    return CARD_IMAGES.candlelight;
+  }
+
+  return CARD_IMAGES.proposal;
+}
+
+function getCategoryColor(category: string, primary: string, accent: string, primaryDark: string) {
+  if (category === "surprise") {
+    return accent;
+  }
+
+  if (category === "anniversary") {
+    return primaryDark;
+  }
+
+  return primary;
+}
+
+function formatCategory(category: string) {
+  return category.charAt(0).toUpperCase() + category.slice(1);
+}
+
+function transparentColor(hex: string, alpha: number) {
+  const normalized = hex.replace("#", "");
+  const value = normalized.length === 3 ? normalized.split("").map((char) => `${char}${char}`).join("") : normalized;
+  const red = Number.parseInt(value.slice(0, 2), 16);
+  const green = Number.parseInt(value.slice(2, 4), 16);
+  const blue = Number.parseInt(value.slice(4, 6), 16);
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 }
 
 const styles = StyleSheet.create({
@@ -195,21 +265,31 @@ const styles = StyleSheet.create({
   activeChip: { borderColor: "#ec0e68", backgroundColor: "#ec0e68" },
   chipText: { color: "#344054", fontSize: 13, fontWeight: "900", textTransform: "capitalize" },
   activeChipText: { color: "#ffffff" },
-  gridRow: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
+  gridRow: { flexDirection: "row", justifyContent: "flex-start" },
   cardSpacer: { flexShrink: 0 },
-  card: { minHeight: 216, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 8, gap: 7, marginBottom: 12 },
-  preview: { borderRadius: 16, alignItems: "center", justifyContent: "center", overflow: "hidden", gap: 7, padding: 8 },
-  previewIcon: { width: 42, height: 42, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  previewText: { fontSize: 13, lineHeight: 17, fontWeight: "900", textAlign: "center" },
-  premiumBadge: { position: "absolute", right: 8, top: 8, overflow: "hidden", borderRadius: 14, backgroundColor: "#ec0e68", color: "#ffffff", paddingHorizontal: 7, paddingVertical: 4, fontSize: 10, fontWeight: "900" },
-  metaRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
-  categoryLabel: { color: "#ec0e68", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
-  swatches: { flexDirection: "row", gap: 5 },
-  swatch: { width: 16, height: 16, borderRadius: 8, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)" },
-  cardTitle: { color: "#101828", fontSize: 12, lineHeight: 16, fontWeight: "900" },
-  cardCopy: { color: "#667085", fontSize: 10, lineHeight: 14 },
-  footerRow: { marginTop: "auto", flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  pageCount: { color: "#667085", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
+  card: {
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2
+  },
+  cardImage: { borderRadius: 16, width: "100%", height: "100%" },
+  cardImageFill: { borderRadius: 16, overflow: "hidden" },
+  cardShade: { ...StyleSheet.absoluteFillObject },
+  premiumBadge: { position: "absolute", right: 7, top: 7, overflow: "hidden", borderRadius: 999, paddingHorizontal: 6, paddingVertical: 3, fontSize: 8, fontWeight: "900" },
+  cardContent: { alignItems: "center", paddingHorizontal: 7, paddingTop: 22 },
+  cardTitle: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: "900",
+    textAlign: "center",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3
+  },
+  cardPill: { position: "absolute", alignSelf: "center", top: 72, minHeight: 22, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
+  cardPillText: { fontSize: 9, lineHeight: 12, fontWeight: "700" },
   emptyCard: { gap: 8, alignItems: "center", borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 18 },
   emptyTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
   emptyCopy: { color: "#667085", textAlign: "center", lineHeight: 21 },
