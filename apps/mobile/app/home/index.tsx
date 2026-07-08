@@ -248,12 +248,12 @@ function TemplateCard({ height, template, width }: { height: number; template: D
 }
 
 function buildPopularTemplates(templates: Template[]): DisplayTemplate[] {
-  return POPULAR_TEMPLATE_CARDS.map((card) => {
+  return POPULAR_TEMPLATE_CARDS.map((card, index) => {
     const matchingTemplate = findMatchingTemplate(templates, card.match);
     const routeId = matchingTemplate?.id ?? card.fallbackRoute;
 
     return {
-      id: matchingTemplate?.id ?? `fallback-${card.fallbackRoute}`,
+      id: `popular-${index}-${card.fallbackRoute}`,
       name: card.name,
       category: card.category,
       routeId,
@@ -377,18 +377,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginTop: 1,
+    marginTop: 0,
     marginBottom: 10,
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 6,
     ...softShadow
   },
   upgradeIcon: { width: 34, height: 34, borderRadius: 13, alignItems: "center", justifyContent: "center" },
   upgradeCopy: { flex: 1, minWidth: 0, gap: 2 },
-  upgradeTitle: { fontFamily: FONT.bold, fontSize: 13, lineHeight: 17 },
-  upgradeText: { fontFamily: FONT.regular, fontSize: 10, lineHeight: 14 },
+  upgradeTitle: { fontFamily: FONT.bold, fontSize: 12, lineHeight: 16 },
+  upgradeText: { fontFamily: FONT.regular, fontSize: 9, lineHeight: 13 },
   upgradeButton: { minWidth: 44, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
-  upgradeButtonText: { fontFamily: FONT.bold, fontSize: 12, lineHeight: 15 },
+  upgradeButtonText: { fontFamily: FONT.bold, fontSize: 11, lineHeight: 14 },
   emptyCard: { minHeight: 84, borderRadius: 16, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   emptyText: { fontFamily: FONT.medium, fontSize: 12 }
 });
