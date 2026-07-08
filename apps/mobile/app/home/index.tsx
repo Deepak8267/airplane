@@ -75,10 +75,10 @@ export default function HomeScreen() {
   const isCompact = availableWidth < 380;
   const horizontalPadding = isCompact ? 12 : 16;
   const contentWidth = Math.max(0, availableWidth - horizontalPadding * 2);
-  const columnCount = contentWidth >= 320 ? 3 : 2;
-  const gridGap = 10;
+  const columnCount = 2;
+  const gridGap = 12;
   const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
-  const cardHeight = isCompact ? 180 : 190;
+  const cardHeight = isCompact ? 250 : 270;
   const creator = getCreator(session?.user.user_metadata?.full_name, session?.user.email);
   const templates = useMemo(() => {
     const source = buildPopularTemplates(templatesQuery.data ?? []);
@@ -311,10 +311,10 @@ const styles = StyleSheet.create({
   cardImage: { borderRadius: 16 },
   cardImageFill: { flex: 1, overflow: "hidden" },
   cardShade: { ...StyleSheet.absoluteFillObject },
-  cardTopWash: { position: "absolute", left: 0, right: 0, top: 0, height: 74 },
-  cardContent: { alignItems: "center", paddingHorizontal: 7, paddingTop: 20 },
-  cardTitle: { fontFamily: FONT.bold, fontSize: 12, lineHeight: 16, textAlign: "center" },
-  cardPill: { position: "absolute", alignSelf: "center", top: 74, minHeight: 24, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 9 },
+  cardTopWash: { position: "absolute", left: 0, right: 0, top: 0, height: 92 },
+  cardContent: { alignItems: "center", paddingHorizontal: 12, paddingTop: 26 },
+  cardTitle: { fontFamily: FONT.bold, fontSize: 13, lineHeight: 17, textAlign: "center" },
+  cardPill: { position: "absolute", alignSelf: "center", top: 86, minHeight: 25, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
   cardPillText: { fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
   emptyCard: { minHeight: 84, borderRadius: 16, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   emptyText: { fontFamily: FONT.medium, fontSize: 12 }
