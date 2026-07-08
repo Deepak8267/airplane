@@ -38,21 +38,27 @@ const CARD_IMAGES = {
   candlelight: require("../../assets/templates/candlelight-couple.png") as ImageSourcePropType
 };
 
+const POPULAR_TEMPLATE_CARDS: Array<{
+  category: HomeFilter;
+  fallbackRoute: string;
+  image: ImageSourcePropType;
+  match: string[];
+  name: string;
+}> = [
+  { name: "Will You Marry Me?", category: "proposal", fallbackRoute: "marriage-proposal", image: CARD_IMAGES.proposal, match: ["marriage", "proposal"] },
+  { name: "Our First Trip Together", category: "memory", fallbackRoute: "date-proposal", image: CARD_IMAGES.lake, match: ["date", "trip"] },
+  { name: "Birthday Surprise", category: "surprise", fallbackRoute: "birthday-surprise", image: CARD_IMAGES.birthday, match: ["birthday surprise"] },
+  { name: "Reasons I Love You", category: "memory", fallbackRoute: "birthday-memory-book", image: CARD_IMAGES.memory, match: ["memory book", "family memories", "memory"] },
+  { name: "Anniversary Journey", category: "anniversary", fallbackRoute: "anniversary-story", image: CARD_IMAGES.anniversary, match: ["anniversary"] },
+  { name: "Be My Girlfriend?", category: "proposal", fallbackRoute: "date-proposal", image: CARD_IMAGES.candlelight, match: ["girlfriend", "date"] }
+];
+
 const FILTERS: Array<{ id: HomeFilter; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
   { id: "all", label: "All", icon: "leaf-outline" },
   { id: "proposal", label: "Proposal", icon: "heart-outline" },
   { id: "memory", label: "Memory", icon: "image-outline" },
   { id: "surprise", label: "Surprise", icon: "gift-outline" },
   { id: "anniversary", label: "Anniversary", icon: "calendar-outline" }
-];
-
-const FALLBACK_TEMPLATES: DisplayTemplate[] = [
-  { id: "fallback-proposal", name: "Will You Marry Me?", category: "proposal", routeId: "marriage-proposal", image: CARD_IMAGES.proposal },
-  { id: "fallback-trip", name: "Our First Trip Together", category: "memory", routeId: "date-proposal", image: CARD_IMAGES.lake },
-  { id: "fallback-birthday", name: "Birthday Surprise", category: "surprise", routeId: "birthday-surprise", image: CARD_IMAGES.birthday },
-  { id: "fallback-reasons", name: "Reasons I Love You", category: "memory", routeId: "birthday-memory-book", image: CARD_IMAGES.memory },
-  { id: "fallback-anniversary", name: "Anniversary Journey", category: "anniversary", routeId: "anniversary-story", image: CARD_IMAGES.anniversary },
-  { id: "fallback-girlfriend", name: "Be My Girlfriend?", category: "proposal", routeId: "date-proposal", image: CARD_IMAGES.candlelight }
 ];
 
 export default function HomeScreen() {
@@ -75,8 +81,8 @@ export default function HomeScreen() {
   const cardHeight = columnCount === 3 ? Math.max(158, Math.min(178, Math.round(cardWidth * 1.55))) : Math.max(170, Math.min(188, Math.round(cardWidth * 1.05)));
   const creator = getCreator(session?.user.user_metadata?.full_name, session?.user.email);
   const templates = useMemo(() => {
-    const source = templatesQuery.data?.length ? templatesQuery.data.map(mapTemplateForHome) : FALLBACK_TEMPLATES;
-    return source.filter((template) => filter === "all" || template.category === filter).slice(0, 9);
+    const source = buildPopularTemplates(templatesQuery.data ?? []);
+    return source.filter((template) => filter === "all" || template.category === filter);
   }, [filter, templatesQuery.data]);
 
   return (
@@ -95,11 +101,11 @@ export default function HomeScreen() {
             <View style={styles.header}>
               <View style={styles.headerCopy}>
                 <View style={styles.greetingRow}>
-                  <Text numberOfLines={1} style={[styles.greeting, { color: appTheme.text }, isCompact ? styles.greetingCompact : null]}>
+                  <Text allowFontScaling={false} numberOfLines={1} style={[styles.greeting, { color: appTheme.text }, isCompact ? styles.greetingCompact : null]}>
                     {creator.greeting}
                   </Text>
                 </View>
-                <Text style={[styles.subtitle, { color: appTheme.secondaryText }, isCompact ? styles.subtitleCompact : null]}>What will you create today?</Text>
+                <Text allowFontScaling={false} style={[styles.subtitle, { color: appTheme.secondaryText }, isCompact ? styles.subtitleCompact : null]}>What will you create today?</Text>
               </View>
               <View style={styles.headerActions}>
                 <Pressable accessibilityLabel="Notifications" style={[styles.iconButton, { backgroundColor: appTheme.surface }]}>
@@ -107,7 +113,7 @@ export default function HomeScreen() {
                   <View style={[styles.iconDot, { backgroundColor: appTheme.primary }]} />
                 </Pressable>
                 <Pressable accessibilityLabel="Profile" style={[styles.avatar, { backgroundColor: appTheme.accent }]} onPress={() => router.push("/profile" as never)}>
-                  <Text style={[styles.avatarText, { color: appTheme.surface }]}>{creator.avatar}</Text>
+                  <Text allowFontScaling={false} style={[styles.avatarText, { color: appTheme.surface }]}>{creator.avatar}</Text>
                 </Pressable>
               </View>
             </View>
@@ -119,6 +125,7 @@ export default function HomeScreen() {
                 pointerEvents="none"
                 placeholder="Search templates..."
                 placeholderTextColor={appTheme.mutedText}
+                allowFontScaling={false}
                 style={[styles.searchInput, { color: appTheme.text }, isCompact ? styles.searchInputCompact : null]}
               />
               <Ionicons color={appTheme.secondaryText} name="options-outline" size={20} />
@@ -134,9 +141,9 @@ export default function HomeScreen() {
             />
 
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, { color: appTheme.text }, isCompact ? styles.sectionTitleCompact : null]}>Popular Templates</Text>
+              <Text allowFontScaling={false} style={[styles.sectionTitle, { color: appTheme.text }, isCompact ? styles.sectionTitleCompact : null]}>Popular Templates</Text>
               <Pressable style={styles.seeAllButton} onPress={() => router.push("/templates" as never)}>
-                <Text style={[styles.seeAll, { color: appTheme.primary }]}>See All</Text>
+                <Text allowFontScaling={false} style={[styles.seeAll, { color: appTheme.primary }]}>See All</Text>
                 <Ionicons color={appTheme.primary} name="chevron-forward" size={16} />
               </Pressable>
             </View>
@@ -145,7 +152,7 @@ export default function HomeScreen() {
         ListEmptyComponent={
           <View style={[styles.emptyCard, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
             <Ionicons color={appTheme.primary} name="leaf-outline" size={22} />
-            <Text style={[styles.emptyText, { color: appTheme.secondaryText }]}>{templatesQuery.isLoading ? "Loading templates..." : "No templates found."}</Text>
+            <Text allowFontScaling={false} style={[styles.emptyText, { color: appTheme.secondaryText }]}>{templatesQuery.isLoading ? "Loading templates..." : "No templates found."}</Text>
           </View>
         }
         renderItem={({ index, item }) => (
@@ -173,7 +180,7 @@ function CategoryChip({ active, icon, label, onPress }: { active: boolean; icon:
       onPress={onPress}
     >
       <Ionicons color={active ? appTheme.surface : appTheme.secondaryText} name={icon} size={14} />
-      <Text style={[styles.chipText, { color: active ? appTheme.surface : appTheme.secondaryText }]}>{label}</Text>
+      <Text allowFontScaling={false} style={[styles.chipText, { color: active ? appTheme.surface : appTheme.secondaryText }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -192,10 +199,10 @@ function TemplateCard({ height, marginRight, template, width }: { height: number
           />
           <View style={[styles.cardTopWash, { backgroundColor: transparentColor(appTheme.surface, 0.64) }]} />
           <View style={styles.cardContent}>
-            <Text numberOfLines={2} style={[styles.cardTitle, { color: appTheme.text }]}>{template.name}</Text>
+            <Text allowFontScaling={false} numberOfLines={2} style={[styles.cardTitle, { color: appTheme.text }]}>{template.name}</Text>
           </View>
           <View style={[styles.cardPill, { backgroundColor: transparentColor(appTheme.surface, 0.82), borderColor: transparentColor(appTheme.surface, 0.7) }]}>
-            <Text numberOfLines={1} style={[styles.cardPillText, { color: getCategoryColor(template.category, appTheme.primary, appTheme.accent, appTheme.primaryDark) }]}>{formatCategory(template.category)}</Text>
+            <Text allowFontScaling={false} numberOfLines={1} style={[styles.cardPillText, { color: getCategoryColor(template.category, appTheme.primary, appTheme.accent, appTheme.primaryDark) }]}>{formatCategory(template.category)}</Text>
           </View>
         </ImageBackground>
       </Pressable>
@@ -203,32 +210,26 @@ function TemplateCard({ height, marginRight, template, width }: { height: number
   );
 }
 
-function mapTemplateForHome(template: Template): DisplayTemplate {
-  return {
-    id: template.id,
-    name: template.name,
-    category: getHomeCategory(template),
-    routeId: template.id,
-    image: getTemplateImage(template)
-  };
+function buildPopularTemplates(templates: Template[]): DisplayTemplate[] {
+  return POPULAR_TEMPLATE_CARDS.map((card) => {
+    const matchingTemplate = findMatchingTemplate(templates, card.match);
+    const routeId = matchingTemplate?.id ?? card.fallbackRoute;
+
+    return {
+      id: matchingTemplate?.id ?? `fallback-${card.fallbackRoute}`,
+      name: card.name,
+      category: card.category,
+      routeId,
+      image: card.image
+    };
+  });
 }
 
-function getHomeCategory(template: Template): HomeFilter {
-  const value = `${template.name} ${template.description} ${template.category} ${template.templateType}`.toLowerCase();
-
-  if (value.includes("anniversary")) {
-    return "anniversary";
-  }
-
-  if (value.includes("birthday") || value.includes("surprise")) {
-    return "surprise";
-  }
-
-  if (value.includes("memory") || value.includes("friend") || value.includes("family")) {
-    return "memory";
-  }
-
-  return "proposal";
+function findMatchingTemplate(templates: Template[], matchers: string[]) {
+  return templates.find((template) => {
+    const value = `${template.id} ${template.name} ${template.description} ${template.category} ${template.templateType}`.toLowerCase();
+    return matchers.some((matcher) => value.includes(matcher));
+  });
 }
 
 function getCreator(fullName?: unknown, email?: string) {
@@ -259,32 +260,6 @@ function getCategoryColor(category: HomeFilter, primary: string, accent: string,
   }
 
   return primary;
-}
-
-function getTemplateImage(template: Template) {
-  const value = `${template.id} ${template.name} ${template.category} ${template.templateType}`.toLowerCase();
-
-  if (value.includes("birthday")) {
-    return CARD_IMAGES.birthday;
-  }
-
-  if (value.includes("anniversary")) {
-    return CARD_IMAGES.anniversary;
-  }
-
-  if (value.includes("friend") || value.includes("family") || value.includes("memory")) {
-    return CARD_IMAGES.memory;
-  }
-
-  if (value.includes("date")) {
-    return CARD_IMAGES.lake;
-  }
-
-  if (value.includes("mystery")) {
-    return CARD_IMAGES.candlelight;
-  }
-
-  return CARD_IMAGES.proposal;
 }
 
 function transparentColor(hex: string, alpha: number) {
