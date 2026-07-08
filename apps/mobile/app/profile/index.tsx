@@ -14,17 +14,6 @@ import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { useAppTheme } from "@/stores/app-theme-store";
 import { useSessionStore } from "@/stores/session-store";
 
-const COLORS = {
-  primary: "#FF3D81",
-  background: "#FFFFFF",
-  text: "#111827",
-  secondary: "#6B7280",
-  border: "#F3F4F6",
-  success: "#22C55E",
-  warning: "#F59E0B",
-  danger: "#EF4444"
-};
-
 const FONT = {
   regular: "Poppins_400Regular",
   medium: "Poppins_500Medium",
@@ -39,20 +28,18 @@ type ProfileStat = {
 };
 
 const MENU_ITEMS = [
-  { icon: "person-outline", iconColor: COLORS.primary, tone: "#FFEAF3", title: "Account Settings", subtitle: "Edit your personal information", route: "/settings" },
-  { icon: "star-outline", iconColor: COLORS.warning, tone: "#FFF7DF", title: "Subscription", subtitle: "Manage your plan and billing", route: "/subscription" },
-  { icon: "gift-outline", iconColor: "#16A34A", tone: "#E8F8EF", title: "My Templates", subtitle: "Your favorite and saved templates", route: "/templates" },
-  { icon: "download-outline", iconColor: "#228BE6", tone: "#EAF4FF", title: "Downloads", subtitle: "Access your downloaded assets", route: "/experiences" },
-  { icon: "shield-checkmark-outline", iconColor: "#7C3AED", tone: "#F2EAFF", title: "Privacy & Security", subtitle: "Manage privacy and security settings", route: "/settings" },
-  { icon: "help-circle-outline", iconColor: "#F04438", tone: "#FFF0EA", title: "Help & Support", subtitle: "Get help and contact support", route: "/help" },
-  { icon: "information-circle-outline", iconColor: "#475467", tone: "#F2F4F7", title: "About Airplane", subtitle: "Version 1.2.0", route: "/themes" }
+  { icon: "person-outline", title: "Account Settings", subtitle: "Edit your personal information", route: "/settings" },
+  { icon: "star-outline", title: "Subscription", subtitle: "Manage your plan and billing", route: "/subscription" },
+  { icon: "gift-outline", title: "My Templates", subtitle: "Your favorite and saved templates", route: "/templates" },
+  { icon: "download-outline", title: "Downloads", subtitle: "Access your downloaded assets", route: "/experiences" },
+  { icon: "shield-checkmark-outline", title: "Privacy & Security", subtitle: "Manage privacy and security settings", route: "/settings" },
+  { icon: "help-circle-outline", title: "Help & Support", subtitle: "Get help and contact support", route: "/help" },
+  { icon: "information-circle-outline", title: "About Airplane", subtitle: "Version 1.2.0", route: "/themes" }
 ] satisfies Array<{
   icon: keyof typeof Ionicons.glyphMap;
-  iconColor: string;
   route: string;
   subtitle: string;
   title: string;
-  tone: string;
 }>;
 
 export default function ProfileScreen() {
@@ -129,7 +116,7 @@ export default function ProfileScreen() {
           <ProfileCard email={displayEmail} initials={initials} name={displayName} phone={displayPhone || "Phone not added"} plan={planUsageQuery.data?.plan ?? "free"} profile={profile} stats={stats} onEdit={() => setEditorVisible(true)} />
           <PremiumBanner activeCount={planUsageQuery.data?.activeExperienceCount ?? 0} freeLimit={planUsageQuery.data?.freeExperienceLimit ?? 3} plan={planUsageQuery.data?.plan ?? "free"} />
           <MenuCard onEditProfile={() => setEditorVisible(true)} />
-          {profileQuery.error instanceof Error ? <Text style={styles.errorText}>{profileQuery.error.message}</Text> : null}
+          {profileQuery.error instanceof Error ? <Text style={[styles.errorText, { color: appTheme.danger }]}>{profileQuery.error.message}</Text> : null}
           <LogoutButton isPending={signOutMutation.isPending} onPress={() => signOutMutation.mutate()} />
         </ScrollView>
       </Animated.View>
@@ -193,11 +180,11 @@ const ProfileCard = memo(function ProfileCard({
           {profile?.avatarUrl ? (
             <Image resizeMode="cover" source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
           ) : (
-            <LinearGradient colors={["#FCE7F3", "#F9A8D4"]} style={styles.avatarImage}>
+            <LinearGradient colors={[appTheme.primaryLight, appTheme.accent]} style={styles.avatarImage}>
               <Text style={styles.avatarInitials}>{initials}</Text>
             </LinearGradient>
           )}
-          <View style={styles.cameraBadge}>
+          <View style={[styles.cameraBadge, { backgroundColor: appTheme.primary, borderColor: appTheme.surface }]}>
             <Ionicons color="#FFFFFF" name="camera" size={12} />
           </View>
         </View>
@@ -222,7 +209,7 @@ const ProfileCard = memo(function ProfileCard({
         <Ionicons color={appTheme.text} name="chevron-forward" size={18} />
       </View>
 
-      <View style={styles.cardDivider} />
+      <View style={[styles.cardDivider, { backgroundColor: appTheme.navBorder }]} />
       <StatsRow stats={stats} />
     </Pressable>
   );
@@ -256,7 +243,7 @@ const PremiumBanner = memo(function PremiumBanner({ activeCount, freeLimit, plan
   return (
     <LinearGradient colors={[appTheme.surfaceAlt, appTheme.surface]} end={{ x: 1, y: 0 }} start={{ x: 0, y: 0 }} style={[styles.premiumBanner, { borderColor: appTheme.border }]}>
       <View style={[styles.premiumIcon, { backgroundColor: appTheme.surface }]}>
-        <Ionicons color={COLORS.warning} name={isPro ? "diamond" : "sparkles-outline"} size={20} />
+        <Ionicons color={appTheme.accent} name={isPro ? "diamond" : "sparkles-outline"} size={20} />
       </View>
       <View style={styles.premiumCopy}>
           <Text adjustsFontSizeToFit minimumFontScale={0.82} numberOfLines={1} style={[styles.premiumTitle, { color: appTheme.text }]}>{isPro ? "You're on Pro Plan" : "Free Plan"}</Text>
@@ -279,13 +266,11 @@ const MenuCard = memo(function MenuCard({ onEditProfile }: { onEditProfile: () =
       {MENU_ITEMS.map((item, index) => (
         <MenuItem
           icon={item.icon}
-          iconColor={item.iconColor}
           isLast={index === MENU_ITEMS.length - 1}
           key={item.title}
           onPress={() => (item.title === "Account Settings" ? onEditProfile() : router.push(item.route as never))}
           subtitle={item.subtitle}
           title={item.title}
-          tone={item.tone}
         />
       ))}
     </View>
@@ -294,20 +279,16 @@ const MenuCard = memo(function MenuCard({ onEditProfile }: { onEditProfile: () =
 
 function MenuItem({
   icon,
-  iconColor,
   isLast,
   onPress,
   subtitle,
-  title,
-  tone
+  title
 }: {
   icon: keyof typeof Ionicons.glyphMap;
-  iconColor: string;
   isLast: boolean;
   onPress: () => void;
   subtitle: string;
   title: string;
-  tone: string;
 }) {
   const appTheme = useAppTheme();
 
@@ -429,7 +410,7 @@ function ProfileEditor({
           <EditorField autoCapitalize="none" error={emailError} keyboardType="email-address" label="Email" value={emailValue} onChangeText={setEmailValue} />
           <EditorField error={phoneError} keyboardType="phone-pad" label="Phone" value={phoneValue} onChangeText={setPhoneValue} />
 
-          {error ? <Text style={styles.editorError}>{error}</Text> : null}
+          {error ? <Text style={[styles.editorError, { color: appTheme.danger }]}>{error}</Text> : null}
 
           <Pressable disabled={isPending} style={[styles.editorSave, { backgroundColor: appTheme.primary, opacity: isPending ? 0.7 : 1 }]} onPress={submit}>
             <Ionicons color="#ffffff" name={isPending ? "hourglass-outline" : "checkmark-circle-outline"} size={19} />
@@ -508,7 +489,7 @@ function formatCompactNumber(value: number) {
 }
 
 const softShadow = {
-  shadowColor: COLORS.text,
+  shadowColor: "#111827",
   shadowOpacity: 0.08,
   shadowRadius: 12,
   shadowOffset: { width: 0, height: 4 },
@@ -516,57 +497,57 @@ const softShadow = {
 };
 
 const styles = StyleSheet.create({
-  shell: { flex: 1, backgroundColor: COLORS.background },
+  shell: { flex: 1 },
   animatedContent: { flex: 1 },
   screen: { gap: 12, paddingHorizontal: 14, paddingTop: 4, paddingBottom: 88 },
   header: { minHeight: 54, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 },
   headerCopy: { flex: 1, minWidth: 0, gap: 2 },
-  pageTitle: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 22, lineHeight: 25 },
-  pageSubtitle: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
+  pageTitle: { fontFamily: FONT.bold, fontSize: 22, lineHeight: 25 },
+  pageSubtitle: { fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
   headerActions: { flexShrink: 0, flexDirection: "row", alignItems: "center", gap: 6, paddingTop: 0 },
   iconButton: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
-  notificationDot: { position: "absolute", right: 4, top: 4, width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
-  profileCard: { borderRadius: 16, backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, padding: 12, ...softShadow },
+  notificationDot: { position: "absolute", right: 4, top: 4, width: 8, height: 8, borderRadius: 4 },
+  profileCard: { borderRadius: 16, borderWidth: 1, padding: 12, ...softShadow },
   profileTop: { minHeight: 92, flexDirection: "row", alignItems: "center", gap: 10 },
   avatarWrap: { width: 68, height: 68 },
   avatarImage: { width: 68, height: 68, borderRadius: 34, alignItems: "center", justifyContent: "center" },
   avatarInitials: { color: "#FFFFFF", fontFamily: FONT.bold, fontSize: 22, lineHeight: 26 },
-  cameraBadge: { position: "absolute", right: -2, bottom: 1, width: 26, height: 26, borderRadius: 13, borderWidth: 3, borderColor: COLORS.background, backgroundColor: COLORS.primary, alignItems: "center", justifyContent: "center" },
+  cameraBadge: { position: "absolute", right: -2, bottom: 1, width: 26, height: 26, borderRadius: 13, borderWidth: 3, alignItems: "center", justifyContent: "center" },
   profileInfo: { flex: 1, minWidth: 0, gap: 4 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  userName: { flexShrink: 1, color: COLORS.text, fontFamily: FONT.bold, fontSize: 16, lineHeight: 21 },
+  userName: { flexShrink: 1, fontFamily: FONT.bold, fontSize: 16, lineHeight: 21 },
   proBadge: { height: 24, borderRadius: 12, backgroundColor: "#FFE8F2", flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, flexShrink: 0 },
-  proBadgeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 11 },
-  profileBio: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 11, lineHeight: 15 },
+  proBadgeText: { fontFamily: FONT.semibold, fontSize: 11 },
+  profileBio: { fontFamily: FONT.regular, fontSize: 11, lineHeight: 15 },
   contactLine: { flexDirection: "row", alignItems: "center", gap: 7 },
-  contactText: { flex: 1, color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 11, lineHeight: 15 },
-  cardDivider: { height: 1, backgroundColor: COLORS.border, marginTop: 10, marginBottom: 8 },
+  contactText: { flex: 1, fontFamily: FONT.medium, fontSize: 11, lineHeight: 15 },
+  cardDivider: { height: 1, marginTop: 10, marginBottom: 8 },
   statsRow: { height: 78, flexDirection: "row", alignItems: "stretch" },
   statColumn: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4 },
-  statDivider: { position: "absolute", left: 0, top: 8, bottom: 8, width: 1, backgroundColor: COLORS.border },
+  statDivider: { position: "absolute", left: 0, top: 8, bottom: 8, width: 1 },
   statIcon: { width: 30, height: 30, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  statValue: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
-  statLabel: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 9, lineHeight: 12 },
+  statValue: { fontFamily: FONT.bold, fontSize: 17, lineHeight: 21 },
+  statLabel: { fontFamily: FONT.medium, fontSize: 9, lineHeight: 12 },
   premiumBanner: { minHeight: 64, borderRadius: 14, borderWidth: 1, borderColor: "#FFD4E5", flexDirection: "row", alignItems: "center", gap: 8, padding: 12, ...softShadow },
-  premiumIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  premiumIcon: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   premiumCopy: { flex: 1, minWidth: 0, gap: 2 },
-  premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 12, lineHeight: 16 },
-  premiumSubtitle: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
-  manageButton: { width: 92, height: 32, borderRadius: 12, backgroundColor: COLORS.primary, alignItems: "center", justifyContent: "center", paddingHorizontal: 8, flexShrink: 0 },
+  premiumTitle: { fontFamily: FONT.semibold, fontSize: 12, lineHeight: 16 },
+  premiumSubtitle: { fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
+  manageButton: { width: 92, height: 32, borderRadius: 12, alignItems: "center", justifyContent: "center", paddingHorizontal: 8, flexShrink: 0 },
   manageButtonText: { color: "#FFFFFF", fontFamily: FONT.semibold, fontSize: 10 },
-  menuCard: { borderRadius: 16, backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, overflow: "hidden", ...softShadow },
+  menuCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden", ...softShadow },
   menuItem: { height: 58, flexDirection: "row", alignItems: "center", gap: 10, paddingLeft: 12 },
   menuIcon: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
-  menuCopy: { flex: 1, height: "100%", borderBottomWidth: 1, borderBottomColor: COLORS.border, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, paddingRight: 12 },
+  menuCopy: { flex: 1, height: "100%", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, paddingRight: 12 },
   menuCopyLast: { borderBottomWidth: 0 },
   menuTextBlock: { flex: 1, minWidth: 0, gap: 2 },
-  menuTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
-  menuSubtitle: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
-  logoutCard: { height: 52, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.background, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, ...softShadow },
-  logoutText: { color: COLORS.danger, fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
+  menuTitle: { fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
+  menuSubtitle: { fontFamily: FONT.regular, fontSize: 10, lineHeight: 13 },
+  logoutCard: { height: 52, borderRadius: 16, borderWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, ...softShadow },
+  logoutText: { fontFamily: FONT.semibold, fontSize: 13, lineHeight: 17 },
   pressed: { transform: [{ scale: 0.98 }], opacity: 0.92 },
   disabled: { opacity: 0.6 },
-  errorText: { color: COLORS.danger, fontFamily: FONT.medium, fontSize: 12, lineHeight: 18, textAlign: "center" },
+  errorText: { fontFamily: FONT.medium, fontSize: 12, lineHeight: 18, textAlign: "center" },
   modalOverlay: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(16, 24, 40, 0.45)" },
   editorSheet: { gap: 14, padding: 16, paddingBottom: 28, borderTopLeftRadius: 22, borderTopRightRadius: 22 },
   editorHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
@@ -577,7 +558,7 @@ const styles = StyleSheet.create({
   editorLabel: { fontFamily: FONT.semibold, fontSize: 12 },
   editorInput: { height: 50, borderRadius: 16, borderWidth: 1, paddingHorizontal: 13, fontFamily: FONT.regular, fontSize: 13 },
   editorFieldError: { fontFamily: FONT.medium, fontSize: 11, lineHeight: 15 },
-  editorError: { color: COLORS.danger, fontFamily: FONT.medium, fontSize: 12, lineHeight: 17 },
+  editorError: { fontFamily: FONT.medium, fontSize: 12, lineHeight: 17 },
   editorSave: { height: 52, borderRadius: 16, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   editorSaveText: { color: "#ffffff", fontFamily: FONT.semibold, fontSize: 14 }
 });

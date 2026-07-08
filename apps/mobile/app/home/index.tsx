@@ -27,14 +27,6 @@ import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplates } from "@/features/templates/template-service";
 import { useAppTheme } from "@/stores/app-theme-store";
 
-const COLORS = {
-  primary: "#FF3D81",
-  background: "#FFFFFF",
-  text: "#111827",
-  secondary: "#6B7280",
-  border: "#F3F4F6"
-};
-
 const FONT = {
   regular: "Poppins_400Regular",
   medium: "Poppins_500Medium",
@@ -45,7 +37,6 @@ const FONT = {
 type HomeCategory = {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
-  tone: string;
 };
 
 type HomeBanner = {
@@ -63,12 +54,12 @@ type HomeBanner = {
 };
 
 const HOME_CATEGORIES: HomeCategory[] = [
-  { icon: "heart", label: "Love", tone: "#fff0f6" },
-  { icon: "gift", label: "Birthday", tone: "#fff7ed" },
-  { icon: "people", label: "Friends", tone: "#eef4ff" },
-  { icon: "sparkles", label: "Anniversary", tone: "#fff1f7" },
-  { icon: "musical-notes", label: "Celebration", tone: "#f0fdf4" },
-  { icon: "ellipsis-horizontal", label: "More", tone: "#f8fafc" }
+  { icon: "heart", label: "Love" },
+  { icon: "gift", label: "Birthday" },
+  { icon: "people", label: "Friends" },
+  { icon: "sparkles", label: "Anniversary" },
+  { icon: "musical-notes", label: "Celebration" },
+  { icon: "ellipsis-horizontal", label: "More" }
 ];
 
 const HOME_BANNERS: HomeBanner[] = [
@@ -286,11 +277,13 @@ export default function HomeScreen() {
 }
 
 function SectionHeader({ onSeeAll, title }: { onSeeAll: () => void; title: string }) {
+  const appTheme = useAppTheme();
+
   return (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={[styles.sectionTitle, { color: appTheme.text }]}>{title}</Text>
       <Pressable onPress={onSeeAll}>
-        <Text style={styles.seeAll}>See All</Text>
+        <Text style={[styles.seeAll, { color: appTheme.primary }]}>See All</Text>
       </Pressable>
     </View>
   );
@@ -505,31 +498,35 @@ function HeroSlide({ banner, isNarrow, width }: { banner: HomeBanner; isNarrow: 
 }
 
 function RecentCard({ compact, experience }: { compact: boolean; experience: Experience }) {
+  const appTheme = useAppTheme();
+
   return (
-    <Pressable style={[styles.templateCard, compact ? styles.templateCardNarrow : null]} onPress={() => router.push("/experiences" as never)}>
+    <Pressable style={[styles.templateCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }, compact ? styles.templateCardNarrow : null]} onPress={() => router.push("/experiences" as never)}>
       <CardImage accent={experience.theme.accent} background={experience.theme.background} category="love" compact={compact} uri={experience.coverPhotoUrl} />
       <View style={styles.templateInfo}>
-        <Text numberOfLines={1} style={styles.templateTitle}>
+        <Text numberOfLines={1} style={[styles.templateTitle, { color: appTheme.text }]}>
           {experience.title || "Untitled experience"}
         </Text>
-        <Text style={styles.templateMeta}>{experience.isPublished ? "Published" : "Draft"} link</Text>
+        <Text style={[styles.templateMeta, { color: appTheme.secondaryText }]}>{experience.isPublished ? "Published" : "Draft"} link</Text>
       </View>
-      <Ionicons color={COLORS.secondary} name="ellipsis-vertical" size={18} style={styles.moreIcon} />
+      <Ionicons color={appTheme.secondaryText} name="ellipsis-vertical" size={18} style={styles.moreIcon} />
     </Pressable>
   );
 }
 
 function TrendingCard({ compact, rank, template }: { compact: boolean; rank: number; template: Template }) {
+  const appTheme = useAppTheme();
+
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.id } }} asChild>
-      <Pressable style={[styles.templateCard, compact ? styles.templateCardNarrow : null]}>
+      <Pressable style={[styles.templateCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }, compact ? styles.templateCardNarrow : null]}>
         <CardImage accent={template.defaultTheme.accent} background={template.defaultTheme.background} category={template.category} compact={compact} uri={template.thumbnailUrl} />
-        <Text style={[styles.badge, rank < 2 ? styles.popularBadge : styles.newBadge]}>{rank < 2 ? "Popular" : "New"}</Text>
+        <Text style={[styles.badge, rank < 2 ? { backgroundColor: appTheme.primary } : styles.newBadge]}>{rank < 2 ? "Popular" : "New"}</Text>
         <View style={styles.templateInfo}>
-          <Text numberOfLines={1} style={styles.templateTitle}>
+          <Text numberOfLines={1} style={[styles.templateTitle, { color: appTheme.text }]}>
             {template.name}
           </Text>
-          <Text style={styles.templateMeta}>{getUsageLabel(rank)} uses</Text>
+          <Text style={[styles.templateMeta, { color: appTheme.secondaryText }]}>{getUsageLabel(rank)} uses</Text>
         </View>
       </Pressable>
     </Link>
@@ -567,10 +564,12 @@ function VisualPanel({ accent, background, category, compact }: { accent: string
 }
 
 function LoadingCard({ label }: { label: string }) {
+  const appTheme = useAppTheme();
+
   return (
-    <View style={styles.loadingCard}>
-      <Ionicons color={COLORS.primary} name="sparkles-outline" size={18} />
-      <Text style={styles.loadingText}>{label}</Text>
+    <View style={[styles.loadingCard, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]}>
+      <Ionicons color={appTheme.primary} name="sparkles-outline" size={18} />
+      <Text style={[styles.loadingText, { color: appTheme.secondaryText }]}>{label}</Text>
     </View>
   );
 }
@@ -600,7 +599,7 @@ function getTemplateIcon(category: TemplateCategory | "love"): keyof typeof Ioni
 }
 
 const softShadow = {
-  shadowColor: COLORS.text,
+  shadowColor: "#111827",
   shadowOpacity: 0.08,
   shadowRadius: 12,
   shadowOffset: { width: 0, height: 4 },
@@ -608,7 +607,7 @@ const softShadow = {
 };
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.background },
+  screen: { flex: 1 },
   content: { gap: 20, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 96 },
   contentNarrow: { paddingHorizontal: 16 },
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
@@ -618,45 +617,40 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 11,
-    backgroundColor: COLORS.primary,
     alignItems: "center",
     justifyContent: "center",
     transform: [{ rotate: "-10deg" }]
   },
-  logo: { color: COLORS.text, fontFamily: FONT.bold, fontSize: 22, lineHeight: 25, letterSpacing: 0 },
+  logo: { fontFamily: FONT.bold, fontSize: 22, lineHeight: 25, letterSpacing: 0 },
   logoNarrow: { fontSize: 20, lineHeight: 23 },
-  tagline: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
+  tagline: { fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
   topActions: { flexShrink: 0, flexDirection: "row", alignItems: "center", gap: 6 },
   proPill: {
     height: 30,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.background,
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
     paddingHorizontal: 8,
     ...softShadow
   },
-  proText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 10 },
-  bellButton: { width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center" },
-  notificationDot: { position: "absolute", right: 8, top: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.primary },
+  proText: { fontFamily: FONT.semibold, fontSize: 10 },
+  bellButton: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
+  notificationDot: { position: "absolute", right: 8, top: 6, width: 8, height: 8, borderRadius: 4 },
   searchRow: { flexDirection: "row", gap: 10 },
   searchBox: {
     flex: 1,
     height: 48,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.background,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     paddingHorizontal: 14,
     ...softShadow
   },
-  searchInput: { flex: 1, color: COLORS.text, fontFamily: FONT.regular, fontSize: 13, padding: 0 },
+  searchInput: { flex: 1, fontFamily: FONT.regular, fontSize: 13, padding: 0 },
   sparkleButton: {
     width: 48,
     height: 48,
@@ -673,8 +667,6 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.background,
     alignItems: "center",
     justifyContent: "center",
     gap: 3,
@@ -683,7 +675,7 @@ const styles = StyleSheet.create({
   },
   categoryTileNarrow: { width: 60, height: 62 },
   categoryIcon: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
-  categoryLabel: { color: COLORS.text, fontFamily: FONT.medium, fontSize: 11, lineHeight: 13, textAlign: "center" },
+  categoryLabel: { fontFamily: FONT.medium, fontSize: 11, lineHeight: 13, textAlign: "center" },
   heroCarousel: {
     height: 188,
     borderRadius: 24,
@@ -782,16 +774,14 @@ const styles = StyleSheet.create({
   heroIndicator: { position: "absolute", bottom: 16, left: 0, right: 0, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 6 },
   heroIndicatorDot: { height: 8, borderRadius: 4 },
   sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: -10 },
-  sectionTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
-  seeAll: { color: COLORS.primary, fontFamily: FONT.medium, fontSize: 11 },
+  sectionTitle: { fontFamily: FONT.semibold, fontSize: 16, lineHeight: 21 },
+  seeAll: { fontFamily: FONT.medium, fontSize: 11 },
   cardRail: { gap: 12, paddingRight: 4 },
   templateCard: {
     width: 122,
     height: 162,
     borderRadius: 20,
-    backgroundColor: COLORS.background,
     borderWidth: 1,
-    borderColor: COLORS.border,
     overflow: "hidden",
     padding: 8,
     ...softShadow
@@ -803,8 +793,8 @@ const styles = StyleSheet.create({
   visualCircle: { position: "absolute", width: 86, height: 86, borderRadius: 43, opacity: 0.14 },
   visualLine: { position: "absolute", bottom: 0, left: 0, right: 0, height: 3, opacity: 0.7 },
   templateInfo: { gap: 2, paddingTop: 7, paddingRight: 14 },
-  templateTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
-  templateMeta: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 12, lineHeight: 15 },
+  templateTitle: { fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
+  templateMeta: { fontFamily: FONT.regular, fontSize: 12, lineHeight: 15 },
   moreIcon: { position: "absolute", right: 8, bottom: 17 },
   badge: {
     position: "absolute",
@@ -818,7 +808,7 @@ const styles = StyleSheet.create({
     fontFamily: FONT.semibold,
     fontSize: 9
   },
-  popularBadge: { backgroundColor: COLORS.primary },
+  popularBadge: {},
   newBadge: { backgroundColor: "#22C55E" },
   premiumBanner: {
     minHeight: 76,
@@ -833,10 +823,10 @@ const styles = StyleSheet.create({
     overflow: "hidden"
   },
   premiumBannerNarrow: { minHeight: 82, gap: 8, paddingHorizontal: 12 },
-  crownBox: { width: 34, height: 34, borderRadius: 12, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  crownBox: { width: 34, height: 34, borderRadius: 12, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   premiumCopy: { flex: 1, minWidth: 0, gap: 3 },
-  premiumTitle: { color: COLORS.text, fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
-  premiumText: { color: COLORS.secondary, fontFamily: FONT.regular, fontSize: 12, lineHeight: 15 },
+  premiumTitle: { fontFamily: FONT.semibold, fontSize: 14, lineHeight: 18 },
+  premiumText: { fontFamily: FONT.regular, fontSize: 12, lineHeight: 15 },
   upgradePill: {
     width: 112,
     height: 36,
@@ -849,7 +839,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     flexShrink: 0
   },
-  upgradeText: { color: COLORS.primary, fontFamily: FONT.semibold, fontSize: 11 },
-  loadingCard: { minHeight: 66, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.background, alignItems: "center", justifyContent: "center", gap: 6 },
-  loadingText: { color: COLORS.secondary, fontFamily: FONT.medium, fontSize: 11 }
+  upgradeText: { fontFamily: FONT.semibold, fontSize: 11 },
+  loadingCard: { minHeight: 66, borderRadius: 14, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 6 },
+  loadingText: { fontFamily: FONT.medium, fontSize: 11 }
 });
