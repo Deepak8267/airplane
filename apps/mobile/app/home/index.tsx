@@ -190,8 +190,8 @@ function TemplateCard({ height, marginRight, template, width }: { height: number
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.routeId } }} asChild>
-      <Pressable style={[styles.templateCard, { width, height, minHeight: height, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border, shadowColor: appTheme.text }]}>
-        <ImageBackground imageStyle={styles.cardImage} resizeMode="cover" source={template.image} style={styles.cardImageFill}>
+      <Pressable style={[styles.templateCard, { width, height, minHeight: height, maxHeight: height, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border, shadowColor: appTheme.text }]}>
+        <ImageBackground imageStyle={styles.cardImage} resizeMode="cover" source={template.image} style={[styles.cardImageFill, { width, height }]}>
           <LinearGradient
             colors={[transparentColor(appTheme.surface, 0.1), transparentColor(appTheme.surface, 0.34), transparentColor(appTheme.text, 0.34)]}
             locations={[0, 0.55, 1]}
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   gridRow: {},
   templateCard: { marginBottom: 12, borderRadius: 16, borderWidth: 1, overflow: "hidden", ...softShadow },
   cardImage: { borderRadius: 16 },
-  cardImageFill: { flex: 1, overflow: "hidden" },
+  cardImageFill: { overflow: "hidden" },
   cardShade: { ...StyleSheet.absoluteFillObject },
   cardTopWash: { position: "absolute", left: 0, right: 0, top: 0, height: 92 },
   cardContent: { alignItems: "center", paddingHorizontal: 12, paddingTop: 26 },
