@@ -3,9 +3,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { FlatList, ImageBackground, Pressable, RefreshControl, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import type { ImageSourcePropType } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { Template, TemplateCategory } from "@airplane/shared";
+import type { Template } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
 import { getTemplates } from "@/features/templates/template-service";
 import { useAppTheme } from "@/stores/app-theme-store";
@@ -25,6 +26,16 @@ type DisplayTemplate = {
   name: string;
   category: HomeFilter;
   routeId: string;
+  image: ImageSourcePropType;
+};
+
+const CARD_IMAGES = {
+  proposal: require("../../assets/templates/proposal-garden.png") as ImageSourcePropType,
+  lake: require("../../assets/templates/lake-memory.png") as ImageSourcePropType,
+  birthday: require("../../assets/templates/birthday-garden.png") as ImageSourcePropType,
+  memory: require("../../assets/templates/memory-table.png") as ImageSourcePropType,
+  anniversary: require("../../assets/templates/anniversary-path.png") as ImageSourcePropType,
+  candlelight: require("../../assets/templates/candlelight-couple.png") as ImageSourcePropType
 };
 
 const FILTERS: Array<{ id: HomeFilter; label: string; icon: keyof typeof Ionicons.glyphMap }> = [
@@ -36,12 +47,12 @@ const FILTERS: Array<{ id: HomeFilter; label: string; icon: keyof typeof Ionicon
 ];
 
 const FALLBACK_TEMPLATES: DisplayTemplate[] = [
-  { id: "fallback-proposal", name: "Will You Marry Me?", category: "proposal", routeId: "marriage-proposal" },
-  { id: "fallback-trip", name: "Our First Trip Together", category: "memory", routeId: "date-proposal" },
-  { id: "fallback-birthday", name: "Birthday Surprise", category: "surprise", routeId: "birthday-surprise" },
-  { id: "fallback-reasons", name: "Reasons I Love You", category: "memory", routeId: "birthday-memory-book" },
-  { id: "fallback-anniversary", name: "Anniversary Journey", category: "anniversary", routeId: "anniversary-story" },
-  { id: "fallback-girlfriend", name: "Be My Girlfriend?", category: "proposal", routeId: "date-proposal" }
+  { id: "fallback-proposal", name: "Will You Marry Me?", category: "proposal", routeId: "marriage-proposal", image: CARD_IMAGES.proposal },
+  { id: "fallback-trip", name: "Our First Trip Together", category: "memory", routeId: "date-proposal", image: CARD_IMAGES.lake },
+  { id: "fallback-birthday", name: "Birthday Surprise", category: "surprise", routeId: "birthday-surprise", image: CARD_IMAGES.birthday },
+  { id: "fallback-reasons", name: "Reasons I Love You", category: "memory", routeId: "birthday-memory-book", image: CARD_IMAGES.memory },
+  { id: "fallback-anniversary", name: "Anniversary Journey", category: "anniversary", routeId: "anniversary-story", image: CARD_IMAGES.anniversary },
+  { id: "fallback-girlfriend", name: "Be My Girlfriend?", category: "proposal", routeId: "date-proposal", image: CARD_IMAGES.candlelight }
 ];
 
 export default function HomeScreen() {
@@ -58,10 +69,10 @@ export default function HomeScreen() {
   const isCompact = availableWidth < 380;
   const horizontalPadding = isCompact ? 12 : 16;
   const contentWidth = Math.max(0, availableWidth - horizontalPadding * 2);
-  const columnCount = 2;
-  const gridGap = 12;
+  const columnCount = contentWidth >= 320 ? 3 : 2;
+  const gridGap = 10;
   const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
-  const cardHeight = Math.max(150, Math.min(165, Math.round(cardWidth * 0.9)));
+  const cardHeight = columnCount === 3 ? Math.max(158, Math.min(178, Math.round(cardWidth * 1.55))) : Math.max(170, Math.min(188, Math.round(cardWidth * 1.05)));
   const creator = getCreator(session?.user.user_metadata?.full_name, session?.user.email);
   const templates = useMemo(() => {
     const source = templatesQuery.data?.length ? templatesQuery.data.map(mapTemplateForHome) : FALLBACK_TEMPLATES;
@@ -141,7 +152,6 @@ export default function HomeScreen() {
           <TemplateCard
             height={cardHeight}
             marginRight={index % columnCount === columnCount - 1 ? 0 : gridGap}
-            position={index}
             template={item}
             width={cardWidth}
           />
@@ -168,42 +178,28 @@ function CategoryChip({ active, icon, label, onPress }: { active: boolean; icon:
   );
 }
 
-function TemplateCard({ height, marginRight, position, template, width }: { height: number; marginRight: number; position: number; template: DisplayTemplate; width: number }) {
+function TemplateCard({ height, marginRight, template, width }: { height: number; marginRight: number; template: DisplayTemplate; width: number }) {
   const appTheme = useAppTheme();
-  const artVariant = position % 4;
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.routeId } }} asChild>
       <Pressable style={[styles.templateCard, { width, height, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border, shadowColor: appTheme.text }]}>
-        <DreamyArt variant={artVariant} />
-        <View style={[styles.cardOverlay, { backgroundColor: appTheme.surface }]} />
-        <View style={styles.cardContent}>
-          <Text numberOfLines={2} style={[styles.cardTitle, { color: appTheme.text }]}>{template.name}</Text>
-          <View style={[styles.cardPill, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+        <ImageBackground imageStyle={styles.cardImage} resizeMode="cover" source={template.image} style={styles.cardImageFill}>
+          <LinearGradient
+            colors={[transparentColor(appTheme.surface, 0.1), transparentColor(appTheme.surface, 0.34), transparentColor(appTheme.text, 0.34)]}
+            locations={[0, 0.55, 1]}
+            style={styles.cardShade}
+          />
+          <View style={[styles.cardTopWash, { backgroundColor: transparentColor(appTheme.surface, 0.64) }]} />
+          <View style={styles.cardContent}>
+            <Text numberOfLines={2} style={[styles.cardTitle, { color: appTheme.text }]}>{template.name}</Text>
+          </View>
+          <View style={[styles.cardPill, { backgroundColor: transparentColor(appTheme.surface, 0.82), borderColor: transparentColor(appTheme.surface, 0.7) }]}>
             <Text numberOfLines={1} style={[styles.cardPillText, { color: getCategoryColor(template.category, appTheme.primary, appTheme.accent, appTheme.primaryDark) }]}>{formatCategory(template.category)}</Text>
           </View>
-        </View>
+        </ImageBackground>
       </Pressable>
     </Link>
-  );
-}
-
-function DreamyArt({ variant }: { variant: number }) {
-  const appTheme = useAppTheme();
-  const flip = variant % 2 === 1;
-
-  return (
-    <View style={styles.artLayer} pointerEvents="none">
-      <LinearGradient colors={[appTheme.surfaceAlt, appTheme.primaryLight, appTheme.background]} style={styles.artSky} />
-      <View style={[styles.sun, { backgroundColor: variant === 2 ? appTheme.accent : appTheme.primary }]} />
-      <View style={[styles.arc, { borderColor: appTheme.border }, flip ? styles.arcFlip : null]} />
-      <View style={[styles.hillBack, { backgroundColor: appTheme.muted }, flip ? styles.hillBackFlip : null]} />
-      <View style={[styles.hillFront, { backgroundColor: variant === 1 ? appTheme.accent : appTheme.primary }, flip ? styles.hillFrontFlip : null]} />
-      <View style={[styles.path, { backgroundColor: appTheme.surface }]} />
-      <View style={[styles.flowerDot, styles.flowerOne, { backgroundColor: appTheme.primary }]} />
-      <View style={[styles.flowerDot, styles.flowerTwo, { backgroundColor: appTheme.accent }]} />
-      <View style={[styles.flowerDot, styles.flowerThree, { backgroundColor: appTheme.mutedText }]} />
-    </View>
   );
 }
 
@@ -212,7 +208,8 @@ function mapTemplateForHome(template: Template): DisplayTemplate {
     id: template.id,
     name: template.name,
     category: getHomeCategory(template),
-    routeId: template.id
+    routeId: template.id,
+    image: getTemplateImage(template)
   };
 }
 
@@ -264,6 +261,42 @@ function getCategoryColor(category: HomeFilter, primary: string, accent: string,
   return primary;
 }
 
+function getTemplateImage(template: Template) {
+  const value = `${template.id} ${template.name} ${template.category} ${template.templateType}`.toLowerCase();
+
+  if (value.includes("birthday")) {
+    return CARD_IMAGES.birthday;
+  }
+
+  if (value.includes("anniversary")) {
+    return CARD_IMAGES.anniversary;
+  }
+
+  if (value.includes("friend") || value.includes("family") || value.includes("memory")) {
+    return CARD_IMAGES.memory;
+  }
+
+  if (value.includes("date")) {
+    return CARD_IMAGES.lake;
+  }
+
+  if (value.includes("mystery")) {
+    return CARD_IMAGES.candlelight;
+  }
+
+  return CARD_IMAGES.proposal;
+}
+
+function transparentColor(hex: string, alpha: number) {
+  const normalized = hex.replace("#", "");
+  const value = normalized.length === 3 ? normalized.split("").map((char) => `${char}${char}`).join("") : normalized;
+  const red = Number.parseInt(value.slice(0, 2), 16);
+  const green = Number.parseInt(value.slice(2, 4), 16);
+  const blue = Number.parseInt(value.slice(4, 6), 16);
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
 const softShadow = {
   shadowOpacity: 0.06,
   shadowRadius: 10,
@@ -300,24 +333,13 @@ const styles = StyleSheet.create({
   seeAll: { fontFamily: FONT.medium, fontSize: 12, lineHeight: 16 },
   gridRow: {},
   templateCard: { marginBottom: 12, borderRadius: 16, borderWidth: 1, overflow: "hidden", ...softShadow },
-  artLayer: { ...StyleSheet.absoluteFillObject, overflow: "hidden" },
-  artSky: { ...StyleSheet.absoluteFillObject },
-  sun: { position: "absolute", right: 18, top: 16, width: 30, height: 30, borderRadius: 15, opacity: 0.22 },
-  arc: { position: "absolute", left: 16, top: 18, width: 64, height: 64, borderRadius: 32, borderWidth: 1, opacity: 0.8 },
-  arcFlip: { left: undefined, right: 14, top: 26 },
-  hillBack: { position: "absolute", left: -30, right: 22, bottom: 20, height: 76, borderTopLeftRadius: 120, borderTopRightRadius: 150, opacity: 0.48, transform: [{ rotate: "-8deg" }] },
-  hillBackFlip: { left: 22, right: -30, transform: [{ rotate: "8deg" }] },
-  hillFront: { position: "absolute", left: 20, right: -40, bottom: -22, height: 92, borderTopLeftRadius: 130, borderTopRightRadius: 120, opacity: 0.44, transform: [{ rotate: "8deg" }] },
-  hillFrontFlip: { left: -40, right: 20, transform: [{ rotate: "-8deg" }] },
-  path: { position: "absolute", left: "42%", bottom: -8, width: 24, height: 104, borderRadius: 18, opacity: 0.54, transform: [{ rotate: "9deg" }] },
-  flowerDot: { position: "absolute", width: 5, height: 5, borderRadius: 2.5, opacity: 0.75 },
-  flowerOne: { left: 16, bottom: 22 },
-  flowerTwo: { right: 24, bottom: 36 },
-  flowerThree: { left: 36, bottom: 48 },
-  cardOverlay: { ...StyleSheet.absoluteFillObject, opacity: 0.08 },
-  cardContent: { flex: 1, alignItems: "center", justifyContent: "center", padding: 10, gap: 8 },
-  cardTitle: { fontFamily: FONT.bold, fontSize: 13, lineHeight: 16, textAlign: "center" },
-  cardPill: { minHeight: 25, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 10 },
+  cardImage: { borderRadius: 16 },
+  cardImageFill: { flex: 1, overflow: "hidden" },
+  cardShade: { ...StyleSheet.absoluteFillObject },
+  cardTopWash: { position: "absolute", left: 0, right: 0, top: 0, height: 64 },
+  cardContent: { alignItems: "center", paddingHorizontal: 8, paddingTop: 18 },
+  cardTitle: { fontFamily: FONT.bold, fontSize: 12, lineHeight: 16, textAlign: "center" },
+  cardPill: { position: "absolute", alignSelf: "center", top: 66, minHeight: 24, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 9 },
   cardPillText: { fontFamily: FONT.medium, fontSize: 10, lineHeight: 13 },
   emptyCard: { minHeight: 84, borderRadius: 16, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   emptyText: { fontFamily: FONT.medium, fontSize: 12 }
