@@ -77,6 +77,7 @@ export default function HomeScreen() {
   const contentWidth = Math.max(0, availableWidth - horizontalPadding * 2);
   const columnCount = contentWidth >= 330 ? 3 : 2;
   const gridGap = contentWidth >= 330 ? 12 : 10;
+  const rowGap = contentWidth >= 330 ? 14 : 12;
   const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
   const cardHeight = columnCount === 3 ? Math.max(186, Math.min(206, Math.round(cardWidth * 1.72))) : Math.max(240, Math.min(280, Math.round(cardWidth * 1.45)));
   const creator = getCreator(session?.user.user_metadata?.full_name, session?.user.email);
@@ -159,7 +160,7 @@ export default function HomeScreen() {
         renderItem={({ index, item }) => (
           <TemplateCard
             height={cardHeight}
-            marginBottom={gridGap}
+            marginBottom={rowGap}
             marginRight={0}
             template={item}
             width={cardWidth}
