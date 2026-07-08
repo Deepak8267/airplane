@@ -75,10 +75,10 @@ export default function HomeScreen() {
   const isCompact = availableWidth < 380;
   const horizontalPadding = isCompact ? 12 : 16;
   const contentWidth = Math.max(0, availableWidth - horizontalPadding * 2);
-  const columnCount = 3;
-  const gridGap = 10;
+  const columnCount = contentWidth >= 330 ? 3 : 2;
+  const gridGap = contentWidth >= 330 ? 12 : 10;
   const cardWidth = Math.floor((contentWidth - gridGap * (columnCount - 1)) / columnCount);
-  const cardHeight = isCompact ? 180 : 195;
+  const cardHeight = columnCount === 3 ? Math.max(186, Math.min(206, Math.round(cardWidth * 1.72))) : Math.max(240, Math.min(280, Math.round(cardWidth * 1.45)));
   const creator = getCreator(session?.user.user_metadata?.full_name, session?.user.email);
   const templates = useMemo(() => {
     const source = buildPopularTemplates(templatesQuery.data ?? []);
@@ -158,6 +158,7 @@ export default function HomeScreen() {
         renderItem={({ index, item }) => (
           <TemplateCard
             height={cardHeight}
+            marginBottom={gridGap}
             marginRight={index % columnCount === columnCount - 1 ? 0 : gridGap}
             template={item}
             width={cardWidth}
@@ -185,21 +186,26 @@ function CategoryChip({ active, icon, label, onPress }: { active: boolean; icon:
   );
 }
 
-function TemplateCard({ height, marginRight, template, width }: { height: number; marginRight: number; template: DisplayTemplate; width: number }) {
+function TemplateCard({ height, marginBottom, marginRight, template, width }: { height: number; marginBottom: number; marginRight: number; template: DisplayTemplate; width: number }) {
   const appTheme = useAppTheme();
 
   return (
     <Link href={{ pathname: "/templates/[id]", params: { id: template.routeId } }} asChild>
-      <Pressable style={[styles.templateCard, { width, height, minHeight: height, maxHeight: height, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border, shadowColor: appTheme.text }]}>
+      <Pressable style={[styles.templateCard, { width, height, minHeight: height, maxHeight: height, marginBottom, marginRight, backgroundColor: appTheme.surface, borderColor: appTheme.border, shadowColor: appTheme.text }]}>
         <ImageBackground imageStyle={styles.cardImage} resizeMode="cover" source={template.image} style={[styles.cardImageFill, { width, height }]}>
           <LinearGradient
-            colors={[transparentColor(appTheme.surface, 0.1), transparentColor(appTheme.surface, 0.34), transparentColor(appTheme.text, 0.34)]}
-            locations={[0, 0.55, 1]}
+            colors={[transparentColor(appTheme.text, 0), transparentColor(appTheme.text, 0.04), transparentColor(appTheme.text, 0.38)]}
+            locations={[0, 0.62, 1]}
             style={styles.cardShade}
           />
-          <View style={[styles.cardTopWash, { backgroundColor: transparentColor(appTheme.surface, 0.64) }]} />
           <View style={styles.cardContent}>
-            <Text allowFontScaling={false} numberOfLines={2} style={[styles.cardTitle, { color: appTheme.text }]}>{template.name}</Text>
+            <Text
+              allowFontScaling={false}
+              numberOfLines={2}
+              style={[styles.cardTitle, { color: appTheme.text, textShadowColor: transparentColor(appTheme.surface, 0.82) }]}
+            >
+              {template.name}
+            </Text>
           </View>
           <View style={[styles.cardPill, { backgroundColor: transparentColor(appTheme.surface, 0.82), borderColor: transparentColor(appTheme.surface, 0.7) }]}>
             <Text allowFontScaling={false} numberOfLines={1} style={[styles.cardPillText, { color: getCategoryColor(template.category, appTheme.primary, appTheme.accent, appTheme.primaryDark) }]}>{formatCategory(template.category)}</Text>
@@ -307,13 +313,19 @@ const styles = StyleSheet.create({
   seeAllButton: { flexDirection: "row", alignItems: "center", gap: 2 },
   seeAll: { fontFamily: FONT.medium, fontSize: 12, lineHeight: 16 },
   gridRow: {},
-  templateCard: { marginBottom: 12, borderRadius: 16, borderWidth: 1, overflow: "hidden", ...softShadow },
+  templateCard: { borderRadius: 16, borderWidth: 1, overflow: "hidden", ...softShadow },
   cardImage: { borderRadius: 16 },
   cardImageFill: { overflow: "hidden" },
   cardShade: { ...StyleSheet.absoluteFillObject },
-  cardTopWash: { position: "absolute", left: 0, right: 0, top: 0, height: 82 },
   cardContent: { alignItems: "center", paddingHorizontal: 7, paddingTop: 22 },
-  cardTitle: { fontFamily: FONT.bold, fontSize: 11, lineHeight: 14, textAlign: "center" },
+  cardTitle: {
+    fontFamily: FONT.bold,
+    fontSize: 11,
+    lineHeight: 14,
+    textAlign: "center",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3
+  },
   cardPill: { position: "absolute", alignSelf: "center", top: 72, minHeight: 22, borderRadius: 999, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   cardPillText: { fontFamily: FONT.medium, fontSize: 9, lineHeight: 12 },
   emptyCard: { minHeight: 84, borderRadius: 16, borderWidth: 1, alignItems: "center", justifyContent: "center", gap: 8 },
