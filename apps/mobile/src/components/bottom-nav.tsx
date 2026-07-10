@@ -24,11 +24,10 @@ const NAV_ITEMS: Array<{
 export function BottomNav({ active, variant = "compact" }: { active: BottomNavKey; variant?: "compact" | "main" }) {
   const insets = useSafeAreaInsets();
   const theme = useAppTheme();
-  const isMain = variant === "main";
 
   return (
     <View style={[styles.shell, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-      <View style={[styles.nav, { backgroundColor: theme.surface, borderColor: theme.navBorder }, isMain ? styles.navMain : null]}>
+      <View style={[styles.nav, { backgroundColor: theme.surface, borderColor: theme.navBorder }]}>
         {NAV_ITEMS.slice(0, 2).map((item) => {
           const selected = item.key === active;
 
@@ -49,10 +48,10 @@ export function BottomNav({ active, variant = "compact" }: { active: BottomNavKe
         })}
         <Pressable
           accessibilityLabel="Create experience"
-          style={[styles.createButton, { backgroundColor: theme.primary, borderColor: theme.background, shadowColor: theme.primary }, isMain ? styles.createButtonMain : null]}
+          style={[styles.createButton, { backgroundColor: theme.primary, borderColor: theme.background, shadowColor: theme.primary }]}
           onPress={() => router.push("/templates" as never)}
         >
-          <Ionicons color="#ffffff" name="add" size={isMain ? 36 : 32} />
+          <Ionicons color="#ffffff" name="add" size={32} />
         </Pressable>
         {NAV_ITEMS.slice(2).map((item) => {
           const selected = item.key === active;
@@ -103,13 +102,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 2
   },
-  navMain: {
-    height: 54,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20
-  },
   item: {
     flex: 1,
     minWidth: 0,
@@ -135,12 +127,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3
-  },
-  createButtonMain: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginTop: -22
   },
   label: { fontFamily: FONT_MEDIUM, fontSize: 9, lineHeight: 12, textAlign: "center" }
 });
