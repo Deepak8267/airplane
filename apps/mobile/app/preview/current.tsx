@@ -55,9 +55,6 @@ export default function CurrentPreviewScreen() {
     <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: draft.theme.background }]}>
       <ScrollView contentContainerStyle={[styles.screen, { paddingBottom: 28 + insets.bottom }]} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Back to editor" style={[styles.topIconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
-            <Ionicons color={appTheme.text} name="create-outline" size={21} />
-          </Pressable>
           <View style={[styles.previewBadge, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
             <Ionicons color={draft.theme.accent} name="eye-outline" size={17} />
             <Text style={[styles.previewBadgeText, { color: draft.theme.accent }]}>Preview</Text>
@@ -95,7 +92,7 @@ export default function CurrentPreviewScreen() {
           <Text style={styles.watermark}>Made with AIRPLANE</Text>
         </View>
 
-        <View style={styles.navigation}>
+        <View style={[styles.navigation, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
           <Pressable
             accessibilityLabel="Previous page"
             disabled={index === 0}
@@ -281,7 +278,7 @@ const styles = StyleSheet.create({
   emptyButton: { height: 52, borderRadius: 16, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
   emptyButtonText: { color: "#ffffff", fontWeight: "900" },
   screen: { flexGrow: 1, padding: 16, paddingBottom: 28, justifyContent: "center", gap: 20 },
-  topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "flex-end" },
   topIconButton: { width: 42, height: 42, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)" },
   previewBadge: { minHeight: 36, borderRadius: 16, backgroundColor: "rgba(255, 255, 255, 0.82)", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.08)", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
   previewBadgeText: { fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
@@ -321,9 +318,9 @@ const styles = StyleSheet.create({
   dots: { flexDirection: "row", justifyContent: "center", gap: 6, paddingTop: 2 },
   dot: { height: 6, borderRadius: 999 },
   watermark: { color: "#667085", textAlign: "center", fontSize: 11, fontWeight: "800" },
-  navigation: { flexDirection: "row", gap: 10 },
+  navigation: { flexDirection: "row", gap: 10, borderRadius: 22, borderWidth: 1, padding: 10, shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
   navIconButton: { width: 52, height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd" },
   disabledButton: { opacity: 0.35 },
-  button: { flex: 1, height: 52, borderRadius: 16, flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
+  button: { flex: 1, height: 52, borderRadius: 16, flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center", shadowColor: "#101828", shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   buttonText: { color: "#ffffff", fontWeight: "900", fontSize: 16 }
 });

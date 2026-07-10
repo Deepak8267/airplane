@@ -78,9 +78,6 @@ export default function TemplateDetailScreen() {
     <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: template.defaultTheme.background }]}>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 124 + insets.bottom }]} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Go back" style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
-            <Ionicons color={appTheme.text} name="chevron-back" size={22} />
-          </Pressable>
           {template.isPremium ? <Text style={[styles.premiumBadge, { backgroundColor: appTheme.primary }]}>Premium</Text> : null}
         </View>
 
@@ -240,7 +237,7 @@ const styles = StyleSheet.create({
   loadingTitle: { color: "#101828", fontSize: 24, lineHeight: 30, fontWeight: "900", textAlign: "center" },
   emptyCopy: { color: "#667085", lineHeight: 21, textAlign: "center" },
   content: { gap: 20, padding: 16, paddingBottom: 116 },
-  topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  topBar: { minHeight: 28, paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "flex-end" },
   iconButton: { width: 42, height: 42, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
   premiumBadge: { overflow: "hidden", borderRadius: 14, backgroundColor: "#ec0e68", color: "#ffffff", paddingHorizontal: 10, paddingVertical: 7, fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
   hero: { minHeight: 184, flexDirection: "row", alignItems: "stretch", gap: 14, borderRadius: 22, borderWidth: 1, borderColor: "#ffffff", backgroundColor: "rgba(255,255,255,0.78)", padding: 14, shadowColor: "#101828", shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 },
@@ -279,7 +276,7 @@ const styles = StyleSheet.create({
   planNoticeTitle: { color: "#101828", fontWeight: "900" },
   planNoticeCopy: { color: "#344054", lineHeight: 20 },
   error: { color: "#b42318", lineHeight: 20 },
-  footer: { position: "absolute", left: 0, right: 0, bottom: 0, padding: 20, paddingTop: 12, backgroundColor: "rgba(255,247,251,0.94)", borderTopWidth: 1, borderTopColor: "#fbcfe8" },
+  footer: { position: "absolute", left: 0, right: 0, bottom: 0, padding: 20, paddingTop: 12, backgroundColor: "#ffffff", borderTopWidth: 1, borderTopColor: "#fbcfe8", shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: -4 }, elevation: 8 },
   button: { height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "#ec0e68", flexDirection: "row", gap: 8 },
   buttonText: { color: "#ffffff", fontSize: 16, fontWeight: "900" }
 });

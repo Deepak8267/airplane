@@ -270,7 +270,7 @@ export default function BuilderScreen() {
         </Pressable>
       </View>
 
-      <View style={styles.actions}>
+      <View style={[styles.actions, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
             <Pressable style={[styles.secondaryButton, { backgroundColor: appTheme.surface, borderColor: appTheme.navBorder }]} onPress={openPreview}>
           <Text style={[styles.secondaryButtonText, { color: appTheme.text }]}>Preview</Text>
         </Pressable>
@@ -936,8 +936,8 @@ const styles = StyleSheet.create({
   pageOptionCopy: { flex: 1, gap: 2 },
   pageOptionTitle: { color: "#101828", fontSize: 16, fontWeight: "900" },
   pageOptionDescription: { color: "#667085", fontSize: 13 },
-  actions: { flexDirection: "row", gap: 10 },
-  button: { flex: 1, height: 52, borderRadius: 16, backgroundColor: "#ec0e68", justifyContent: "center", alignItems: "center" },
+  actions: { flexDirection: "row", gap: 10, borderRadius: 22, borderWidth: 1, padding: 10, shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
+  button: { flex: 1, height: 52, borderRadius: 16, backgroundColor: "#ec0e68", justifyContent: "center", alignItems: "center", shadowColor: "#101828", shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   buttonText: { color: "#ffffff", fontWeight: "800" },
   secondaryButton: { flex: 1, height: 52, borderRadius: 16, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd", justifyContent: "center", alignItems: "center", flexDirection: "row", gap: 7 },
   secondaryButtonText: { color: "#101828", fontWeight: "800" },

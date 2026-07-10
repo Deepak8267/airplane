@@ -83,9 +83,6 @@ export default function PublishScreen() {
     <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: appTheme.background }]}>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 32 + insets.bottom }]} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
-          <Pressable accessibilityLabel="Back to preview" style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
-            <Ionicons color={appTheme.text} name="chevron-back" size={22} />
-          </Pressable>
           <View style={[styles.statusBadge, { backgroundColor: appTheme.surface, borderColor: appTheme.border }, link ? styles.liveBadge : null]}>
             <Ionicons color={link ? appTheme.success : appTheme.primary} name={link ? "checkmark-circle" : "rocket-outline"} size={18} />
             <Text style={[styles.eyebrow, { color: link ? appTheme.success : appTheme.primary }]}>{link ? "Published" : "Ready"}</Text>
@@ -147,16 +144,18 @@ export default function PublishScreen() {
         {publishMutation.error instanceof Error ? <Text style={styles.error}>{publishMutation.error.message}</Text> : null}
 
         {!link ? (
-          <Pressable
-            style={[styles.button, { backgroundColor: appTheme.primary, opacity: publishMutation.isPending || !publishReady ? 0.7 : 1 }]}
-            onPress={() => publishMutation.mutate()}
-            disabled={publishMutation.isPending || !publishReady}
-          >
-            <Ionicons color="#ffffff" name={publishMutation.isPending ? "hourglass-outline" : "rocket-outline"} size={20} />
-            <Text style={styles.buttonText}>{publishMutation.isPending ? "Publishing..." : "Publish experience"}</Text>
-          </Pressable>
+          <View style={[styles.actionPanel, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
+            <Pressable
+              style={[styles.button, { backgroundColor: appTheme.primary, opacity: publishMutation.isPending || !publishReady ? 0.82 : 1 }]}
+              onPress={() => publishMutation.mutate()}
+              disabled={publishMutation.isPending || !publishReady}
+            >
+              <Ionicons color="#ffffff" name={publishMutation.isPending ? "hourglass-outline" : "rocket-outline"} size={20} />
+              <Text style={styles.buttonText}>{publishMutation.isPending ? "Publishing..." : "Publish experience"}</Text>
+            </Pressable>
+          </View>
         ) : (
-          <View style={styles.publishedActions}>
+          <View style={[styles.publishedActions, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
             <Pressable style={[styles.button, { backgroundColor: appTheme.primary }]} onPress={share}>
               <Ionicons color="#ffffff" name="share-social-outline" size={20} />
               <Text style={styles.buttonText}>Share link</Text>
@@ -217,7 +216,7 @@ function ChecklistItem({ complete, label }: { complete: boolean; label: string }
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#fff7fb" },
   content: { flexGrow: 1, gap: 20, padding: 16, paddingBottom: 32 },
-  topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "flex-end" },
   iconButton: { width: 42, height: 42, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center" },
   statusBadge: { minHeight: 36, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
   liveBadge: { borderColor: "#abefc6", backgroundColor: "#ecfdf3" },
@@ -246,9 +245,10 @@ const styles = StyleSheet.create({
   link: { color: "#101828", fontWeight: "800", lineHeight: 20, flexShrink: 1 },
   copyIconButton: { width: 44, height: 44, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#fff7fb", alignItems: "center", justifyContent: "center" },
   linkHint: { color: "#667085", lineHeight: 18, fontSize: 12 },
-  publishedActions: { gap: 10 },
+  actionPanel: { borderRadius: 22, borderWidth: 1, padding: 10, shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
+  publishedActions: { gap: 10, borderRadius: 22, borderWidth: 1, padding: 10, shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
   actionGrid: { flexDirection: "row", gap: 10 },
-  button: { height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "#ec0e68", flexDirection: "row", gap: 8 },
+  button: { height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "#ec0e68", flexDirection: "row", gap: 8, shadowColor: "#101828", shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
   buttonText: { color: "#ffffff", fontWeight: "900", fontSize: 16 },
   secondaryButton: { flex: 1, height: 50, borderRadius: 16, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   secondaryButtonFull: { height: 50, borderRadius: 16, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#d0d5dd", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
