@@ -8,6 +8,7 @@ import type { ImageSourcePropType } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TEMPLATE_CATEGORIES } from "@airplane/shared";
 import type { Template, TemplateCategory } from "@airplane/shared";
+import { BottomNav } from "@/components/bottom-nav";
 import { getTemplates } from "@/features/templates/template-service";
 import { useAppTheme } from "@/stores/app-theme-store";
 
@@ -131,6 +132,7 @@ export default function TemplatesScreen() {
           </View>
         )}
       />
+      <BottomNav active="home" />
     </SafeAreaView>
   );
 }
@@ -251,7 +253,7 @@ function transparentColor(hex: string, alpha: number) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  list: { gap: 16, paddingTop: 8, paddingBottom: 40 },
+  list: { gap: 16, paddingTop: 8, paddingBottom: 118 },
   headerStack: { gap: 14 },
   header: { gap: 5, paddingTop: 4 },
   headerIcon: { width: 48, height: 48, borderRadius: 18, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#fbcfe8", alignItems: "center", justifyContent: "center", marginBottom: 3 },
