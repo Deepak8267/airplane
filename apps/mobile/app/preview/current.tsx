@@ -3,13 +3,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { getCountdownParts } from "@airplane/shared";
 import type { ExperiencePageDraft, Theme } from "@airplane/shared";
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useBuilderStore } from "@/stores/builder-store";
 import { useAppTheme } from "@/stores/app-theme-store";
 
 export default function CurrentPreviewScreen() {
   const appTheme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const draft = useBuilderStore((state) => state.draft);
   const [index, setIndex] = useState(0);
@@ -29,7 +30,7 @@ export default function CurrentPreviewScreen() {
 
   if (!draft || !activePage) {
     return (
-      <SafeAreaView edges={["top"]} style={[styles.emptyScreen, { backgroundColor: appTheme.background }]}>
+      <SafeAreaView edges={["top", "bottom"]} style={[styles.emptyScreen, { backgroundColor: appTheme.background }]}>
         <View style={[styles.emptyIcon, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
           <Ionicons color={appTheme.primary} name="eye-outline" size={30} />
         </View>
@@ -52,7 +53,7 @@ export default function CurrentPreviewScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: draft.theme.background }]}>
-      <ScrollView contentContainerStyle={styles.screen} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.screen, { paddingBottom: 28 + insets.bottom }]} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <Pressable accessibilityLabel="Back to editor" style={[styles.topIconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
             <Ionicons color={appTheme.text} name="create-outline" size={21} />

@@ -6,7 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { EXPERIENCE_THEMES } from "@airplane/shared";
 import type { ExperiencePageDraft, ExperiencePageType, PageContent, Theme } from "@airplane/shared";
 import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { validateBuilderDraft } from "@/features/experiences/builder-validation";
 import { updateDraftExperience, uploadCoverPhoto, uploadPagePhoto } from "@/features/experiences/experience-service";
 import type { ExperienceDraftInput } from "@/features/experiences/experience-service";
@@ -33,6 +33,7 @@ const BUILDER_STEPS = [
 
 export default function BuilderScreen() {
   const appTheme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const [pagePickerVisible, setPagePickerVisible] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [autosaveState, setAutosaveState] = useState<AutosaveState>({ status: "saved" });
@@ -173,7 +174,7 @@ export default function BuilderScreen() {
 
   if (!draft) {
     return (
-      <SafeAreaView edges={["top"]} style={[styles.empty, { backgroundColor: appTheme.background }]}>
+      <SafeAreaView edges={["top", "bottom"]} style={[styles.empty, { backgroundColor: appTheme.background }]}>
         <Text style={[styles.title, { color: appTheme.text }]}>Pick a template first.</Text>
         <Pressable style={[styles.button, { backgroundColor: appTheme.primary }]} onPress={() => router.replace("/home")}>
           <Text style={styles.buttonText}>Go to templates</Text>
@@ -184,7 +185,7 @@ export default function BuilderScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.builderRoot, { backgroundColor: appTheme.background }]}>
-    <ScrollView contentContainerStyle={[styles.screen, { backgroundColor: appTheme.background }]}>
+    <ScrollView contentContainerStyle={[styles.screen, { backgroundColor: appTheme.background, paddingBottom: 28 + insets.bottom }]} showsVerticalScrollIndicator={false}>
       <View style={styles.builderMeta}>
         <Text style={[styles.eyebrow, { color: appTheme.primary }]}>Builder</Text>
         <AutosaveStatus state={autosaveState} />
@@ -291,7 +292,7 @@ export default function BuilderScreen() {
         visible={pagePickerVisible}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.pagePicker}>
+          <View style={[styles.pagePicker, { paddingBottom: 20 + insets.bottom }]}>
             <View style={styles.pagePickerHeader}>
               <Text style={[styles.pagePickerTitle, { color: appTheme.text }]}>Add a page</Text>
               <Pressable accessibilityLabel="Close page picker" style={styles.smallIconButton} onPress={() => setPagePickerVisible(false)}>

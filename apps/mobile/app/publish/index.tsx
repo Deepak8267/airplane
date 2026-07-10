@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Alert, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { publishExperience, updateDraftExperience } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
@@ -11,6 +11,7 @@ import { useAppTheme } from "@/stores/app-theme-store";
 
 export default function PublishScreen() {
   const appTheme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const draft = useBuilderStore((state) => state.draft);
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -80,7 +81,7 @@ export default function PublishScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.root, { backgroundColor: appTheme.background }]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 32 + insets.bottom }]} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <Pressable accessibilityLabel="Back to preview" style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
             <Ionicons color={appTheme.text} name="chevron-back" size={22} />
