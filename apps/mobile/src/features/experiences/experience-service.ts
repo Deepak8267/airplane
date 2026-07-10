@@ -126,6 +126,26 @@ export async function setExperienceArchived({ experienceId, archived }: { experi
   return mapExperience(data);
 }
 
+export async function deleteExperience(experienceId: string): Promise<void> {
+  const dependentDeletes = await Promise.all([
+    supabase.from("events").delete().eq("experience_id", experienceId),
+    supabase.from("analytics").delete().eq("experience_id", experienceId),
+    supabase.from("experience_pages").delete().eq("experience_id", experienceId)
+  ]);
+
+  const dependentError = dependentDeletes.find((result) => result.error)?.error;
+
+  if (dependentError) {
+    throw new Error(dependentError.message);
+  }
+
+  const { error } = await supabase.from("experiences").delete().eq("id", experienceId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function createDraftExperience(template: Template): Promise<{ experience: Experience; pages: ExperiencePage[] }> {
   const userId = await ensureCreatorUserId();
   await assertCanCreateExperience(userId, template);

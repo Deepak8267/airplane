@@ -7,7 +7,7 @@ import type { Experience } from "@airplane/shared";
 import { Alert, FlatList, Image, Linking, Modal, Pressable, RefreshControl, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomNav } from "@/components/bottom-nav";
-import { duplicateExperience, getExperienceForEditing, getMyExperiences, setExperienceArchived } from "@/features/experiences/experience-service";
+import { deleteExperience, duplicateExperience, getExperienceForEditing, getMyExperiences, setExperienceArchived } from "@/features/experiences/experience-service";
 import { useBuilderStore } from "@/stores/builder-store";
 import { useAppTheme } from "@/stores/app-theme-store";
 
@@ -52,6 +52,13 @@ export default function ExperiencesScreen() {
       setMenuExperience(null);
     }
   });
+  const deleteMutation = useMutation({
+    mutationFn: deleteExperience,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["my-experiences"] });
+      setMenuExperience(null);
+    }
+  });
   const experiences = experiencesQuery.data ?? [];
   const filteredExperiences = experiences.filter((experience) => {
     if (filter === "published") {
@@ -78,6 +85,7 @@ export default function ExperiencesScreen() {
   function openActionMenu(experience: Experience) {
     duplicateMutation.reset();
     archiveMutation.reset();
+    deleteMutation.reset();
     setMenuExperience(experience);
   }
 
@@ -98,6 +106,21 @@ export default function ExperiencesScreen() {
           text: "Archive",
           style: "destructive",
           onPress: () => archiveMutation.mutate({ experienceId: experience.id, archived: true })
+        }
+      ]
+    );
+  }
+
+  function confirmDeleteExperience(experience: Experience) {
+    Alert.alert(
+      "Delete experience?",
+      "This permanently removes the experience, its pages, analytics, and event history. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteMutation.mutate(experience.id)
         }
       ]
     );
@@ -297,8 +320,16 @@ export default function ExperiencesScreen() {
               label={archiveMutation.isPending ? "Updating..." : menuExperience?.status === "archived" ? "Restore to drafts" : "Archive"}
               onPress={() => menuExperience && changeArchiveState(menuExperience)}
             />
+            <MenuAction
+              destructive
+              disabled={deleteMutation.isPending}
+              icon="trash-outline"
+              label={deleteMutation.isPending ? "Deleting..." : "Delete permanently"}
+              onPress={() => menuExperience && confirmDeleteExperience(menuExperience)}
+            />
             {duplicateMutation.error instanceof Error ? <Text style={styles.error}>{duplicateMutation.error.message}</Text> : null}
             {archiveMutation.error instanceof Error ? <Text style={styles.error}>{archiveMutation.error.message}</Text> : null}
+            {deleteMutation.error instanceof Error ? <Text style={styles.error}>{deleteMutation.error.message}</Text> : null}
           </View>
         </View>
       </Modal>
@@ -368,7 +399,7 @@ const styles = StyleSheet.create({
   eyebrow: { color: "#ec0e68", fontFamily: FONT.semibold, fontSize: 10, lineHeight: 13, textTransform: "uppercase" },
   title: { color: "#101828", fontFamily: FONT.bold, fontSize: 22, lineHeight: 25 },
   createButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", shadowColor: "#ec0e68", shadowOpacity: 0.14, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
-  list: { gap: 12, paddingTop: 0, paddingBottom: 88 },
+  list: { gap: 12, paddingTop: 0, paddingBottom: 118 },
   listHeader: { gap: 10 },
   statsGrid: { flexDirection: "row", gap: 8 },
   metric: { flex: 1, minHeight: 54, borderRadius: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#f3f4f6", padding: 9, justifyContent: "center" },
