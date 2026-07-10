@@ -84,11 +84,11 @@ const styles = StyleSheet.create({
     paddingTop: 0
   },
   nav: {
-    height: 60,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    height: 51,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#F3F4F6",
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
     paddingHorizontal: 6,
-    paddingVertical: 6,
+    paddingVertical: 4,
     shadowColor: "#111827",
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -104,11 +104,11 @@ const styles = StyleSheet.create({
     elevation: 2
   },
   navMain: {
-    height: 64,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22
+    height: 54,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20
   },
   item: {
     flex: 1,
@@ -120,15 +120,15 @@ const styles = StyleSheet.create({
     paddingVertical: 4
   },
   createButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 41,
+    height: 41,
+    borderRadius: 20.5,
     backgroundColor: "#FF3D81",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: -24,
+    marginTop: -20,
     flexShrink: 0,
-    borderWidth: 5,
+    borderWidth: 4,
     borderColor: "#fff7fb",
     shadowColor: "#FF3D81",
     shadowOpacity: 0.2,
@@ -137,10 +137,10 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   createButtonMain: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    marginTop: -26
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    marginTop: -22
   },
   label: { fontFamily: FONT_MEDIUM, fontSize: 9, lineHeight: 12, textAlign: "center" }
 });
