@@ -394,12 +394,12 @@ function MenuAction({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, paddingHorizontal: 14, paddingTop: 4, backgroundColor: "#ffffff" },
-  header: { minHeight: 54, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 },
+  screen: { flex: 1, paddingTop: 4, backgroundColor: "#ffffff" },
+  header: { minHeight: 54, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8, paddingHorizontal: 14 },
   eyebrow: { color: "#ec0e68", fontFamily: FONT.semibold, fontSize: 10, lineHeight: 13, textTransform: "uppercase" },
   title: { color: "#101828", fontFamily: FONT.bold, fontSize: 22, lineHeight: 25 },
   createButton: { width: 34, height: 34, borderRadius: 17, backgroundColor: "#ec0e68", alignItems: "center", justifyContent: "center", shadowColor: "#ec0e68", shadowOpacity: 0.14, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
-  list: { gap: 12, paddingTop: 0, paddingBottom: 118 },
+  list: { gap: 12, paddingHorizontal: 14, paddingTop: 0, paddingBottom: 118 },
   listHeader: { gap: 10 },
   statsGrid: { flexDirection: "row", gap: 8 },
   metric: { flex: 1, minHeight: 54, borderRadius: 14, backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#f3f4f6", padding: 9, justifyContent: "center" },
