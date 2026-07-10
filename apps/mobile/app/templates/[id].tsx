@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExperiencePageType, Template, TemplateCategory } from "@airplane/shared";
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { createDraftExperience } from "@/features/experiences/experience-service";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { getTemplateById } from "@/features/templates/template-service";
@@ -14,6 +14,7 @@ const FEATURE_COPY = ["Web link included", "Editable pages", "Analytics ready"];
 
 export default function TemplateDetailScreen() {
   const appTheme = useAppTheme();
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id: string }>();
   const isSmallPhone = width < 370;
@@ -75,7 +76,7 @@ export default function TemplateDetailScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={[styles.screen, { backgroundColor: template.defaultTheme.background }]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 124 + insets.bottom }]} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <Pressable accessibilityLabel="Go back" style={[styles.iconButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]} onPress={() => router.back()}>
             <Ionicons color={appTheme.text} name="chevron-back" size={22} />
@@ -170,7 +171,7 @@ export default function TemplateDetailScreen() {
         {createDraftMutation.error instanceof Error ? <Text style={styles.error}>{createDraftMutation.error.message}</Text> : null}
       </ScrollView>
 
-      <View style={[styles.footer, { backgroundColor: appTheme.background, borderTopColor: appTheme.border }]}>
+      <View style={[styles.footer, { backgroundColor: appTheme.background, borderTopColor: appTheme.border, paddingBottom: Math.max(insets.bottom, 12) + 12 }]}>
         <Pressable style={[styles.button, { backgroundColor: appTheme.primary, opacity: disabled ? 0.7 : 1 }]} onPress={start} disabled={disabled}>
           <Ionicons color="#ffffff" name={createDraftMutation.isPending ? "hourglass-outline" : "rocket-outline"} size={20} />
           <Text style={styles.buttonText}>
