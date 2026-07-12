@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FLOW_SIZE, MOBILE_FONT } from "@/design/tokens";
-import { getCreatorNotifications, markAllNotificationsRead } from "@/features/notifications/notification-service";
+import { clearReadNotifications, dismissNotification, getCreatorNotifications, markAllNotificationsRead } from "@/features/notifications/notification-service";
 import type { CreatorNotification, CreatorNotificationType } from "@/features/notifications/notification-service";
 import { useAppTheme } from "@/stores/app-theme-store";
 
@@ -17,8 +17,13 @@ export default function NotificationsScreen() {
   });
   const notifications = notificationsQuery.data?.notifications ?? [];
   const unreadCount = notificationsQuery.data?.unreadCount ?? 0;
+  const readCount = notifications.length - unreadCount;
   const markReadMutation = useMutation({
     mutationFn: () => markAllNotificationsRead(notifications),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["creator-notifications"] })
+  });
+  const clearReadMutation = useMutation({
+    mutationFn: () => clearReadNotifications(notifications),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["creator-notifications"] })
   });
 
@@ -54,14 +59,24 @@ export default function NotificationsScreen() {
         }
         ListFooterComponent={
           notifications.length > 0 ? (
-            <Pressable
-              disabled={markReadMutation.isPending || unreadCount === 0}
-              style={[styles.markReadButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border, opacity: unreadCount === 0 ? 0.55 : 1 }]}
-              onPress={() => markReadMutation.mutate()}
-            >
-              <Ionicons color={appTheme.primary} name="checkmark-done-outline" size={18} />
-              <Text style={[styles.markReadText, { color: appTheme.primary }]}>{markReadMutation.isPending ? "Updating..." : "Mark all as read"}</Text>
-            </Pressable>
+            <View style={styles.footerActions}>
+              <Pressable
+                disabled={markReadMutation.isPending || unreadCount === 0}
+                style={[styles.footerButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border, opacity: unreadCount === 0 ? 0.55 : 1 }]}
+                onPress={() => markReadMutation.mutate()}
+              >
+                <Ionicons color={appTheme.primary} name="checkmark-done-outline" size={18} />
+                <Text style={[styles.footerButtonText, { color: appTheme.primary }]}>{markReadMutation.isPending ? "Updating..." : "Mark all read"}</Text>
+              </Pressable>
+              <Pressable
+                disabled={clearReadMutation.isPending || readCount === 0}
+                style={[styles.footerButton, { backgroundColor: appTheme.surface, borderColor: appTheme.border, opacity: readCount === 0 ? 0.55 : 1 }]}
+                onPress={() => clearReadMutation.mutate()}
+              >
+                <Ionicons color={appTheme.danger} name="trash-outline" size={17} />
+                <Text style={[styles.footerButtonText, { color: appTheme.danger }]}>{clearReadMutation.isPending ? "Clearing..." : "Clear read"}</Text>
+              </Pressable>
+            </View>
           ) : null
         }
         renderItem={({ item }) => <NotificationCard notification={item} />}
@@ -73,7 +88,12 @@ export default function NotificationsScreen() {
 
 function NotificationCard({ notification }: { notification: CreatorNotification }) {
   const appTheme = useAppTheme();
+  const queryClient = useQueryClient();
   const icon = getNotificationIcon(notification.type);
+  const dismissMutation = useMutation({
+    mutationFn: () => dismissNotification(notification.id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["creator-notifications"] })
+  });
 
   return (
     <Pressable
@@ -87,6 +107,18 @@ function NotificationCard({ notification }: { notification: CreatorNotification 
         <View style={styles.cardTitleRow}>
           <Text numberOfLines={1} style={[styles.cardTitle, { color: appTheme.text }]}>{notification.title}</Text>
           {notification.unread ? <View style={[styles.unreadDot, { backgroundColor: appTheme.primary }]} /> : null}
+          <Pressable
+            accessibilityLabel="Dismiss notification"
+            disabled={dismissMutation.isPending}
+            hitSlop={8}
+            style={styles.dismissButton}
+            onPress={(event) => {
+              event.stopPropagation();
+              dismissMutation.mutate();
+            }}
+          >
+            <Ionicons color={appTheme.mutedText} name="close" size={15} />
+          </Pressable>
         </View>
         <Text numberOfLines={2} style={[styles.cardBody, { color: appTheme.secondaryText }]}>{notification.body}</Text>
         <View style={styles.cardMetaRow}>
@@ -173,6 +205,8 @@ const styles = StyleSheet.create({
   cardTime: { fontFamily: MOBILE_FONT.medium, fontSize: FLOW_SIZE.caption, lineHeight: FLOW_SIZE.captionLine },
   actionLabel: { flexDirection: "row", alignItems: "center", gap: 2 },
   actionText: { fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, lineHeight: FLOW_SIZE.captionLine },
-  markReadButton: { height: FLOW_SIZE.buttonHeight, borderRadius: FLOW_SIZE.compactRadius, borderWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 2 },
-  markReadText: { fontFamily: MOBILE_FONT.semibold, fontSize: 13 }
+  dismissButton: { width: 24, height: 24, alignItems: "center", justifyContent: "center" },
+  footerActions: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 2 },
+  footerButton: { flex: 1, height: FLOW_SIZE.buttonHeight, borderRadius: FLOW_SIZE.compactRadius, borderWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  footerButtonText: { fontFamily: MOBILE_FONT.semibold, fontSize: 12 }
 });

@@ -142,11 +142,23 @@ create table public.subscriptions (
   updated_at timestamptz not null default now()
 );
 
+create table public.notification_states (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  notification_id text not null,
+  read_at timestamptz,
+  dismissed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, notification_id)
+);
+
 create index experiences_user_id_idx on public.experiences(user_id);
 create index experiences_slug_idx on public.experiences(slug) where slug is not null;
 create index experience_pages_experience_id_position_idx on public.experience_pages(experience_id, position);
 create index events_experience_id_created_at_idx on public.events(experience_id, created_at desc);
 create index events_unique_visitor_idx on public.events(experience_id, visitor_id);
+create index notification_states_user_id_idx on public.notification_states(user_id);
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -164,6 +176,7 @@ create trigger experiences_set_updated_at before update on public.experiences fo
 create trigger experience_pages_set_updated_at before update on public.experience_pages for each row execute function public.set_updated_at();
 create trigger analytics_set_updated_at before update on public.analytics for each row execute function public.set_updated_at();
 create trigger subscriptions_set_updated_at before update on public.subscriptions for each row execute function public.set_updated_at();
+create trigger notification_states_set_updated_at before update on public.notification_states for each row execute function public.set_updated_at();
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -310,6 +323,7 @@ alter table public.analytics enable row level security;
 alter table public.events enable row level security;
 alter table public.payments enable row level security;
 alter table public.subscriptions enable row level security;
+alter table public.notification_states enable row level security;
 
 create policy "Users can read own profile" on public.users for select using (id = auth.uid());
 create policy "Users can update own profile" on public.users for update using (id = auth.uid()) with check (id = auth.uid());
@@ -337,6 +351,9 @@ using (exists (select 1 from public.experiences e where e.id = experience_id and
 
 create policy "Users read own payments" on public.payments for select using (user_id = auth.uid());
 create policy "Users read own subscriptions" on public.subscriptions for select using (user_id = auth.uid());
+create policy "Users manage own notification states" on public.notification_states for all
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
 
 
 -- ============================================================

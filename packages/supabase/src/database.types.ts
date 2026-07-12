@@ -294,6 +294,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      notification_states: {
+        Row: {
+          id: string;
+          user_id: string;
+          notification_id: string;
+          read_at: string | null;
+          dismissed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          notification_id: string;
+          read_at?: string | null;
+          dismissed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          notification_id?: string;
+          read_at?: string | null;
+          dismissed_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {};
     Functions: {

@@ -1,12 +1,10 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Experience } from "@airplane/shared";
 import { getAnalyticsDashboard } from "@/features/analytics/analytics-service";
 import type { AnalyticsDashboard } from "@/features/analytics/analytics-service";
 import { getMyExperiences } from "@/features/experiences/experience-service";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import type { PlanUsage } from "@/features/subscriptions/subscription-service";
-
-const READ_STORAGE_KEY = "airplane:read-notifications";
+import { supabase } from "@/lib/supabase";
 
 export type CreatorNotificationType = "plan" | "activity" | "publish" | "draft" | "tip";
 
@@ -27,11 +25,12 @@ export type CreatorNotificationCenter = {
 };
 
 export async function getCreatorNotifications(): Promise<CreatorNotificationCenter> {
+  const userId = await getCurrentUserId();
   const [dashboard, planUsage, experiences, readIds] = await Promise.all([
     getAnalyticsDashboard().catch(() => null),
     getPlanUsage().catch(() => null),
     getMyExperiences().catch(() => []),
-    getReadNotificationIds()
+    userId ? getNotificationStates(userId) : Promise.resolve(new Map<string, NotificationState>())
   ]);
 
   const notifications = buildNotifications({
@@ -39,9 +38,10 @@ export async function getCreatorNotifications(): Promise<CreatorNotificationCent
     experiences,
     planUsage
   })
+    .filter((notification) => !readIds.get(notification.id)?.dismissedAt)
     .map((notification) => ({
       ...notification,
-      unread: !readIds.has(notification.id)
+      unread: !readIds.get(notification.id)?.readAt
     }))
     .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 
@@ -52,24 +52,90 @@ export async function getCreatorNotifications(): Promise<CreatorNotificationCent
 }
 
 export async function markAllNotificationsRead(notifications: CreatorNotification[]) {
-  const existing = await getReadNotificationIds();
-  notifications.forEach((notification) => existing.add(notification.id));
-  await AsyncStorage.setItem(READ_STORAGE_KEY, JSON.stringify(Array.from(existing)));
+  const userId = await getCurrentUserId();
+
+  if (!userId || notifications.length === 0) {
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const rows = notifications.map((notification) => ({
+    user_id: userId,
+    notification_id: notification.id,
+    read_at: now
+  }));
+  const { error } = await supabase.from("notification_states").upsert(rows, {
+    onConflict: "user_id,notification_id"
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
-async function getReadNotificationIds() {
-  const raw = await AsyncStorage.getItem(READ_STORAGE_KEY);
+export async function dismissNotification(notificationId: string) {
+  const userId = await getCurrentUserId();
 
-  if (!raw) {
-    return new Set<string>();
+  if (!userId) {
+    return;
   }
 
-  try {
-    const parsed = JSON.parse(raw);
-    return new Set(Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string") : []);
-  } catch {
-    return new Set<string>();
+  const now = new Date().toISOString();
+  const { error } = await supabase.from("notification_states").upsert(
+    {
+      user_id: userId,
+      notification_id: notificationId,
+      read_at: now,
+      dismissed_at: now
+    },
+    { onConflict: "user_id,notification_id" }
+  );
+
+  if (error) {
+    throw new Error(error.message);
   }
+}
+
+export async function clearReadNotifications(notifications: CreatorNotification[]) {
+  const readNotifications = notifications.filter((notification) => !notification.unread);
+
+  await Promise.all(readNotifications.map((notification) => dismissNotification(notification.id)));
+}
+
+type NotificationState = {
+  readAt: string | null;
+  dismissedAt: string | null;
+};
+
+async function getCurrentUserId() {
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.session?.user.id ?? null;
+}
+
+async function getNotificationStates(userId: string) {
+  const { data, error } = await supabase
+    .from("notification_states")
+    .select("notification_id,read_at,dismissed_at")
+    .eq("user_id", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return new Map(
+    (data ?? []).map((row) => [
+      row.notification_id,
+      {
+        readAt: row.read_at,
+        dismissedAt: row.dismissed_at
+      }
+    ])
+  );
 }
 
 function buildNotifications({
