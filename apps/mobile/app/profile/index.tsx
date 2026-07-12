@@ -9,6 +9,7 @@ import type { UserProfile } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
 import { getAnalyticsDashboard } from "@/features/analytics/analytics-service";
 import { useSignOut } from "@/features/auth/use-sign-out";
+import { getCreatorNotifications } from "@/features/notifications/notification-service";
 import { getMyProfile, updateMyProfile } from "@/features/profile/profile-service";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { useAppTheme } from "@/stores/app-theme-store";
@@ -63,6 +64,11 @@ export default function ProfileScreen() {
     queryFn: getAnalyticsDashboard,
     enabled: Boolean(session)
   });
+  const notificationsQuery = useQuery({
+    queryKey: ["creator-notifications"],
+    queryFn: getCreatorNotifications,
+    enabled: Boolean(session)
+  });
   const entrance = useRef(new Animated.Value(0)).current;
   const profile = profileQuery.data;
   const displayName = profile?.fullName?.trim() || session?.user.user_metadata?.full_name || session?.user.email?.split("@")[0] || "Airplane Creator";
@@ -112,7 +118,7 @@ export default function ProfileScreen() {
           refreshControl={<RefreshControl refreshing={profileQuery.isRefetching} onRefresh={() => profileQuery.refetch()} />}
           showsVerticalScrollIndicator={false}
         >
-          <ProfileHeader />
+          <ProfileHeader hasUnreadNotifications={(notificationsQuery.data?.unreadCount ?? 0) > 0} />
           <ProfileCard email={displayEmail} initials={initials} name={displayName} phone={displayPhone || "Phone not added"} plan={planUsageQuery.data?.plan ?? "free"} profile={profile} stats={stats} onEdit={() => setEditorVisible(true)} />
           <PremiumBanner activeCount={planUsageQuery.data?.activeExperienceCount ?? 0} freeLimit={planUsageQuery.data?.freeExperienceLimit ?? 3} plan={planUsageQuery.data?.plan ?? "free"} />
           <MenuCard onEditProfile={() => setEditorVisible(true)} />
@@ -135,7 +141,7 @@ export default function ProfileScreen() {
   );
 }
 
-const ProfileHeader = memo(function ProfileHeader() {
+const ProfileHeader = memo(function ProfileHeader({ hasUnreadNotifications }: { hasUnreadNotifications: boolean }) {
   const appTheme = useAppTheme();
 
   return (
@@ -145,7 +151,7 @@ const ProfileHeader = memo(function ProfileHeader() {
         <Text numberOfLines={2} style={[styles.pageSubtitle, { color: appTheme.secondaryText }]}>Manage your account and preferences</Text>
       </View>
       <View style={styles.headerActions}>
-        <IconButton dot icon="notifications-outline" onPress={() => undefined} />
+        <IconButton dot={hasUnreadNotifications} icon="notifications-outline" onPress={() => router.push("/notifications" as never)} />
         <IconButton icon="settings-outline" onPress={() => router.push("/settings" as never)} />
       </View>
     </View>

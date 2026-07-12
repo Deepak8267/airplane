@@ -8,6 +8,7 @@ import type { ImageSourcePropType } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { Template } from "@airplane/shared";
 import { BottomNav } from "@/components/bottom-nav";
+import { getCreatorNotifications } from "@/features/notifications/notification-service";
 import { getTemplates } from "@/features/templates/template-service";
 import { useAppTheme } from "@/stores/app-theme-store";
 import { useSessionStore } from "@/stores/session-store";
@@ -71,6 +72,10 @@ export default function HomeScreen() {
     queryKey: ["templates"],
     queryFn: getTemplates
   });
+  const notificationsQuery = useQuery({
+    queryKey: ["creator-notifications"],
+    queryFn: getCreatorNotifications
+  });
   const availableWidth = measuredWidth || width;
   const isCompact = availableWidth < 380;
   const horizontalPadding = isCompact ? 12 : 16;
@@ -108,9 +113,9 @@ export default function HomeScreen() {
                 <Text allowFontScaling={false} style={[styles.subtitle, { color: appTheme.secondaryText }, isCompact ? styles.subtitleCompact : null]}>What will you create today?</Text>
               </View>
               <View style={styles.headerActions}>
-                <Pressable accessibilityLabel="Notifications" style={[styles.iconButton, { backgroundColor: appTheme.surface }]}>
+                <Pressable accessibilityLabel="Notifications" style={[styles.iconButton, { backgroundColor: appTheme.surface }]} onPress={() => router.push("/notifications" as never)}>
                   <Ionicons color={appTheme.text} name="notifications-outline" size={20} />
-                  <View style={[styles.iconDot, { backgroundColor: appTheme.primary }]} />
+                  {(notificationsQuery.data?.unreadCount ?? 0) > 0 ? <View style={[styles.iconDot, { backgroundColor: appTheme.primary }]} /> : null}
                 </Pressable>
                 <Pressable accessibilityLabel="Profile" style={[styles.avatar, { backgroundColor: appTheme.accent }]} onPress={() => router.push("/profile" as never)}>
                   <Text allowFontScaling={false} style={[styles.avatarText, { color: appTheme.surface }]}>{creator.avatar}</Text>
