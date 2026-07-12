@@ -31,14 +31,15 @@ export default function SubscriptionScreen() {
 
         <View style={[styles.heroCard, { backgroundColor: appTheme.surface, borderColor: appTheme.border }]}>
           <View style={[styles.crown, { backgroundColor: appTheme.muted }]}>
-            <Ionicons color={appTheme.primary} name="diamond-outline" size={32} />
+            <Ionicons color={appTheme.primary} name="diamond-outline" size={22} />
           </View>
-          <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={2} style={[styles.heroTitle, { color: appTheme.text }]}>{isPro ? "You are on Pro." : "Unlock Pro"}</Text>
-          <Text style={[styles.heroCopy, { color: appTheme.secondaryText }]}>Create unlimited personalized experiences, remove AIRPLANE branding, and unlock deeper analytics.</Text>
-          <View style={[styles.usageCard, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }]}>
-            <Text style={[styles.usageLabel, { color: appTheme.secondaryText }]}>Free usage</Text>
-            <Text style={[styles.usageValue, { color: appTheme.text }]}>
-              {usage ? `${usage.activeExperienceCount}/${usage.freeExperienceLimit} active experiences` : "Loading usage..."}
+          <View style={styles.heroCopyWrap}>
+            <Text adjustsFontSizeToFit minimumFontScale={0.78} numberOfLines={1} style={[styles.heroTitle, { color: appTheme.text }]}>{isPro ? "Pro plan active" : "Upgrade to Pro"}</Text>
+            <Text numberOfLines={2} style={[styles.heroCopy, { color: appTheme.secondaryText }]}>Unlimited experiences, no watermark, premium templates, and analytics.</Text>
+          </View>
+          <View style={[styles.usagePill, { backgroundColor: appTheme.surfaceAlt, borderColor: appTheme.border }]}>
+            <Text numberOfLines={1} style={[styles.usageValue, { color: appTheme.text }]}>
+              {usage ? `${usage.activeExperienceCount}/${usage.freeExperienceLimit}` : "..."}
             </Text>
           </View>
         </View>
@@ -51,8 +52,8 @@ export default function SubscriptionScreen() {
         {planQuery.error instanceof Error ? <Text style={styles.error}>{planQuery.error.message}</Text> : null}
 
         <View style={styles.planGrid}>
-          <PlanCard active={!isPro} name="Free" price="Rs 0" features={FREE_FEATURES} />
-          <PlanCard active={isPro} name="Pro" price="Rs 199/mo" features={PRO_FEATURES} highlighted />
+          <PlanCard active={!isPro} name="Free" price="Rs 0" features={FREE_FEATURES.slice(0, 3)} />
+          <PlanCard active={isPro} name="Pro" price="Rs 199/mo" features={PRO_FEATURES.slice(0, 4)} highlighted />
         </View>
 
         <View style={styles.noticeCard}>
@@ -98,36 +99,38 @@ function PlanCard({ active, features, highlighted = false, name, price }: { acti
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#fff7fb" },
-  screen: { flexGrow: 1, gap: FLOW_SIZE.sectionGap, paddingHorizontal: FLOW_SIZE.screenPadding, paddingTop: 10, paddingBottom: 30 },
+  screen: { flexGrow: 1, gap: 12, paddingHorizontal: FLOW_SIZE.screenPadding, paddingTop: 8, paddingBottom: 24 },
   topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   iconButton: { width: 42, height: 42, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   badge: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
   badgeText: { color: "#ec0e68", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, textTransform: "uppercase" },
-  heroCard: { gap: 10, alignItems: "center", borderRadius: FLOW_SIZE.cardRadius, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: FLOW_SIZE.cardPadding },
-  crown: { width: 50, height: 50, borderRadius: 18, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
-  heroTitle: { color: "#101828", fontFamily: MOBILE_FONT.bold, fontSize: FLOW_SIZE.headerTitle, lineHeight: FLOW_SIZE.headerTitleLine, textAlign: "center" },
-  heroCopy: { color: "#667085", fontFamily: MOBILE_FONT.regular, textAlign: "center", fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
+  heroCard: { minHeight: 88, flexDirection: "row", gap: 11, alignItems: "center", borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 12 },
+  crown: { width: 42, height: 42, borderRadius: 15, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
+  heroCopyWrap: { flex: 1, minWidth: 0, gap: 3 },
+  heroTitle: { color: "#101828", fontFamily: MOBILE_FONT.bold, fontSize: 17, lineHeight: 22 },
+  heroCopy: { color: "#667085", fontFamily: MOBILE_FONT.regular, fontSize: 11, lineHeight: 15 },
+  usagePill: { minWidth: 48, height: 34, borderRadius: 13, borderWidth: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   usageCard: { alignSelf: "stretch", minHeight: 56, borderRadius: 18, backgroundColor: "#fff7fb", borderWidth: 1, borderColor: "#fbcfe8", padding: 11, justifyContent: "center", gap: 3 },
   usageLabel: { color: "#667085", fontFamily: MOBILE_FONT.medium, fontSize: FLOW_SIZE.caption, textTransform: "uppercase" },
   usageValue: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
-  billingTabs: { height: 42, flexDirection: "row", borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 3 },
+  billingTabs: { height: 38, flexDirection: "row", borderRadius: 14, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 3 },
   billingActive: { flex: 1, borderRadius: 6, backgroundColor: "#ec0e68", color: "#ffffff", textAlign: "center", textAlignVertical: "center", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
   billingInactive: { flex: 1, color: "#667085", textAlign: "center", textAlignVertical: "center", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
-  planGrid: { gap: 12 },
-  planCard: { gap: 12, borderRadius: FLOW_SIZE.cardRadius, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", padding: FLOW_SIZE.cardPadding },
+  planGrid: { gap: 10 },
+  planCard: { gap: 9, borderRadius: 18, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", padding: 12 },
   proCard: { borderColor: "#fbcfe8", backgroundColor: "#fff1f7" },
   planHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
   planName: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.sectionTitle },
   activeBadge: { overflow: "hidden", borderRadius: 12, backgroundColor: "#dcfae6", color: "#067647", paddingHorizontal: 8, paddingVertical: 4, fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, flexShrink: 0 },
-  price: { color: "#101828", fontFamily: MOBILE_FONT.bold, fontSize: 22, lineHeight: 27, marginTop: 3 },
-  featureList: { gap: 9 },
+  price: { color: "#101828", fontFamily: MOBILE_FONT.bold, fontSize: 18, lineHeight: 23, marginTop: 2 },
+  featureList: { gap: 7 },
   featureRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   featureText: { flex: 1, minWidth: 0, color: "#344054", fontFamily: MOBILE_FONT.medium, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
-  noticeCard: { minHeight: 78, borderRadius: 18, borderWidth: 1, borderColor: "#fedf89", backgroundColor: "#fffaeb", padding: 13, flexDirection: "row", gap: 10 },
+  noticeCard: { minHeight: 64, borderRadius: 16, borderWidth: 1, borderColor: "#fedf89", backgroundColor: "#fffaeb", padding: 11, flexDirection: "row", gap: 9 },
   noticeCopy: { flex: 1, minWidth: 0, gap: 3 },
-  noticeTitle: { color: "#7a2e0e", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.sectionTitle },
+  noticeTitle: { color: "#7a2e0e", fontFamily: MOBILE_FONT.semibold, fontSize: 13 },
   noticeText: { color: "#7a2e0e", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
-  disabledButton: { height: FLOW_SIZE.buttonHeight, borderRadius: FLOW_SIZE.compactRadius, backgroundColor: "#ec0e68", opacity: 0.65, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 16 },
+  disabledButton: { height: 46, borderRadius: 15, backgroundColor: "#ec0e68", opacity: 0.65, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 16 },
   disabledButtonText: { color: "#ffffff", fontFamily: MOBILE_FONT.semibold, fontSize: 13 },
   error: { color: "#b42318", fontFamily: MOBILE_FONT.regular, lineHeight: 20 }
 });
