@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FLOW_SIZE, MOBILE_FONT } from "@/design/tokens";
 import { useAppTheme } from "@/stores/app-theme-store";
 
 const ARTICLES = [
@@ -113,31 +114,31 @@ export default function HelpScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#fff7fb" },
-  screen: { flexGrow: 1, gap: 16, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 34 },
+  screen: { flexGrow: 1, gap: FLOW_SIZE.sectionGap, paddingHorizontal: FLOW_SIZE.screenPadding, paddingTop: 10, paddingBottom: 30 },
   topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   iconButton: { width: 42, height: 42, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   badge: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
-  badgeText: { color: "#ec0e68", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  hero: { gap: 10, borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 16 },
-  heroIcon: { width: 54, height: 54, borderRadius: 18, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
-  title: { color: "#101828", fontSize: 26, lineHeight: 32, fontWeight: "900" },
-  subtitle: { color: "#667085", fontSize: 13, lineHeight: 20 },
-  searchBox: { height: 52, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 13 },
-  searchInput: { flex: 1, minWidth: 0, color: "#101828", fontSize: 14 },
-  card: { gap: 4, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 14 },
+  badgeText: { color: "#ec0e68", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, textTransform: "uppercase" },
+  hero: { gap: 9, borderRadius: FLOW_SIZE.cardRadius, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: FLOW_SIZE.cardPadding },
+  heroIcon: { width: 48, height: 48, borderRadius: 18, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
+  title: { color: "#101828", fontFamily: MOBILE_FONT.bold, fontSize: FLOW_SIZE.headerTitle, lineHeight: FLOW_SIZE.headerTitleLine },
+  subtitle: { color: "#667085", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
+  searchBox: { height: FLOW_SIZE.buttonHeight, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 13 },
+  searchInput: { flex: 1, minWidth: 0, color: "#101828", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body },
+  card: { gap: 4, borderRadius: FLOW_SIZE.cardRadius, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: FLOW_SIZE.cardPadding },
   sectionHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 },
-  sectionTitle: { flex: 1, minWidth: 0, color: "#101828", fontSize: 18, fontWeight: "900" },
-  sectionCount: { overflow: "hidden", borderRadius: 8, backgroundColor: "#fff0f6", color: "#ec0e68", paddingHorizontal: 8, paddingVertical: 4, fontSize: 11, fontWeight: "900" },
-  articleRow: { minHeight: 62, flexDirection: "row", alignItems: "center", gap: 10, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
+  sectionTitle: { flex: 1, minWidth: 0, color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.sectionTitle },
+  sectionCount: { overflow: "hidden", borderRadius: 8, backgroundColor: "#fff0f6", color: "#ec0e68", paddingHorizontal: 8, paddingVertical: 4, fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption },
+  articleRow: { minHeight: 58, flexDirection: "row", alignItems: "center", gap: 10, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
   articleIcon: { width: 38, height: 38, borderRadius: 14, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   articleCopy: { flex: 1, minWidth: 0, gap: 2 },
-  articleText: { color: "#101828", fontWeight: "900" },
-  articleCategory: { color: "#667085", fontSize: 12, fontWeight: "800" },
+  articleText: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
+  articleCategory: { color: "#667085", fontFamily: MOBILE_FONT.medium, fontSize: FLOW_SIZE.caption },
   emptyState: { minHeight: 90, alignItems: "center", justifyContent: "center", gap: 8 },
-  emptyText: { color: "#667085", fontWeight: "800" },
-  supportCard: { gap: 10, borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 16 },
-  supportTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
-  supportCopy: { color: "#667085", lineHeight: 21 },
-  primaryButton: { height: 52, borderRadius: 16, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
-  primaryButtonText: { color: "#ffffff", fontSize: 16, fontWeight: "900" }
+  emptyText: { color: "#667085", fontFamily: MOBILE_FONT.medium, fontSize: FLOW_SIZE.body },
+  supportCard: { gap: 10, borderRadius: FLOW_SIZE.cardRadius, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: FLOW_SIZE.cardPadding },
+  supportTitle: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.sectionTitle },
+  supportCopy: { color: "#667085", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
+  primaryButton: { height: FLOW_SIZE.buttonHeight, borderRadius: FLOW_SIZE.compactRadius, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  primaryButtonText: { color: "#ffffff", fontFamily: MOBILE_FONT.semibold, fontSize: 13 }
 });

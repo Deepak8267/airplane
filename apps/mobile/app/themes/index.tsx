@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FLOW_SIZE, MOBILE_FONT } from "@/design/tokens";
 import { useBuilderStore } from "@/stores/builder-store";
 import { useAppTheme } from "@/stores/app-theme-store";
 
@@ -129,40 +130,40 @@ function ThemeCard({ isSelected, onPress, theme }: { isSelected: boolean; onPres
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, paddingHorizontal: 16, paddingTop: 12, backgroundColor: "#fff7fb" },
+  screen: { flex: 1, paddingHorizontal: FLOW_SIZE.screenPadding, paddingTop: 10, backgroundColor: "#fff7fb" },
   topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   iconButton: { width: 42, height: 42, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   badge: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
-  badgeText: { color: "#ec0e68", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  header: { gap: 6, paddingTop: 18 },
-  eyebrow: { color: "#ec0e68", fontSize: 13, fontWeight: "900", textTransform: "uppercase" },
-  title: { color: "#101828", fontSize: 26, lineHeight: 32, fontWeight: "900" },
-  subtitle: { color: "#667085", fontSize: 13, lineHeight: 20 },
-  list: { gap: 12, paddingTop: 18, paddingBottom: 28 },
-  themeCard: { minHeight: 248, borderRadius: 20, borderWidth: 2, borderColor: "#ffffff", padding: 15, justifyContent: "space-between", shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
+  badgeText: { color: "#ec0e68", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, textTransform: "uppercase" },
+  header: { gap: 5, paddingTop: 14 },
+  eyebrow: { color: "#ec0e68", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, lineHeight: FLOW_SIZE.captionLine, textTransform: "uppercase" },
+  title: { color: "#101828", fontFamily: MOBILE_FONT.bold, fontSize: FLOW_SIZE.headerTitle, lineHeight: FLOW_SIZE.headerTitleLine },
+  subtitle: { color: "#667085", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
+  list: { gap: 12, paddingTop: 14, paddingBottom: 28 },
+  themeCard: { minHeight: 226, borderRadius: FLOW_SIZE.cardRadius, borderWidth: 2, borderColor: "#ffffff", padding: FLOW_SIZE.cardPadding, justifyContent: "space-between", shadowColor: "#101828", shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
   themeTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-  themeName: { fontSize: 18, fontWeight: "900", maxWidth: 210 },
-  themeMeta: { marginTop: 2, fontSize: 12, fontWeight: "800", opacity: 0.62, textTransform: "capitalize" },
+  themeName: { fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.sectionTitle, maxWidth: 210 },
+  themeMeta: { marginTop: 2, fontFamily: MOBILE_FONT.medium, fontSize: FLOW_SIZE.caption, opacity: 0.62, textTransform: "capitalize" },
   swatches: { flexDirection: "row", gap: 8 },
   swatch: { width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.12)" },
-  previewStage: { alignItems: "center", gap: 9, borderRadius: 18, backgroundColor: "rgba(255, 255, 255, 0.5)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.7)", padding: 16 },
-  previewIcon: { width: 54, height: 54, borderRadius: 18, alignItems: "center", justifyContent: "center" },
-  previewTitle: { fontSize: 25, lineHeight: 30, fontWeight: "900", textAlign: "center" },
-  previewCopy: { fontSize: 14, opacity: 0.75 },
+  previewStage: { alignItems: "center", gap: 8, borderRadius: 18, backgroundColor: "rgba(255, 255, 255, 0.5)", borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.7)", padding: FLOW_SIZE.cardPadding },
+  previewIcon: { width: 48, height: 48, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  previewTitle: { fontSize: FLOW_SIZE.pageTitle, lineHeight: FLOW_SIZE.pageTitleLine, fontWeight: "900", textAlign: "center" },
+  previewCopy: { fontSize: FLOW_SIZE.body, opacity: 0.75 },
   previewActions: { alignSelf: "stretch", flexDirection: "row", gap: 8, marginTop: 5 },
-  yesButton: { flex: 1, height: 44, borderRadius: 16, alignItems: "center", justifyContent: "center" },
-  yesText: { color: "#ffffff", fontWeight: "900" },
-  noButton: { flex: 1, height: 44, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.1)" },
-  noText: { fontWeight: "900" },
+  yesButton: { flex: 1, height: 42, borderRadius: FLOW_SIZE.compactRadius, alignItems: "center", justifyContent: "center" },
+  yesText: { color: "#ffffff", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
+  noButton: { flex: 1, height: 42, borderRadius: FLOW_SIZE.compactRadius, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(16, 24, 40, 0.1)" },
+  noText: { fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
   selectedBadge: { position: "absolute", right: 14, top: 58, minHeight: 26, borderRadius: 13, flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 9 },
-  selectedBadgeText: { color: "#ffffff", fontSize: 10, fontWeight: "900", textTransform: "uppercase" },
+  selectedBadgeText: { color: "#ffffff", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, textTransform: "uppercase" },
   footer: { gap: 12, paddingTop: 4 },
   selectedPanel: { minHeight: 62, borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", gap: 10, padding: 12 },
   selectedSwatch: { width: 38, height: 38, borderRadius: 19 },
   selectedCopy: { flex: 1, minWidth: 0 },
-  selectedTitle: { color: "#101828", fontSize: 14, fontWeight: "900" },
-  selectedSubtitle: { color: "#667085", fontSize: 12, fontWeight: "700", marginTop: 2 },
-  applyButton: { height: 52, borderRadius: 16, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 16 },
+  selectedTitle: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.sectionTitle },
+  selectedSubtitle: { color: "#667085", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body, marginTop: 2 },
+  applyButton: { height: FLOW_SIZE.buttonHeight, borderRadius: FLOW_SIZE.compactRadius, backgroundColor: "#ec0e68", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 16 },
   applyButtonMuted: { backgroundColor: "#667085" },
-  applyButtonText: { color: "#ffffff", fontSize: 15, fontWeight: "900" }
+  applyButtonText: { color: "#ffffff", fontFamily: MOBILE_FONT.semibold, fontSize: 13 }
 });

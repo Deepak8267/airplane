@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FLOW_SIZE, MOBILE_FONT } from "@/design/tokens";
 import { getPlanUsage } from "@/features/subscriptions/subscription-service";
 import { useAppTheme } from "@/stores/app-theme-store";
 
@@ -97,36 +98,36 @@ function PlanCard({ active, features, highlighted = false, name, price }: { acti
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#fff7fb" },
-  screen: { flexGrow: 1, gap: 16, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 34 },
+  screen: { flexGrow: 1, gap: FLOW_SIZE.sectionGap, paddingHorizontal: FLOW_SIZE.screenPadding, paddingTop: 10, paddingBottom: 30 },
   topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   iconButton: { width: 42, height: 42, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   badge: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
-  badgeText: { color: "#ec0e68", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  heroCard: { gap: 12, alignItems: "center", borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 16 },
-  crown: { width: 58, height: 58, borderRadius: 18, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
-  heroTitle: { color: "#101828", fontSize: 26, lineHeight: 32, fontWeight: "900", textAlign: "center" },
-  heroCopy: { color: "#667085", textAlign: "center", fontSize: 13, lineHeight: 20 },
-  usageCard: { alignSelf: "stretch", minHeight: 62, borderRadius: 18, backgroundColor: "#fff7fb", borderWidth: 1, borderColor: "#fbcfe8", padding: 12, justifyContent: "center", gap: 3 },
-  usageLabel: { color: "#667085", fontSize: 11, fontWeight: "900", textTransform: "uppercase" },
-  usageValue: { color: "#101828", fontWeight: "900" },
+  badgeText: { color: "#ec0e68", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, textTransform: "uppercase" },
+  heroCard: { gap: 10, alignItems: "center", borderRadius: FLOW_SIZE.cardRadius, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: FLOW_SIZE.cardPadding },
+  crown: { width: 50, height: 50, borderRadius: 18, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
+  heroTitle: { color: "#101828", fontFamily: MOBILE_FONT.bold, fontSize: FLOW_SIZE.headerTitle, lineHeight: FLOW_SIZE.headerTitleLine, textAlign: "center" },
+  heroCopy: { color: "#667085", fontFamily: MOBILE_FONT.regular, textAlign: "center", fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
+  usageCard: { alignSelf: "stretch", minHeight: 56, borderRadius: 18, backgroundColor: "#fff7fb", borderWidth: 1, borderColor: "#fbcfe8", padding: 11, justifyContent: "center", gap: 3 },
+  usageLabel: { color: "#667085", fontFamily: MOBILE_FONT.medium, fontSize: FLOW_SIZE.caption, textTransform: "uppercase" },
+  usageValue: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
   billingTabs: { height: 42, flexDirection: "row", borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 3 },
-  billingActive: { flex: 1, borderRadius: 6, backgroundColor: "#ec0e68", color: "#ffffff", textAlign: "center", textAlignVertical: "center", fontWeight: "900" },
-  billingInactive: { flex: 1, color: "#667085", textAlign: "center", textAlignVertical: "center", fontWeight: "900" },
+  billingActive: { flex: 1, borderRadius: 6, backgroundColor: "#ec0e68", color: "#ffffff", textAlign: "center", textAlignVertical: "center", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
+  billingInactive: { flex: 1, color: "#667085", textAlign: "center", textAlignVertical: "center", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
   planGrid: { gap: 12 },
-  planCard: { gap: 13, borderRadius: 20, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", padding: 15 },
+  planCard: { gap: 12, borderRadius: FLOW_SIZE.cardRadius, borderWidth: 1, borderColor: "#eaecf0", backgroundColor: "#ffffff", padding: FLOW_SIZE.cardPadding },
   proCard: { borderColor: "#fbcfe8", backgroundColor: "#fff1f7" },
   planHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  planName: { color: "#101828", fontSize: 19, fontWeight: "900" },
-  activeBadge: { overflow: "hidden", borderRadius: 12, backgroundColor: "#dcfae6", color: "#067647", paddingHorizontal: 8, paddingVertical: 4, fontSize: 11, fontWeight: "900", flexShrink: 0 },
-  price: { color: "#101828", fontSize: 29, fontWeight: "900", marginTop: 4 },
+  planName: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.sectionTitle },
+  activeBadge: { overflow: "hidden", borderRadius: 12, backgroundColor: "#dcfae6", color: "#067647", paddingHorizontal: 8, paddingVertical: 4, fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, flexShrink: 0 },
+  price: { color: "#101828", fontFamily: MOBILE_FONT.bold, fontSize: 22, lineHeight: 27, marginTop: 3 },
   featureList: { gap: 9 },
   featureRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  featureText: { flex: 1, minWidth: 0, color: "#344054", fontWeight: "800" },
+  featureText: { flex: 1, minWidth: 0, color: "#344054", fontFamily: MOBILE_FONT.medium, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
   noticeCard: { minHeight: 78, borderRadius: 18, borderWidth: 1, borderColor: "#fedf89", backgroundColor: "#fffaeb", padding: 13, flexDirection: "row", gap: 10 },
   noticeCopy: { flex: 1, minWidth: 0, gap: 3 },
-  noticeTitle: { color: "#7a2e0e", fontWeight: "900" },
-  noticeText: { color: "#7a2e0e", lineHeight: 19 },
-  disabledButton: { height: 52, borderRadius: 16, backgroundColor: "#ec0e68", opacity: 0.65, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 16 },
-  disabledButtonText: { color: "#ffffff", fontSize: 16, fontWeight: "900" },
-  error: { color: "#b42318", lineHeight: 20 }
+  noticeTitle: { color: "#7a2e0e", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.sectionTitle },
+  noticeText: { color: "#7a2e0e", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
+  disabledButton: { height: FLOW_SIZE.buttonHeight, borderRadius: FLOW_SIZE.compactRadius, backgroundColor: "#ec0e68", opacity: 0.65, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: 16 },
+  disabledButtonText: { color: "#ffffff", fontFamily: MOBILE_FONT.semibold, fontSize: 13 },
+  error: { color: "#b42318", fontFamily: MOBILE_FONT.regular, lineHeight: 20 }
 });

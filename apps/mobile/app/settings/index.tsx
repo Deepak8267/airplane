@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FLOW_SIZE, MOBILE_FONT } from "@/design/tokens";
 import type { AppThemeTokens } from "@/stores/app-theme-store";
 import { APP_THEME_OPTIONS, useAppTheme, useAppThemeStore } from "@/stores/app-theme-store";
 
@@ -214,36 +215,36 @@ function Action({ danger = false, icon, label, onPress, theme }: { danger?: bool
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#fff7fb" },
-  screen: { flexGrow: 1, gap: 16, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 34 },
+  screen: { flexGrow: 1, gap: FLOW_SIZE.sectionGap, paddingHorizontal: FLOW_SIZE.screenPadding, paddingTop: 10, paddingBottom: 30 },
   topBar: { paddingTop: 6, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   iconButton: { width: 42, height: 42, borderRadius: 16, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   badge: { minHeight: 36, borderRadius: 8, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", paddingHorizontal: 11, flexDirection: "row", alignItems: "center", gap: 7 },
-  badgeText: { color: "#ec0e68", fontSize: 12, fontWeight: "900", textTransform: "uppercase" },
-  hero: { gap: 10, borderRadius: 20, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: 16 },
-  heroIcon: { width: 54, height: 54, borderRadius: 18, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
-  title: { color: "#101828", fontSize: 26, lineHeight: 32, fontWeight: "900" },
-  subtitle: { color: "#667085", fontSize: 13, lineHeight: 20 },
+  badgeText: { color: "#ec0e68", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.caption, textTransform: "uppercase" },
+  hero: { gap: 9, borderRadius: FLOW_SIZE.cardRadius, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", padding: FLOW_SIZE.cardPadding },
+  heroIcon: { width: 48, height: 48, borderRadius: 18, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center" },
+  title: { color: "#101828", fontFamily: MOBILE_FONT.bold, fontSize: FLOW_SIZE.headerTitle, lineHeight: FLOW_SIZE.headerTitleLine },
+  subtitle: { color: "#667085", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
   section: { gap: 10 },
   sectionHeader: { gap: 3 },
-  sectionTitle: { color: "#101828", fontSize: 18, fontWeight: "900" },
-  sectionSubtitle: { color: "#667085", fontSize: 13, lineHeight: 18 },
-  card: { borderRadius: 18, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", overflow: "hidden" },
+  sectionTitle: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.sectionTitle },
+  sectionSubtitle: { color: "#667085", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
+  card: { borderRadius: FLOW_SIZE.cardRadius, borderWidth: 1, borderColor: "#fbcfe8", backgroundColor: "#ffffff", overflow: "hidden" },
   themeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, padding: 12 },
   themeOption: { flexBasis: "47%", flexGrow: 1, minHeight: 116, borderRadius: 16, borderWidth: 2, padding: 12, gap: 7 },
   themeSwatches: { flexDirection: "row", gap: 5 },
   themeSwatch: { width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: "rgba(16,24,40,0.12)" },
-  themeName: { fontSize: 12, fontWeight: "900" },
-  themeDescription: { fontSize: 10, lineHeight: 14, fontWeight: "700" },
+  themeName: { fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
+  themeDescription: { fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.caption, lineHeight: FLOW_SIZE.captionLine },
   themeSelected: { position: "absolute", right: 9, top: 9, width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center" },
-  row: { minHeight: 74, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
+  row: { minHeight: 68, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
   disabledRow: { opacity: 0.58 },
   rowIcon: { width: 38, height: 38, borderRadius: 14, backgroundColor: "#fff0f6", alignItems: "center", justifyContent: "center", flexShrink: 0 },
   rowCopy: { flex: 1, minWidth: 0, gap: 3 },
-  rowLabel: { color: "#101828", fontWeight: "900" },
-  rowDescription: { color: "#667085", fontSize: 12, lineHeight: 17 },
-  actionRow: { minHeight: 62, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
-  actionLabel: { flex: 1, fontWeight: "900" },
+  rowLabel: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
+  rowDescription: { color: "#667085", fontFamily: MOBILE_FONT.regular, fontSize: FLOW_SIZE.body, lineHeight: FLOW_SIZE.bodyLine },
+  actionRow: { minHeight: 58, flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, borderBottomWidth: 1, borderBottomColor: "#eaecf0" },
+  actionLabel: { flex: 1, fontFamily: MOBILE_FONT.semibold, fontSize: FLOW_SIZE.body },
   dangerIcon: { backgroundColor: "#fef3f2" },
-  secondaryButton: { height: 52, borderRadius: 16, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
-  secondaryButtonText: { color: "#101828", fontWeight: "900" }
+  secondaryButton: { height: FLOW_SIZE.buttonHeight, borderRadius: FLOW_SIZE.compactRadius, borderWidth: 1, borderColor: "#d0d5dd", backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
+  secondaryButtonText: { color: "#101828", fontFamily: MOBILE_FONT.semibold, fontSize: 13 }
 });
